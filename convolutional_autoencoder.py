@@ -249,7 +249,7 @@ def train():
     hooks_binmasks = imgaug.HooksImages(activator=activator_binmasks)
 
     with tf.Session() as sess:
-        sess.run(tf.global_variables_initializer())
+        sess.run(tf.initialize_all_variables())
 
         summary_writer = tf.train.SummaryWriter('{}/{}-{}'.format('logs', network.description, timestamp),
                                                 graph=tf.get_default_graph())
