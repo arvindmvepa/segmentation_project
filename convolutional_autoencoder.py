@@ -67,7 +67,7 @@ class Network:
         self.layers = {}
 
         if per_image_standardization:
-            list_of_images_norm = tf.map_fn(tf.image.per_image_standardization, self.inputs)
+            list_of_images_norm = tf.map_fn(tf.image.per_image_whitening, self.inputs)
             net = tf.pack(list_of_images_norm)
         else:
             net = self.inputs
