@@ -37,8 +37,8 @@ def _MaxPoolWithArgmaxGrad(op, grad, unused_argmax_grad):
 
 
 class Network:
-    IMAGE_HEIGHT = 128
-    IMAGE_WIDTH = 128
+    IMAGE_HEIGHT = 1024
+    IMAGE_WIDTH = 1024
     IMAGE_CHANNELS = 1
 
     def __init__(self, layers = None, per_image_standardization=True, batch_norm=True, skip_connections=True):
@@ -109,7 +109,7 @@ class Network:
 
 
 class Dataset:
-    def __init__(self, batch_size, folder='data128_128', include_hair=False):
+    def __init__(self, batch_size, folder='vessels', include_hair=True):
         self.batch_size = batch_size
         self.include_hair = include_hair
 
@@ -207,7 +207,7 @@ def draw_results(test_inputs, test_targets, test_segmentation, test_accuracy, ne
 
 
 def train():
-    BATCH_SIZE = 100
+    BATCH_SIZE = 5
 
     network = Network()
 
@@ -216,7 +216,7 @@ def train():
     # create directory for saving models
     os.makedirs(os.path.join('save', network.description, timestamp))
 
-    dataset = Dataset(folder='data{}_{}'.format(network.IMAGE_HEIGHT, network.IMAGE_WIDTH), include_hair=False,
+    dataset = Dataset(folder='data{}_{}'.format(network.IMAGE_HEIGHT, network.IMAGE_WIDTH), include_hair=True,
                       batch_size=BATCH_SIZE)
 
     inputs, targets = dataset.next_batch()
