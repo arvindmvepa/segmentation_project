@@ -130,12 +130,12 @@ class Dataset:
         for file in files_list:
             input_image = os.path.join(folder, 'inputs', file)
             target_image = os.path.join(folder, 'targets' if self.include_hair else 'targets_face_only', file)
-            test_image = cv2.imread(target_image, 0)
+            test_image = cv2.imread(input_image, 0)
               # load grayscale
             # test_image = np.multiply(test_image, 1.0 / 255)
             inputs.append(test_image)
-            #print(np.array(io.imread(input_image)).shape)
-            target_image = np.array(skio.imread(input_image))
+            print(np.array(io.imread(target_image)).shape)
+            target_image = np.array(skio.imread(target_image))
             target_image = cv2.threshold(target_image, 127, 1, cv2.THRESH_BINARY)[1]
             print(np.sum(target_image))
             targets.append(target_image)
