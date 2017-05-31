@@ -134,7 +134,7 @@ class Dataset:
               # load grayscale
             # test_image = np.multiply(test_image, 1.0 / 255)
             inputs.append(test_image)
-
+            print(np.array(io.imread(input_image)).shape)
             target_image = np.array(io.imread(input_image))[:,:,3]
             print(np.sum(target_image))
             target_image = cv2.threshold(target_image, 127, 1, cv2.THRESH_BINARY)[1]
