@@ -183,7 +183,7 @@ def draw_results(test_inputs, test_targets, test_segmentation, test_accuracy, ne
     fig.suptitle("Accuracy: {}, {}".format(test_accuracy, network.description), fontsize=20)
     for example_i in range(n_examples_to_plot):
         axs[0][example_i].imshow(test_inputs[example_i], cmap='gray')
-        print(test_targets[example_i].astype(np.float32))
+        print(np.sum(test_targets[example_i].astype(np.float32)))
         axs[1][example_i].imshow(test_targets[example_i].astype(np.float32)*255, cmap='gray')
         axs[2][example_i].imshow(
             np.reshape(test_segmentation[example_i], [network.IMAGE_HEIGHT, network.IMAGE_WIDTH]),
@@ -325,7 +325,7 @@ def train():
                                                    [n_examples, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1])})
 
                     # Prepare the plot
-                    test_plot_buf = draw_results(test_inputs, test_targets, test_segmentation, test_accuracy, network,
+                    test_plot_buf = draw_results(test_inputs, np.multiply(test_targets,1.0/255), test_segmentation, test_accuracy, network,
                                                  batch_num)
 
                     # Convert PNG buffer to TF image
