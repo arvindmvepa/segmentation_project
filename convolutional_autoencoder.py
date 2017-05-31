@@ -130,11 +130,11 @@ class Dataset:
             input_image = os.path.join(folder, 'inputs', file)
             target_image = os.path.join(folder, 'targets' if self.include_hair else 'targets_face_only', file)
 
-            test_image = np.array(Image.open(input_image).('L'))  # load grayscale
+            test_image = np.array(Image.open(input_image).convert('L'))  # load grayscale
             # test_image = np.multiply(test_image, 1.0 / 255)
             inputs.append(test_image)
 
-            target_image = np.array(Image.open(target_image).('1'))
+            target_image = np.array(Image.open(target_image).convert('1'))
             print("hi1")
             print(np.sum(np.array(target_image)))
             #if (np.sum(np.array(target_image)) == 0):
@@ -193,7 +193,7 @@ def draw_results(test_inputs, test_targets, test_segmentation, test_accuracy, ne
     for example_i in range(n_examples_to_plot):
         axs[0][example_i].imshow(test_inputs[example_i], cmap='gray')
         #print(np.sum(test_targets[example_i].astype(np.float32)))
-        axs[1][example_i].imshow(test_targets[example_i].astype(np.float32)*255, cmap='gray')
+        axs[1][example_i].imshow(test_targets[example_i].astype(np.float32), cmap='gray')
         axs[2][example_i].imshow(
             np.reshape(test_segmentation[example_i], [network.IMAGE_HEIGHT, network.IMAGE_WIDTH]),
             cmap='gray')
