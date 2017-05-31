@@ -135,6 +135,7 @@ class Dataset:
 
             target_image = cv2.imread(target_image, 0)
             target_image = cv2.threshold(target_image, 127, 1, cv2.THRESH_BINARY)[1]
+            print(np.sum(np.array(target_image)))
             targets.append(target_image)
 
         return inputs, targets
@@ -183,7 +184,7 @@ def draw_results(test_inputs, test_targets, test_segmentation, test_accuracy, ne
     fig.suptitle("Accuracy: {}, {}".format(test_accuracy, network.description), fontsize=20)
     for example_i in range(n_examples_to_plot):
         axs[0][example_i].imshow(test_inputs[example_i], cmap='gray')
-        print(np.sum(test_targets[example_i].astype(np.float32)))
+        #print(np.sum(test_targets[example_i].astype(np.float32)))
         axs[1][example_i].imshow(test_targets[example_i].astype(np.float32)*255, cmap='gray')
         axs[2][example_i].imshow(
             np.reshape(test_segmentation[example_i], [network.IMAGE_HEIGHT, network.IMAGE_WIDTH]),
