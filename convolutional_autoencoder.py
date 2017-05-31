@@ -22,6 +22,7 @@ from max_pool_2d import MaxPool2d
 import datetime
 import io
 from PIL import Image
+from skimage import io
 
 np.set_printoptions(threshold=np.nan)
 
@@ -129,22 +130,17 @@ class Dataset:
         for file in files_list:
             input_image = os.path.join(folder, 'inputs', file)
             target_image = os.path.join(folder, 'targets' if self.include_hair else 'targets_face_only', file)
-
-            test_image = np.array(Image.open(input_image).convert('L'))  # load grayscale
+            test_image = cv2.imread(target_image, 0)
+              # load grayscale
             # test_image = np.multiply(test_image, 1.0 / 255)
             inputs.append(test_image)
 
-            target_image = np.array(Image.open(target_image).convert('1'))
-            print("hi1")
-            print(np.sum(np.array(target_image)))
-            #if (np.sum(np.array(target_image)) == 0):
-            #    print(os.path.join(folder, 'targets' if self.include_hair else 'targets_face_only', file))
-            print("hi2")
-            #target_image = cv2.threshold(target_image, 127, 1, cv2.THRESH_BINARY)[1]
-            #print("hi3")
-            #print(np.sum(np.array(target_image)))
-            #print("hi4")
+            target_image = np.array(io.imread(input_image))[:,:,3]
+            print(np.sum(target_image))
+            target_image = cv2.threshold(target_image, 127, 1, cv2.THRESH_BINARY)[1]
             targets.append(target_image)
+
+        return inputs, targets
 
         return inputs, targets
 
