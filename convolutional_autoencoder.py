@@ -22,7 +22,7 @@ from max_pool_2d import MaxPool2d
 import datetime
 import io
 from PIL import Image
-from skimage import io
+from skimage import skio
 
 np.set_printoptions(threshold=np.nan)
 
@@ -135,9 +135,9 @@ class Dataset:
             # test_image = np.multiply(test_image, 1.0 / 255)
             inputs.append(test_image)
             #print(np.array(io.imread(input_image)).shape)
-            target_image = np.array(io.imread(input_image))
-            #print(np.sum(target_image))
+            target_image = np.array(skio.imread(input_image))
             target_image = cv2.threshold(target_image, 127, 1, cv2.THRESH_BINARY)[1]
+            print(np.sum(target_image))
             targets.append(target_image)
 
         return inputs, targets
