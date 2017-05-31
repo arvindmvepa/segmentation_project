@@ -136,7 +136,7 @@ class Dataset:
             inputs.append(test_image)
             print(np.array(skio.imread(target_image)).shape)
             target_image = np.array(skio.imread(target_image))[:,:,3]
-            target_image = cv2.threshold(target_image, 127, 1, cv2.THRESH_BINARY)[1]
+            target_image = cv2.threshold(target_image, 127, 1, cv2.THRESH_BINARY_INV)[1]
             print(np.sum(target_image))
             targets.append(target_image)
 
