@@ -22,7 +22,7 @@ from max_pool_2d import MaxPool2d
 import datetime
 import io
 from PIL import Image
-from skimage import skio
+from skimage import io as skio
 
 np.set_printoptions(threshold=np.nan)
 
