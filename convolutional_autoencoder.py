@@ -194,10 +194,10 @@ def draw_results(test_inputs, test_targets, test_segmentation, test_accuracy, ne
             np.reshape(test_image_thresholded, [network.IMAGE_HEIGHT, network.IMAGE_WIDTH]),
             cmap='gray')
 
-        plt.imsave('{}figure_input{}.jpg'.format(batch_num, example_i), test_inputs[example_i])
-        plt.imsave('{}figure_target{}.jpg'.format(batch_num, example_i), test_targets[example_i])
-        plt.imsave('{}figure_segmentation{}.jpg'.format(batch_num, example_i), np.reshape(test_segmentation[example_i], [network.IMAGE_HEIGHT, network.IMAGE_WIDTH]))
-        plt.imsave('{}figure_threshold{}.jpg'.format(batch_num, example_i), np.reshape(test_image_thresholded, [network.IMAGE_HEIGHT, network.IMAGE_WIDTH]))
+        cv2.imwrite('{}figure_input{}.jpg'.format(batch_num, example_i), test_inputs[example_i]*255)
+        cv2.imwrite('{}figure_target{}.jpg'.format(batch_num, example_i), test_targets[example_i]*255)
+        cv2.imwrite('{}figure_segmentation{}.jpg'.format(batch_num, example_i), 255*np.reshape(test_segmentation[example_i], [network.IMAGE_HEIGHT, network.IMAGE_WIDTH]))
+        cv2.imwrite('{}figure_threshold{}.jpg'.format(batch_num, example_i), np.reshape(test_image_thresholded, [network.IMAGE_HEIGHT, network.IMAGE_WIDTH]))
 
     buf = io.BytesIO()
     plt.savefig(buf, format='png')
