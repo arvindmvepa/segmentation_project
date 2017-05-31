@@ -183,6 +183,10 @@ def draw_results(test_inputs, test_targets, test_segmentation, test_accuracy, ne
     fig.suptitle("Accuracy: {}, {}".format(test_accuracy, network.description), fontsize=20)
     for example_i in range(n_examples_to_plot):
         axs[0][example_i].imshow(test_inputs[example_i], cmap='gray')
+        print(test_inputs[example_i].shape)
+        print(test_targets[example_i].shape)
+        print(test_segmentation[example_i].shape)
+        print(test_image_thresholded.shape)
         axs[1][example_i].imshow(test_targets[example_i], cmap='gray')
         axs[2][example_i].imshow(test_segmentation[example_i], cmap='gray')
 
@@ -283,7 +287,7 @@ def train():
                                                                           n_epochs * dataset.num_batches_in_epoch(),
                                                                           epoch_i, cost, end - start))
 
-                if batch_num % 100 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
+                if batch_num % 10 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
                     test_inputs, test_targets = dataset.test_set
                     # test_inputs, test_targets = test_inputs[:100], test_targets[:100]
 
