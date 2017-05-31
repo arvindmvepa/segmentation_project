@@ -134,6 +134,7 @@ class Dataset:
             inputs.append(test_image)
 
             target_image = cv2.imread(target_image, 0)
+            print(np.sum(np.array(target_image)))
             target_image = cv2.threshold(target_image, 127, 1, cv2.THRESH_BINARY)[1]
             print(np.sum(np.array(target_image)))
             targets.append(target_image)
