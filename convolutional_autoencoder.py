@@ -183,7 +183,7 @@ def draw_results(test_inputs, test_targets, test_segmentation, test_accuracy, ne
     fig.suptitle("Accuracy: {}, {}".format(test_accuracy, network.description), fontsize=20)
     for example_i in range(n_examples_to_plot):
         axs[0][example_i].imshow(test_inputs[example_i], cmap='gray')
-        axs[1][example_i].imshow(test_targets[example_i].astype(np.float32), cmap='gray')
+        axs[1][example_i].imshow(test_targets[example_i], cmap='gray')
         axs[2][example_i].imshow(
             np.reshape(test_segmentation[example_i], [network.IMAGE_HEIGHT, network.IMAGE_WIDTH]),
             cmap='gray')
@@ -194,10 +194,10 @@ def draw_results(test_inputs, test_targets, test_segmentation, test_accuracy, ne
             np.reshape(test_image_thresholded, [network.IMAGE_HEIGHT, network.IMAGE_WIDTH]),
             cmap='gray')
 
-        cv2.imwrite('{}figure_input{}.jpg'.format(batch_num, example_i), test_inputs[example_i])
-        cv2.imwrite('{}figure_target{}.jpg'.format(batch_num, example_i), test_targets[example_i])
-        cv2.imwrite('{}figure_segmentation{}.jpg'.format(batch_num, example_i), np.reshape(test_segmentation[example_i], [network.IMAGE_HEIGHT, network.IMAGE_WIDTH]))
-        cv2.imwrite('{}figure_threshold{}.jpg'.format(batch_num, example_i), np.reshape(test_image_thresholded, [network.IMAGE_HEIGHT, network.IMAGE_WIDTH]))
+        plt.imsave('{}figure_input{}.jpg'.format(batch_num, example_i), test_inputs[example_i])
+        plt.imsave('{}figure_target{}.jpg'.format(batch_num, example_i), test_targets[example_i])
+        plt.imsave('{}figure_segmentation{}.jpg'.format(batch_num, example_i), np.reshape(test_segmentation[example_i], [network.IMAGE_HEIGHT, network.IMAGE_WIDTH]))
+        plt.imsave('{}figure_threshold{}.jpg'.format(batch_num, example_i), np.reshape(test_image_thresholded, [network.IMAGE_HEIGHT, network.IMAGE_WIDTH]))
 
     buf = io.BytesIO()
     plt.savefig(buf, format='png')
