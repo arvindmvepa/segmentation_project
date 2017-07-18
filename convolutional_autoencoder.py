@@ -2,6 +2,7 @@ import math
 import os
 import time
 from math import ceil
+import multiprocessing
 
 import cv2
 import matplotlib
@@ -26,7 +27,7 @@ from skimage import io as skio
 
 np.set_printoptions(threshold=np.nan)
 
-
+"""
 @ops.RegisterGradient("MaxPoolWithArgmax")
 def _MaxPoolWithArgmaxGrad(op, grad, unused_argmax_grad):
     return gen_nn_ops._max_pool_grad(op.inputs[0],
@@ -36,7 +37,7 @@ def _MaxPoolWithArgmaxGrad(op, grad, unused_argmax_grad):
                                      op.get_attr("strides"),
                                      padding=op.get_attr("padding"),
                                      data_format='NHWC')
-
+"""
 
 class Network:
     IMAGE_HEIGHT = 1024
@@ -69,8 +70,8 @@ class Network:
         self.layers = {}
 
         if per_image_standardization:
-            list_of_images_norm = tf.map_fn(tf.image.per_image_whitening, self.inputs)
-            net = tf.pack(list_of_images_norm)
+            list_of_images_norm = tf.map_fn(tf.image.per_image_standardization, self.inputs)
+            net = tf.stack(list_of_images_norm)
         else:
             net = self.inputs
 
@@ -105,9 +106,9 @@ class Network:
             correct_pred = tf.cast(tf.equal(argmax_probs, self.targets), tf.float32)
             self.accuracy = tf.reduce_mean(correct_pred)
 
-            tf.scalar_summary('accuracy', self.accuracy)
+            tf.summary.scalar('accuracy', self.accuracy)
 
-        self.summaries = tf.merge_all_summaries()
+        self.summaries = tf.summary.merge_all()
 
 
 class Dataset:
@@ -219,6 +220,7 @@ def draw_results(test_inputs, test_targets, test_segmentation, test_accuracy, ne
 def train():
     BATCH_SIZE = 5
 
+    #with tf.device('/gpu:1'):
     network = Network()
 
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
@@ -258,10 +260,12 @@ def train():
 
     hooks_binmasks = imgaug.HooksImages(activator=activator_binmasks)
 
-    with tf.Session() as sess:
-        sess.run(tf.initialize_all_variables())
+    #config = tf.ConfigProto(device_count = {'GPU': 0,'GPU': 1})
 
-        summary_writer = tf.train.SummaryWriter('{}/{}-{}'.format('logs', network.description, timestamp),
+    with tf.Session(config=tf.ConfigProto(log_device_placement=True)) as sess:
+        print(sess.run(tf.initialize_all_variables()))
+
+        summary_writer = tf.summary.FileWriter('{}/{}-{}'.format('logs', network.description, timestamp),
                                                 graph=tf.get_default_graph())
         saver = tf.train.Saver(tf.all_variables(), max_to_keep=None)
 
@@ -351,4 +355,7 @@ def train():
 
 
 if __name__ == '__main__':
-    train()
+    #with tf.device('/gpu:1'):
+    p = multiprocessing.Process(target=train)
+    p.start()
+    p.join()
