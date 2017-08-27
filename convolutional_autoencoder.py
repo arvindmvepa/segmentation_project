@@ -323,6 +323,7 @@ def train():
                     end = time.time()
                     print('{}/{}, epoch: {}, cost: {}, batch time: {}'.format(batch_num, n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost, end - start))
 
+                    """
                     test_accuracy = 0.0
                     
                     for i in range(len(test_inputs)):
@@ -346,7 +347,8 @@ def train():
                     image_summary_op = tf.summary.image("plot", image)
                     image_summary = sess.run(image_summary_op)
                     summary_writer.add_summary(image_summary)
-
+                    """
+                    
                     if batch_num % 100 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
 
                         test_accuracy = 0.0                    
