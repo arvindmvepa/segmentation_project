@@ -323,7 +323,7 @@ def train():
                 end = time.time()
                 print('{}/{}, epoch: {}, cost: {}, batch time: {}'.format(batch_num, n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost, end - start))
 
-                with tf.device('/gpu:0'):
+                with tf.device('/gpu:1'):
                     summary, test_accuracy = sess.run([network.summaries, network.accuracy], feed_dict={network.inputs: test_inputs, network.targets: test_targets, network.is_training: False})
 
                 summary_writer.add_summary(summary, batch_num)
@@ -338,7 +338,7 @@ def train():
                     test_inputs = np.multiply(test_inputs, 1.0 / 255)
 
                     print(test_inputs.shape)
-                    with tf.device('/gpu:0'):
+                    with tf.device('/gpu:1'):
                         summary, test_accuracy = sess.run([network.summaries, network.accuracy], feed_dict={network.inputs: test_inputs, network.targets: test_targets, network.is_training: False})
 
                     summary_writer.add_summary(summary, batch_num)
