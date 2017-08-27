@@ -295,10 +295,9 @@ def train():
                                                 graph=tf.get_default_graph())
         saver = tf.train.Saver(tf.all_variables(), max_to_keep=None)
 
-        with tf.device('/gpu:1'):
-            print(sess.run(tf.initialize_all_variables())
-            for epoch_i in range(n_epochs):
-                dataset.reset_batch_pointer()
+        print(sess.run(tf.initialize_all_variables())
+        for epoch_i in range(n_epochs):
+            dataset.reset_batch_pointer()
             """
             for batch_i in range(dataset.num_batches_in_epoch()):
                 batch_num = epoch_i * dataset.num_batches_in_epoch() + batch_i + 1
