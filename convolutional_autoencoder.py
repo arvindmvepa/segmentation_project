@@ -286,7 +286,7 @@ def train():
 
     #config = tf.ConfigProto(device_count = {'GPU': 0,'GPU': 1})
 
-    with tf.Session(config=tf.ConfigProto(device_count = {'GPU': 1}, allow_soft_placement=True, log_device_placement=True)) as sess:
+    with tf.Session(config=tf.ConfigProto(allow_soft_placement=True, log_device_placement=True)) as sess:
 
         with tf.device('/gpu:0'):
             print(sess.run(tf.initialize_all_variables()))
