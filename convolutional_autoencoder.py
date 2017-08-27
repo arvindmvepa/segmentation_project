@@ -238,7 +238,7 @@ def draw_results(test_inputs, test_targets, test_segmentation, test_accuracy, ne
 
 def train():
     BATCH_SIZE = 1
-    with tf.device('/gpu:1'):
+    with tf.device('/gpu:0'):
         network = Network()
 
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
