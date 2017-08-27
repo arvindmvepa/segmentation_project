@@ -377,10 +377,10 @@ def train():
                         max_acc = max(test_accuracies)
                         print("Best accuracy: {} in batch {}".format(max_acc[0], max_acc[1]))
                         print("Total time: {}".format(time.time() - global_start))
-
-                        if test_accuracy >= max_acc[0]:
-                            checkpoint_path = os.path.join('save', network.description, timestamp, 'model.ckpt')
-                            saver.save(sess, checkpoint_path, global_step=batch_num)
+                        
+                        #if test_accuracy >= max_acc[0]:
+                            #checkpoint_path = os.path.join('save', network.description, timestamp, 'model.ckpt')
+                            #saver.save(sess, checkpoint_path, global_step=batch_num)
 
 if __name__ == '__main__':
     p = multiprocessing.Process(target=train)
