@@ -283,10 +283,10 @@ def train():
         test_accuracies = []
         n_epochs = 500
         global_start = time.time()
-
+        summary_writer = tf.summary.FileWriter('{}/{}-{}'.format('logs', network.description, timestamp),
+                                                graph=tf.get_default_graph())
         with tf.device('/gpu:1'):
             print(sess.run(tf.initialize_all_variables())
-            summary_writer = tf.summary.FileWriter('{}/{}-{}'.format('logs', network.description, timestamp), graph=tf.get_default_graph())
             saver = tf.train.Saver(tf.all_variables(), max_to_keep=None)
 
         # Fit all training data
