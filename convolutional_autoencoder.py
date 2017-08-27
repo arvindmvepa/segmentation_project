@@ -297,9 +297,9 @@ def train():
 
         with tf.device('/gpu:1'):
             print(sess.run(tf.initialize_all_variables())
-        for epoch_i in range(n_epochs):
-            dataset.reset_batch_pointer()
-
+            for epoch_i in range(n_epochs):
+                dataset.reset_batch_pointer()
+            """
             for batch_i in range(dataset.num_batches_in_epoch()):
                 batch_num = epoch_i * dataset.num_batches_in_epoch() + batch_i + 1
 
@@ -355,7 +355,7 @@ def train():
                         if test_accuracy >= max_acc[0]:
                             checkpoint_path = os.path.join('save', network.description, timestamp, 'model.ckpt')
                             saver.save(sess, checkpoint_path, global_step=batch_num)
-
+            """
 if __name__ == '__main__':
     #with tf.device('/gpu:1'):
     p = multiprocessing.Process(target=train)
