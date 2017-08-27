@@ -292,7 +292,7 @@ def train():
     with tf.Session(config=config) as sess:
 
         with tf.device('/gpu:0'):
-            print(sess.run(tf.initialize_all_variables()))
+            print(sess.run(tf.global_variables_initializer()))
 
             summary_writer = tf.summary.FileWriter('{}/{}-{}'.format('logs', network.description, timestamp),
                                                 graph=tf.get_default_graph())
