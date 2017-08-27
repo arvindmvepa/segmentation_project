@@ -44,22 +44,41 @@ class Network:
     IMAGE_WIDTH = 1024
     IMAGE_CHANNELS = 1
 
-    def __init__(self, layers = None, per_image_standardization=True, batch_norm=True, skip_connections=True):
+    def __init__(self, layers = None, per_image_standardization=True, batch_norm=True, skip_connections=False):
         # Define network - ENCODER (decoder will be symmetric).
 
         if layers == None:
             layers = []
-            layers.append(Conv2d(kernel_size=7, strides=[1, 2, 2, 1], output_channels=64, name='conv_1_1'))
-            layers.append(Conv2d(kernel_size=7, strides=[1, 1, 1, 1], output_channels=64, name='conv_1_2'))
+            layers.append(Conv2d(kernel_size=3, strides=[1, 1, 1, 1], output_channels=64, name='conv_1_1'))
+            layers.append(Conv2d(kernel_size=3, strides=[1, 1, 1, 1], output_channels=64, name='conv_1_2'))
             layers.append(MaxPool2d(kernel_size=2, name='max_1', skip_connection=True and skip_connections))
 
-            layers.append(Conv2d(kernel_size=7, strides=[1, 2, 2, 1], output_channels=64, name='conv_2_1'))
-            layers.append(Conv2d(kernel_size=7, strides=[1, 1, 1, 1], output_channels=64, name='conv_2_2'))
+            layers.append(Conv2d(kernel_size=3, strides=[1, 1, 1, 1], output_channels=128, name='conv_2_1'))
+            layers.append(Conv2d(kernel_size=3, strides=[1, 1, 1, 1], output_channels=128, name='conv_2_2'))
+
             layers.append(MaxPool2d(kernel_size=2, name='max_2', skip_connection=True and skip_connections))
 
-            layers.append(Conv2d(kernel_size=7, strides=[1, 2, 2, 1], output_channels=64, name='conv_3_1'))
-            layers.append(Conv2d(kernel_size=7, strides=[1, 1, 1, 1], output_channels=64, name='conv_3_2'))
+            layers.append(Conv2d(kernel_size=3, strides=[1, 1, 1, 1], output_channels=256, name='conv_3_1'))
+            layers.append(Conv2d(kernel_size=3, strides=[1, 1, 1, 1], output_channels=256, name='conv_3_2'))
+            layers.append(Conv2d(kernel_size=3, strides=[1, 1, 1, 1], output_channels=256, name='conv_3_3'))
+
             layers.append(MaxPool2d(kernel_size=2, name='max_3'))
+
+            layers.append(Conv2d(kernel_size=3, strides=[1, 1, 1, 1], output_channels=512, name='conv_4_1'))
+            layers.append(Conv2d(kernel_size=3, strides=[1, 1, 1, 1], output_channels=512, name='conv_4_2'))
+            layers.append(Conv2d(kernel_size=3, strides=[1, 1, 1, 1], output_channels=512, name='conv_4_3'))
+
+            layers.append(MaxPool2d(kernel_size=2, name='max_4'))
+
+            layers.append(Conv2d(kernel_size=3, strides=[1, 1, 1, 1], output_channels=512, name='conv_5_1'))
+            layers.append(Conv2d(kernel_size=3, strides=[1, 1, 1, 1], output_channels=512, name='conv_5_2'))
+            layers.append(Conv2d(kernel_size=3, strides=[1, 1, 1, 1], output_channels=512, name='conv_5_3'))
+
+            layers.append(MaxPool2d(kernel_size=2, name='max_5'))
+
+            layers.append(Conv2d(kernel_size=7, strides=[1, 1, 1, 1], output_channels=4096, name='conv_6_1'))
+            layers.append(Conv2d(kernel_size=1, strides=[1, 1, 1, 1], output_channels=4096, name='conv_6_2'))
+            layers.append(Conv2d(kernel_size=1, strides=[1, 1, 1, 1], output_channels=1000, name='conv_6_3'))            
 
         self.inputs = tf.placeholder(tf.float32, [None, self.IMAGE_HEIGHT, self.IMAGE_WIDTH, self.IMAGE_CHANNELS],
                                      name='inputs')
