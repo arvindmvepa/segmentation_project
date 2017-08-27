@@ -324,16 +324,28 @@ def train():
                     end = time.time()
                     print('{}/{}, epoch: {}, cost: {}, batch time: {}'.format(batch_num, n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost, end - start))
 
+                    n_examples = 12
+                    test_inputs, test_targets = dataset.test_inputs[:n_examples], dataset.test_targets[:n_examples]
+                    test_inputs = np.multiply(test_inputs, 1.0 / 255)
+
+                    test_segmentation = sess.run(network.segmentation_result, feed_dict={network.inputs: np.reshape(test_inputs, [n_examples, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1])})
+
+                    # Prepare the plot
+                    test_plot_buf = draw_results(test_inputs, np.multiply(test_targets,1.0/255), test_segmentation, test_accuracy, network, batch_num)
+
+                    # Convert PNG buffer to TF image
+                    image = tf.image.decode_png(test_plot_buf.getvalue(), channels=4)
+
+                    # Add the batch dimension
+                    image = tf.expand_dims(image, 0)
+
+                    # Add image summary
+                    image_summary_op = tf.image_summary("plot", image)
+
+                    image_summary = sess.run(image_summary_op)
+                    summary_writer.add_summary(image_summary)
+
                     if batch_num % 100 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
-                        test_inputs, test_targets = dataset.test_set
-                        # test_inputs, test_targets = test_inputs[:100], test_targets[:100]
-
-                        test_inputs = np.reshape(test_inputs, (-1, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1))
-                        test_targets = np.reshape(test_targets, (-1, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1))
-                        test_inputs = np.multiply(test_inputs, 1.0 / 255)
-
-                        print(test_inputs.shape)
-                        #with tf.device('/gpu:0'):
                         summary, test_accuracy = sess.run([network.summaries, network.accuracy], feed_dict={network.inputs: test_inputs, network.targets: test_targets, network.is_training: False})
 
                         summary_writer.add_summary(summary, batch_num)
