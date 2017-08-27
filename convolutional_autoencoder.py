@@ -353,49 +353,46 @@ def train():
 
                     image = tf.image.decode_png(test_plot_buf.getvalue(), channels=4)
                     image = tf.expand_dims(image, 0)
-                    image_summary_op = tf.image_summary("plot", image)
+                    image_summary_op = tf.summary.image("plot", image)
                     image_summary = sess.run(image_summary_op)
                     summary_writer.add_summary(image_summary)
 
-                    """
                     if batch_num % 100 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
-                        summary, test_accuracy = sess.run([network.summaries, network.accuracy], feed_dict={network.inputs: test_inputs, network.targets: test_targets, network.is_training: False})
 
-                        summary_writer.add_summary(summary, batch_num)
-
+                        test_accuracy = 0.0                    
+                        for i in range(len(test_inputs)):
+                            _ , acc = sess.run([network.summaries, network.accuracy], feed_dict={network.inputs: test_inputs[i:(i+1)], network.targets: test_targets[i:(i+1)], network.is_training: False})
+                            test_accuracy += acc
+                        test_accuracy = test_accuracy/len(test_inputs)
                         print('Step {}, test accuracy: {}'.format(batch_num, test_accuracy))
+
+                        n_examples = 12
+                        t_inputs, t_targets = dataset.test_inputs[:n_examples], dataset.test_targets[:n_examples]
+                        test_segmentation = []
+                        for i in range(n_examples):
+                            test_i = np.multiply(t_inputs[i:(i+1)], 1.0 / 255)
+                            segmentation = sess.run(network.segmentation_result, feed_dict={network.inputs: np.reshape(test_i, [1, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1])})
+                            print(segmentation.shape)
+                            print(segmentation[0].shape)
+                            test_segmentation.append(segmentation[0])                            
+
+                        test_plot_buf = draw_results(t_inputs[:n_examples], np.multiply(t_targets[:n_examples],1.0/255), test_segmentation, test_accuracy, network, batch_num)
+
+                        image = tf.image.decode_png(test_plot_buf.getvalue(), channels=4)
+                        image = tf.expand_dims(image, 0)
+                        image_summary_op = tf.summary.image("plot", image)
+                        image_summary = sess.run(image_summary_op)
+                        summary_writer.add_summary(image_summary)
+
                         test_accuracies.append((test_accuracy, batch_num))
                         print("Accuracies in time: ", [test_accuracies[x][0] for x in range(len(test_accuracies))])
                         max_acc = max(test_accuracies)
                         print("Best accuracy: {} in batch {}".format(max_acc[0], max_acc[1]))
                         print("Total time: {}".format(time.time() - global_start))
 
-                        # Plot example reconstructions
-                        n_examples = 12
-                        test_inputs, test_targets = dataset.test_inputs[:n_examples], dataset.test_targets[:n_examples]
-                        test_inputs = np.multiply(test_inputs, 1.0 / 255)
-
-                        test_segmentation = sess.run(network.segmentation_result, feed_dict={network.inputs: np.reshape(test_inputs, [n_examples, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1])})
-
-                        # Prepare the plot
-                        test_plot_buf = draw_results(test_inputs, np.multiply(test_targets,1.0/255), test_segmentation, test_accuracy, network, batch_num)
-
-                        # Convert PNG buffer to TF image
-                        image = tf.image.decode_png(test_plot_buf.getvalue(), channels=4)
-
-                        # Add the batch dimension
-                        image = tf.expand_dims(image, 0)
-
-                        # Add image summary
-                        image_summary_op = tf.image_summary("plot", image)
-
-                        image_summary = sess.run(image_summary_op)
-                        summary_writer.add_summary(image_summary)
-
                         if test_accuracy >= max_acc[0]:
                             checkpoint_path = os.path.join('save', network.description, timestamp, 'model.ckpt')
                             saver.save(sess, checkpoint_path, global_step=batch_num)
-                    """
 
 if __name__ == '__main__':
     #with tf.device('/gpu:1'):
