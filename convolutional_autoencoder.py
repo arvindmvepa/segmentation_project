@@ -348,7 +348,7 @@ def train():
                         #    test_segmentation = segmentation
                         #else:
                         #    test_segmentation = np.concatenate(test_segmentation, segmentation)
-                    print(test_segmentation.shape)
+                    #print(test_segmentation.shape)
                     test_plot_buf = draw_results(t_inputs[:n_examples], np.multiply(t_targets[:n_examples],1.0/255), test_segmentation, test_accuracy, network, batch_num)
 
                     image = tf.image.decode_png(test_plot_buf.getvalue(), channels=4)
