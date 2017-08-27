@@ -324,12 +324,6 @@ def train():
                     end = time.time()
                     print('{}/{}, epoch: {}, cost: {}, batch time: {}'.format(batch_num, n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost, end - start))
 
-                    #with tf.device('/gpu:0'):
-                    summary, test_accuracy = sess.run([network.summaries, network.accuracy], feed_dict={network.inputs: test_inputs, network.targets: test_targets, network.is_training: False})
-
-                    summary_writer.add_summary(summary, batch_num)
-                    print('Step {}, test accuracy: {}'.format(batch_num, test_accuracy))
-
                     if batch_num % 100 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
                         test_inputs, test_targets = dataset.test_set
                         # test_inputs, test_targets = test_inputs[:100], test_targets[:100]
