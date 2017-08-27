@@ -329,10 +329,8 @@ def train():
                     test_inputs = np.multiply(test_inputs, 1.0 / 255)
 
                     print(test_inputs.shape)
-                    summary, test_accuracy = sess.run([network.summaries, network.accuracy],
-                                                      feed_dict={network.inputs: test_inputs,
-                                                                 network.targets: test_targets,
-                                                                 network.is_training: False})
+                    with tf.device('/cpu:0'):
+                        summary, test_accuracy = sess.run([network.summaries, network.accuracy], feed_dict={network.inputs: test_inputs, network.targets: test_targets, network.is_training: False})
 
                     summary_writer.add_summary(summary, batch_num)
 
