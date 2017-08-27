@@ -286,98 +286,93 @@ def train():
 
     #config = tf.ConfigProto(device_count = {'GPU': 0,'GPU': 1})
 
-    with tf.Session(config=tf.ConfigProto(device_count = {'GPU': 0}, allow_soft_placement=True, log_device_placement=True)) as sess:
+    with tf.Session(config=tf.ConfigProto(device_count = {'GPU': 0, 'GPU': 1}, allow_soft_placement=True, log_device_placement=True)) as sess:
 
         with tf.device('/gpu:1'):
             print(sess.run(tf.initialize_all_variables()))
 
-        summary_writer = tf.summary.FileWriter('{}/{}-{}'.format('logs', network.description, timestamp),
+            summary_writer = tf.summary.FileWriter('{}/{}-{}'.format('logs', network.description, timestamp),
                                                 graph=tf.get_default_graph())
-        saver = tf.train.Saver(tf.all_variables(), max_to_keep=None)
+            saver = tf.train.Saver(tf.all_variables(), max_to_keep=None)
 
-        test_accuracies = []
-        # Fit all training data
-        n_epochs = 500
-        global_start = time.time()
-        for epoch_i in range(n_epochs):
-            dataset.reset_batch_pointer()
+            test_accuracies = []
+            # Fit all training data
+            n_epochs = 500
+            global_start = time.time()
+            for epoch_i in range(n_epochs):
+                dataset.reset_batch_pointer()
 
-            for batch_i in range(dataset.num_batches_in_epoch()):
-                batch_num = epoch_i * dataset.num_batches_in_epoch() + batch_i + 1
+                for batch_i in range(dataset.num_batches_in_epoch()):
+                    batch_num = epoch_i * dataset.num_batches_in_epoch() + batch_i + 1
 
-                augmentation_seq_deterministic = augmentation_seq.to_deterministic()
+                    augmentation_seq_deterministic = augmentation_seq.to_deterministic()
 
-                start = time.time()
-                batch_inputs, batch_targets = dataset.next_batch()
-                batch_inputs = np.reshape(batch_inputs,
-                                          (dataset.batch_size, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1))
-                batch_targets = np.reshape(batch_targets,
-                                           (dataset.batch_size, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1))
+                    start = time.time()
+                    batch_inputs, batch_targets = dataset.next_batch()
+                    batch_inputs = np.reshape(batch_inputs, (dataset.batch_size, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1))
+                    batch_targets = np.reshape(batch_targets, (dataset.batch_size, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1))
 
-                batch_inputs = augmentation_seq_deterministic.augment_images(batch_inputs)
-                batch_inputs = np.multiply(batch_inputs, 1.0 / 255)
+                    batch_inputs = augmentation_seq_deterministic.augment_images(batch_inputs)
+                    batch_inputs = np.multiply(batch_inputs, 1.0 / 255)
 
-                batch_targets = augmentation_seq_deterministic.augment_images(batch_targets, hooks=hooks_binmasks)
-                with tf.device('/gpu:0'):
+                    batch_targets = augmentation_seq_deterministic.augment_images(batch_targets, hooks=hooks_binmasks)
+                    #with tf.device('/gpu:0'):
                     cost, _ = sess.run([network.cost, network.train_op], feed_dict={network.inputs: batch_inputs, network.targets: batch_targets, network.is_training: True})
-                end = time.time()
-                print('{}/{}, epoch: {}, cost: {}, batch time: {}'.format(batch_num, n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost, end - start))
+                    end = time.time()
+                    print('{}/{}, epoch: {}, cost: {}, batch time: {}'.format(batch_num, n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost, end - start))
 
-                with tf.device('/gpu:0'):
+                    #with tf.device('/gpu:0'):
                     summary, test_accuracy = sess.run([network.summaries, network.accuracy], feed_dict={network.inputs: test_inputs, network.targets: test_targets, network.is_training: False})
 
-                summary_writer.add_summary(summary, batch_num)
-                print('Step {}, test accuracy: {}'.format(batch_num, test_accuracy))
+                    summary_writer.add_summary(summary, batch_num)
+                    print('Step {}, test accuracy: {}'.format(batch_num, test_accuracy))
 
-                if batch_num % 100 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
-                    test_inputs, test_targets = dataset.test_set
-                    # test_inputs, test_targets = test_inputs[:100], test_targets[:100]
+                    if batch_num % 100 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
+                        test_inputs, test_targets = dataset.test_set
+                        # test_inputs, test_targets = test_inputs[:100], test_targets[:100]
 
-                    test_inputs = np.reshape(test_inputs, (-1, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1))
-                    test_targets = np.reshape(test_targets, (-1, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1))
-                    test_inputs = np.multiply(test_inputs, 1.0 / 255)
+                        test_inputs = np.reshape(test_inputs, (-1, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1))
+                        test_targets = np.reshape(test_targets, (-1, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1))
+                        test_inputs = np.multiply(test_inputs, 1.0 / 255)
 
-                    print(test_inputs.shape)
-                    with tf.device('/gpu:0'):
+                        print(test_inputs.shape)
+                        #with tf.device('/gpu:0'):
                         summary, test_accuracy = sess.run([network.summaries, network.accuracy], feed_dict={network.inputs: test_inputs, network.targets: test_targets, network.is_training: False})
 
-                    summary_writer.add_summary(summary, batch_num)
+                        summary_writer.add_summary(summary, batch_num)
 
-                    print('Step {}, test accuracy: {}'.format(batch_num, test_accuracy))
-                    test_accuracies.append((test_accuracy, batch_num))
-                    print("Accuracies in time: ", [test_accuracies[x][0] for x in range(len(test_accuracies))])
-                    max_acc = max(test_accuracies)
-                    print("Best accuracy: {} in batch {}".format(max_acc[0], max_acc[1]))
-                    print("Total time: {}".format(time.time() - global_start))
+                        print('Step {}, test accuracy: {}'.format(batch_num, test_accuracy))
+                        test_accuracies.append((test_accuracy, batch_num))
+                        print("Accuracies in time: ", [test_accuracies[x][0] for x in range(len(test_accuracies))])
+                        max_acc = max(test_accuracies)
+                        print("Best accuracy: {} in batch {}".format(max_acc[0], max_acc[1]))
+                        print("Total time: {}".format(time.time() - global_start))
 
-                    # Plot example reconstructions
-                    n_examples = 12
-                    test_inputs, test_targets = dataset.test_inputs[:n_examples], dataset.test_targets[:n_examples]
-                    test_inputs = np.multiply(test_inputs, 1.0 / 255)
+                        # Plot example reconstructions
+                        n_examples = 12
+                        test_inputs, test_targets = dataset.test_inputs[:n_examples], dataset.test_targets[:n_examples]
+                        test_inputs = np.multiply(test_inputs, 1.0 / 255)
 
-                    test_segmentation = sess.run(network.segmentation_result, feed_dict={
-                        network.inputs: np.reshape(test_inputs,
-                                                   [n_examples, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1])})
+                        test_segmentation = sess.run(network.segmentation_result, feed_dict={network.inputs: np.reshape(test_inputs, [n_examples, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1])})
 
-                    # Prepare the plot
-                    test_plot_buf = draw_results(test_inputs, np.multiply(test_targets,1.0/255), test_segmentation, test_accuracy, network,
-                                                 batch_num)
+                        # Prepare the plot
+                        test_plot_buf = draw_results(test_inputs, np.multiply(test_targets,1.0/255), test_segmentation, test_accuracy, network, batch_num)
 
-                    # Convert PNG buffer to TF image
-                    image = tf.image.decode_png(test_plot_buf.getvalue(), channels=4)
+                        # Convert PNG buffer to TF image
+                        image = tf.image.decode_png(test_plot_buf.getvalue(), channels=4)
 
-                    # Add the batch dimension
-                    image = tf.expand_dims(image, 0)
+                        # Add the batch dimension
+                        image = tf.expand_dims(image, 0)
 
-                    # Add image summary
-                    image_summary_op = tf.image_summary("plot", image)
+                        # Add image summary
+                        image_summary_op = tf.image_summary("plot", image)
 
-                    image_summary = sess.run(image_summary_op)
-                    summary_writer.add_summary(image_summary)
+                        image_summary = sess.run(image_summary_op)
+                        summary_writer.add_summary(image_summary)
 
-                    if test_accuracy >= max_acc[0]:
-                        checkpoint_path = os.path.join('save', network.description, timestamp, 'model.ckpt')
-                        saver.save(sess, checkpoint_path, global_step=batch_num)
+                        if test_accuracy >= max_acc[0]:
+                            checkpoint_path = os.path.join('save', network.description, timestamp, 'model.ckpt')
+                            saver.save(sess, checkpoint_path, global_step=batch_num)
 
 if __name__ == '__main__':
     #with tf.device('/gpu:1'):
