@@ -324,7 +324,7 @@ def train():
                     end = time.time()
                     print('{}/{}, epoch: {}, cost: {}, batch time: {}'.format(batch_num, n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost, end - start))
 
-                    n_examples = 12
+                    n_examples = 1
                     test_inputs, test_targets = dataset.test_inputs[:n_examples], dataset.test_targets[:n_examples]
                     test_inputs = np.multiply(test_inputs, 1.0 / 255)
 
