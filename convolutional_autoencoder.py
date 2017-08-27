@@ -286,7 +286,7 @@ def train():
 
     #config = tf.ConfigProto(device_count = {'GPU': 0,'GPU': 1})
 
-    with tf.Session(config=tf.ConfigProto(allow_soft_placement=True, log_device_placement=True)) as sess:
+    with tf.Session(config=tf.ConfigProto(device_count = {'GPU': 0}, allow_soft_placement=True, log_device_placement=True)) as sess:
 
         with tf.device('/gpu:1'):
             print(sess.run(tf.initialize_all_variables()))
@@ -318,7 +318,7 @@ def train():
                 batch_inputs = np.multiply(batch_inputs, 1.0 / 255)
 
                 batch_targets = augmentation_seq_deterministic.augment_images(batch_targets, hooks=hooks_binmasks)
-                with tf.device('/gpu:1'):
+                with tf.device('/gpu:0'):
                     cost, _ = sess.run([network.cost, network.train_op], feed_dict={network.inputs: batch_inputs, network.targets: batch_targets, network.is_training: True})
                 end = time.time()
                 print('{}/{}, epoch: {}, cost: {}, batch time: {}'.format(batch_num, n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost, end - start))
@@ -338,7 +338,7 @@ def train():
                     test_inputs = np.multiply(test_inputs, 1.0 / 255)
 
                     print(test_inputs.shape)
-                    with tf.device('/gpu:1'):
+                    with tf.device('/gpu:0'):
                         summary, test_accuracy = sess.run([network.summaries, network.accuracy], feed_dict={network.inputs: test_inputs, network.targets: test_targets, network.is_training: False})
 
                     summary_writer.add_summary(summary, batch_num)
