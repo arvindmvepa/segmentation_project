@@ -237,35 +237,42 @@ def draw_results(test_inputs, test_targets, test_segmentation, test_accuracy, ne
     return buf
 
 def train():
-    with tf.device('/gpu:1'):
-        BATCH_SIZE = 1
+    # Fit all training data
+    #with tf.device('/gpu:1'):
+    test_inputs, test_targets = dataset.test_set
+    # test_inputs, test_targets = test_inputs[:100], test_targets[:100]
+    test_inputs = np.reshape(test_inputs, (-1, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1))
+    test_targets = np.reshape(test_targets, (-1, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1))
+    test_inputs = np.multiply(test_inputs, 1.0 / 255)
 
-        #with tf.device('/gpu:1'):
+    BATCH_SIZE = 1
+
+    with tf.device('/gpu:1'):
         network = Network()
 
-        timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
 
-        # create directory for saving models
-        os.makedirs(os.path.join('save', network.description, timestamp))
+    # create directory for saving models
+    os.makedirs(os.path.join('save', network.description, timestamp))
 
-        dataset = Dataset(folder='vessels', include_hair=True, batch_size=BATCH_SIZE)
-        inputs, targets = dataset.next_batch()
-        print(inputs.shape, targets.shape)
+    dataset = Dataset(folder='vessels', include_hair=True, batch_size=BATCH_SIZE)
+    inputs, targets = dataset.next_batch()
+    print(inputs.shape, targets.shape)
 
-        # augmentation_seq = iaa.Sequential([
-        #     iaa.Crop(px=(0, 16)),  # crop images from each side by 0 to 16px (randomly chosen)
-        #     iaa.Fliplr(0.5),  # horizontally flip 50% of the images
-        #     iaa.GaussianBlur(sigma=(0, 2.0))  # blur images with a sigma of 0 to 3.0
-        # ])
+    # augmentation_seq = iaa.Sequential([
+    #     iaa.Crop(px=(0, 16)),  # crop images from each side by 0 to 16px (randomly chosen)
+    #     iaa.Fliplr(0.5),  # horizontally flip 50% of the images
+    #     iaa.GaussianBlur(sigma=(0, 2.0))  # blur images with a sigma of 0 to 3.0
+    # ])
 
-        augmentation_seq = iaa.Sequential([
-            iaa.Crop(px=(0, 16), name="Cropper"),  # crop images from each side by 0 to 16px (randomly chosen)
-            iaa.Fliplr(0.5, name="Flipper"),
-            iaa.GaussianBlur((0, 3.0), name="GaussianBlur"),
-            iaa.Dropout(0.02, name="Dropout"),
-            iaa.AdditiveGaussianNoise(scale=0.01 * 255, name="GaussianNoise"),
-            iaa.Affine(translate_px={"x": (-network.IMAGE_HEIGHT // 3, network.IMAGE_WIDTH // 3)}, name="Affine")
-        ])
+    augmentation_seq = iaa.Sequential([
+    iaa.Crop(px=(0, 16), name="Cropper"),  # crop images from each side by 0 to 16px (randomly chosen)
+    iaa.Fliplr(0.5, name="Flipper"),
+    iaa.GaussianBlur((0, 3.0), name="GaussianBlur"),
+    iaa.Dropout(0.02, name="Dropout"),
+    iaa.AdditiveGaussianNoise(scale=0.01 * 255, name="GaussianNoise"),
+    iaa.Affine(translate_px={"x": (-network.IMAGE_HEIGHT // 3, network.IMAGE_WIDTH // 3)}, name="Affine")
+    ])
 
     # change the activated augmenters for binary masks,
     # we only want to execute horizontal crop, flip and affine transformation
@@ -290,14 +297,6 @@ def train():
 
         with tf.device('/gpu:1'):
             print(sess.run(tf.initialize_all_variables())
-
-        # Fit all training data
-        #with tf.device('/gpu:1'):
-        test_inputs, test_targets = dataset.test_set
-        # test_inputs, test_targets = test_inputs[:100], test_targets[:100]
-        test_inputs = np.reshape(test_inputs, (-1, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1))
-        test_targets = np.reshape(test_targets, (-1, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1))
-        test_inputs = np.multiply(test_inputs, 1.0 / 255)
 
         for epoch_i in range(n_epochs):
             dataset.reset_batch_pointer()
