@@ -238,7 +238,7 @@ def draw_results(test_inputs, test_targets, test_segmentation, test_accuracy, ne
 
 def train():
     BATCH_SIZE = 1
-    with tf.device('/cpu:0'):
+    with tf.device('/gpu:1'):
         network = Network()
 
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
@@ -286,9 +286,12 @@ def train():
 
     #config = tf.ConfigProto(device_count = {'GPU': 0,'GPU': 1})
 
-    with tf.Session(config=tf.ConfigProto(allow_soft_placement=True, log_device_placement=True)) as sess:
+    config = tf.ConfigProto(allow_soft_placement=True, log_device_placement=True)
+    config.gpu_options.allow_growth = True
 
-        with tf.device('/gpu:1'):
+    with tf.Session(config=config) as sess:
+
+        with tf.device('/gpu:0'):
             print(sess.run(tf.initialize_all_variables()))
 
             summary_writer = tf.summary.FileWriter('{}/{}-{}'.format('logs', network.description, timestamp),
