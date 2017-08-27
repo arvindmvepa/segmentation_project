@@ -328,6 +328,7 @@ def train():
                     
                     for i in range(len(test_inputs)):
                         _ , acc = sess.run([network.summaries, network.accuracy], feed_dict={network.inputs: test_inputs[i:(i+1)], network.targets: test_targets[i:(i+1)], network.is_training: False})
+                        print(acc)
                         test_accuracy += acc
    
                     test_accuracy = test_accuracy/len(test_inputs)
@@ -339,7 +340,8 @@ def train():
                     for i in range(n_examples):
                         test_i = np.multiply(t_inputs[i:(i+1)], 1.0 / 255)
                         segmentation = sess.run(network.segmentation_result, feed_dict={network.inputs: np.reshape(test_i, [1, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1])})
-                        test_segmentation = test_segmentation+segmentation
+                        print(segmentation.shape)
+                        test_segmentation = test_segmentationa.append(segmentation)
                     print(len(test_segmentation))
                     #test_plot_buf = draw_results(t_inputs[:n_examples], np.multiply(t_targets[:n_examples],1.0/255), test_segmentation, test_accuracy, network, batch_num)
 
