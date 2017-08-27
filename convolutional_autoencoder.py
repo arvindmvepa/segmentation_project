@@ -297,7 +297,6 @@ def train():
 
         with tf.device('/gpu:1'):
             print(sess.run(tf.initialize_all_variables())
-
         for epoch_i in range(n_epochs):
             dataset.reset_batch_pointer()
 
