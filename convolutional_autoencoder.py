@@ -237,7 +237,7 @@ def draw_results(test_inputs, test_targets, test_segmentation, test_accuracy, ne
     return buf
 
 def train():
-    BATCH_SIZE = 2
+    BATCH_SIZE = 3
     with tf.device('/gpu:1'):
         network = Network()
 
