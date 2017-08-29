@@ -44,7 +44,7 @@ class Network:
     IMAGE_WIDTH = 1024
     IMAGE_CHANNELS = 1
 
-    def __init__(self, layers = None, per_image_standardization=True, batch_norm=True, skip_connections=False):
+    def __init__(self, layers = None, per_image_standardization=True, batch_norm=True, skip_connections=True):
         # Define network - ENCODER (decoder will be symmetric).
 
         if layers == None:
