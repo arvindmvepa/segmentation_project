@@ -406,7 +406,7 @@ def train():
                             #checkpoint_path = os.path.join('save', network.description, timestamp, 'model.ckpt')
                             #saver.save(sess, checkpoint_path, global_step=batch_num)
 
-def post_process_crf(input_t, prediction_it):
+def post_process_crf(input_it, prediction_it):
     #for input_t, prediction_it in zip(inputs, predictions):
     unary = softmax_to_unary(prediction_it)
     unary = np.ascontiguousarray(unary)
