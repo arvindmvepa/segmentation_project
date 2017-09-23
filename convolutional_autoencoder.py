@@ -330,12 +330,14 @@ def train():
                         for i in range(len(test_inputs)):
                             test_i = np.multiply(test_inputs[i:(i+1)], 1.0 / 255)
                             test_l = np.multiply(test_targets[i:(i+1)], 1.0/255)
+                            test_l = test_l[0]
                             #_ , acc = sess.run([network.summaries, network.accuracy], feed_dict={network.inputs: test_inputs[i:(i+1)], network.targets: test_targets[i:(i+1)], network.is_training: False})
                             segmentation = sess.run(network.segmentation_result, feed_dict={network.inputs: np.reshape(test_i, [1, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1])})
                             segmentation = segmentation[0]
+                            print(test_i.shape)
                             print(segmentation.shape)
                             print(test_l.shape)
-                            acc = tf.metrics.accuracy(labels=np.reshape(test_l, [1,1024, 1024]) , predictions=segmentation)
+                            acc = tf.metrics.accuracy(labels=test_l , predictions=segmentation)
                             test_accuracy += acc
                         test_accuracy = test_accuracy/len(test_inputs)
                         print('Step {}, test accuracy: {}'.format(batch_num, test_accuracy))
