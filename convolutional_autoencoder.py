@@ -307,6 +307,7 @@ def train():
             saver = tf.train.Saver(tf.all_variables(), max_to_keep=None)
 
             test_accuracies = []
+            test_accuracies1 = []
             # Fit all training data
             n_epochs = 5000
             global_start = time.time()
@@ -391,7 +392,7 @@ def train():
                             segmentation = sess.run(network.segmentation_result, feed_dict={network.inputs: np.reshape(test_i, [1, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1])})
                             test_segmentation.append(segmentation[0])                            
 
-                        test_plot_buf = draw_results(t_inputs[:n_examples], np.multiply(t_targets[:n_examples],1.0/255), test_segmentation, test_accuracy, network, batch_num)
+                        test_plot_buf = draw_results(test_inputs[:n_examples], np.multiply(t_targets[:n_examples],1.0/255), test_segmentation, test_accuracy, network, batch_num)
 
                         image = tf.image.decode_png(test_plot_buf.getvalue(), channels=4)
                         image = tf.expand_dims(image, 0)
@@ -400,12 +401,18 @@ def train():
                         summary_writer.add_summary(image_summary)
 
                         test_accuracies.append((test_accuracy, batch_num))
+                        test_accuracies1.append((test_accuracy1, batch_num))
                         print("Accuracies in time: ", [test_accuracies[x][0] for x in range(len(test_accuracies))])
                         print(test_accuracies)
                         max_acc = max(test_accuracies)
                         print("Best accuracy: {} in batch {}".format(max_acc[0], max_acc[1]))
                         print("Total time: {}".format(time.time() - global_start))
-                        
+
+                        print("Accuracies1 in time: ", [test_accuracies1[x][0] for x in range(len(test_accuracies1))])
+                        print(test_accuracies1)
+                        max_acc = max(test_accuracies1)
+                        print("Best accuracy1: {} in batch {}".format(max_acc[0], max_acc[1]))
+                        print("Total time: {}".format(time.time() - global_start))                        
                         #if test_accuracy >= max_acc[0]:
                             #checkpoint_path = os.path.join('save', network.description, timestamp, 'model.ckpt')
                             #saver.save(sess, checkpoint_path, global_step=batch_num)
@@ -422,7 +429,7 @@ def post_process_crf(input_it, prediction_it):
     d.addPairwiseEnergy(feats, compat=10, kernel=dcrf.DIAG_KERNEL, normalization=dcrf.NORMALIZE_SYMMETRIC)
     Q = d.inference(5)
     res = np.argmax(Q, axis=0).reshape((1024, 1024))
-    return res
+    return (1-res)
     
 if __name__ == '__main__':
     p = multiprocessing.Process(target=train)
