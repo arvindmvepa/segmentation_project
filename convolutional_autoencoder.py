@@ -303,6 +303,7 @@ def train():
             # Fit all training data
             n_epochs = 5000
             global_start = time.time()
+            acc = 0.0
             for epoch_i in range(n_epochs):
                 dataset.reset_batch_pointer()
                 for batch_i in range(dataset.num_batches_in_epoch()):
@@ -323,9 +324,9 @@ def train():
                     cost, _ = sess.run([network.cost, network.train_op], feed_dict={network.inputs: batch_inputs, network.targets: batch_targets, network.is_training: True})
                     end = time.time()
                     print('{}/{}, epoch: {}, cost: {}, batch time: {}'.format(batch_num, n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost, end - start))
-                    
-                    if batch_num % 1 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
-                        acc = 0.0
+                    print(acc)
+                    if batch_num % 10 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
+                        #acc = 0.0
                         test_accuracy = 0.0                    
                         for i in range(len(test_inputs)):
                             test_i = np.multiply(test_inputs[i:(i+1)], 1.0 / 255)
