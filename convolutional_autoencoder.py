@@ -408,7 +408,7 @@ def train():
 
 def post_process_crf(input_t, prediction_it):
     #for input_t, prediction_it in zip(inputs, predictions):
-    unary = unary_from_softmax(prediction_it)
+    unary = softmax_to_unary(prediction_it)
     unary = np.ascontiguousarray(unary)
     d = dcrf.DenseCRF(1024*1024, 2)
     d.setUnaryEnergy(unary)
