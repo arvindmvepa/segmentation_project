@@ -325,7 +325,7 @@ def train():
                     print('{}/{}, epoch: {}, cost: {}, batch time: {}'.format(batch_num, n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost, end - start))
                     
                     if batch_num % 1 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
-
+                        acc = 0.0.
                         test_accuracy = 0.0                    
                         for i in range(len(test_inputs)):
                             test_i = np.multiply(test_inputs[i:(i+1)], 1.0 / 255)
@@ -337,8 +337,10 @@ def train():
                             print(test_i.shape)
                             print(segmentation.shape)
                             print(test_l.shape)
+                            print(acc)
                             acc, _ = tf.metrics.accuracy(labels=test_l , predictions=segmentation)
                             test_accuracy += acc
+                            print(acc)
                         test_accuracy = test_accuracy/len(test_inputs)
                         print('Step {}, test accuracy: {}'.format(batch_num, test_accuracy))
 
