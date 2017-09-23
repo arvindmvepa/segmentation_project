@@ -350,8 +350,9 @@ def train():
                             #seg_result = self.segmentation_result.eval()
                             #print(seg_result)
                             #print(seg_result.shape)
-                            inputs = inputs.eval()
-                            results = results.eval()
+
+                            #inputs = inputs.eval()
+                            #results = results.eval()
                             print(results)
                             print(results.shape)
                             print(inputs)
