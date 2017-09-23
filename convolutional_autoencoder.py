@@ -364,7 +364,7 @@ def train():
                             new_results[0] = results
                             new_results[1] = 1-results
                             
-                            crf_result = post_process_crf(new_results, inputs)
+                            crf_result = post_process_crf(inputs, new_results)
 
                             argmax_probs = np.round(crf_result)  # 0x1
                             correct_pred = np.sum(argmax_probs == targets)
