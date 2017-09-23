@@ -335,7 +335,7 @@ def train():
                     if batch_num % 10 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
                         #acc = 0.0
                         test_accuracy = 0.0
-                        test1_accuracy = 0.0
+                        test_accuracy1 = 0.0
                         for i in range(len(test_inputs)):
                             #test_i = np.multiply(test_inputs[i:(i+1)], 1.0 / 255)
                             #test_l = np.multiply(test_targets[i:(i+1)], 1.0/255)
@@ -379,6 +379,7 @@ def train():
                             print(acc1)
 
                         test_accuracy = test_accuracy/len(test_inputs)
+                        test_accuracy1 = test_accuracy1/len(test_inputs)
                         print('Step {}, test accuracy: {}'.format(batch_num, test_accuracy))
                         print('Step {}, test accuracy1: {}'.format(batch_num, test_accuracy1))
                         n_examples = 12
