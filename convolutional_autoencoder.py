@@ -337,7 +337,7 @@ def train():
                             print(test_i.shape)
                             print(segmentation.shape)
                             print(test_l.shape)
-                            _ , acc = tf.metrics.accuracy(labels=test_l , predictions=segmentation)
+                            acc, _ = tf.metrics.accuracy(labels=test_l , predictions=segmentation)
                             test_accuracy += acc
                         test_accuracy = test_accuracy/len(test_inputs)
                         print('Step {}, test accuracy: {}'.format(batch_num, test_accuracy))
