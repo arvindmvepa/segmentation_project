@@ -347,7 +347,7 @@ def train():
                             #print(test_l.shape)
                             #print(acc)
                             #acc, _ = tf.metrics.accuracy(labels=test_l , predictions=segmentation)
-                                        #seg_result = self.segmentation_result.eval()
+                            #seg_result = self.segmentation_result.eval()
                             #print(seg_result)
                             #print(seg_result.shape)
                             inputs = inputs.eval()
