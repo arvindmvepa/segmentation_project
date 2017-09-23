@@ -360,7 +360,11 @@ def train():
                             #print(results.shape)
                             #print(inputs)
                             #print(inputs.shape)
-                            crf_result = post_process_crf(results, inputs)
+                            new_results = np.zeros((2,1024,1024))
+                            new_results[0] = results
+                            new_results[1] = 1-results
+                            
+                            crf_result = post_process_crf(new_results, inputs)
 
                             argmax_probs = np.round(crf_result)  # 0x1
                             correct_pred = np.sum(argmax_probs == targets)
@@ -404,7 +408,7 @@ def train():
 
 def post_process_crf(input_t, prediction_it):
     #for input_t, prediction_it in zip(inputs, predictions):
-    unary = softmax_to_unary(prediction_it)
+    unary = unary_from_softmax(prediction_it)
     unary = np.ascontiguousarray(unary)
     d = dcrf.DenseCRF(1024*1024, 2)
     d.setUnaryEnergy(unary)
