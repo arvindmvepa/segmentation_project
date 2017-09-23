@@ -324,7 +324,7 @@ def train():
                     end = time.time()
                     print('{}/{}, epoch: {}, cost: {}, batch time: {}'.format(batch_num, n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost, end - start))
                     
-                    if batch_num % 100 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
+                    if batch_num % 1 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
 
                         test_accuracy = 0.0                    
                         for i in range(len(test_inputs)):
