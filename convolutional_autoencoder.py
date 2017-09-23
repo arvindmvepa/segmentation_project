@@ -127,7 +127,7 @@ class Network:
             #seg_result = self.segmentation_result.eval()
             #print(seg_result)
             #print(seg_result.shape)
-            inputs = self.inputs.eval()
+            #inputs = self.inputs.eval()
             #print(inputs)
             #print(inputs.shape)
             #result = post_process_crf(seg_result, inputs)
