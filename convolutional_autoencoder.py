@@ -353,17 +353,22 @@ def train():
 
                             #inputs = inputs.eval()
                             #results = results.eval()
-                            print(results)
-                            print(results.shape)
-                            print(inputs)
-                            print(inputs.shape)
-                            #result = post_process_crf(seg_result, inputs)
+                            #print(results)
+                            results = results[0,:,:,0]
+                            inputs = inputs[0,:,:,0]
+                            targets = targets[0,:,:,0]
+                            #print(results.shape)
+                            #print(inputs)
+                            #print(inputs.shape)
+                            crf_result = post_process_crf(results, inputs)
 
-                            #argmax_probs = tf.round(results)  # 0x1
+                            argmax_probs = np.round(crf_result)  # 0x1
+                            correct_pred = np.sum(argmax_probs == targets)
+                            acc = np.mean(correct_pred)
                             #correct_pred = tf.cast(tf.equal(argmax_probs, self.targets), tf.float32)
                             #self.accuracy = tf.reduce_mean(correct_pred)
                             test_accuracy += acc
-                            #print(acc)
+                            print(acc)
 
                         test_accuracy = test_accuracy/len(test_inputs)
                         print('Step {}, test accuracy: {}'.format(batch_num, test_accuracy))
