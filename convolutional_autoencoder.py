@@ -365,9 +365,10 @@ def train():
                             new_results[1] = 1-results
                             
                             crf_result = post_process_crf(inputs, new_results)
-
+                            print(crf_result)
                             argmax_probs = np.round(crf_result)  # 0x1
                             correct_pred = np.sum(argmax_probs == targets)
+                            print(correct_pred)
                             acc = np.mean(correct_pred)
                             #correct_pred = tf.cast(tf.equal(argmax_probs, self.targets), tf.float32)
                             #self.accuracy = tf.reduce_mean(correct_pred)
@@ -378,7 +379,6 @@ def train():
                         print('Step {}, test accuracy: {}'.format(batch_num, test_accuracy))
 
                         n_examples = 12
-                        t_in
 
                         puts, t_targets = dataset.test_inputs[:n_examples], dataset.test_targets[:n_examples]
                         test_segmentation = []
