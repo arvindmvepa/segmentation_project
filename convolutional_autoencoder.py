@@ -124,14 +124,14 @@ class Network:
         self.cost = tf.sqrt(tf.reduce_mean(tf.square(self.segmentation_result - self.targets)))
         self.train_op = tf.train.AdamOptimizer().minimize(self.cost)
         with tf.name_scope('accuracy'):
-            seg_result = self.segmentation_result.eval()
-            print(seg_result)
-            print(seg_result.shape)
+            #seg_result = self.segmentation_result.eval()
+            #print(seg_result)
+            #print(seg_result.shape)
             inputs = self.inputs.eval()
-            print(inputs)
-            print(inputs.shape)
-            result = post_process_crf(seg_result, inputs)
-            argmax_probs = tf.round(result)  # 0x1
+            #print(inputs)
+            #print(inputs.shape)
+            #result = post_process_crf(seg_result, inputs)
+            argmax_probs = tf.round(self.segmentation_result)  # 0x1
             correct_pred = tf.cast(tf.equal(argmax_probs, self.targets), tf.float32)
             self.accuracy = tf.reduce_mean(correct_pred)
 
@@ -339,7 +339,7 @@ def train():
                             #test_i = np.multiply(test_inputs[i:(i+1)], 1.0 / 255)
                             #test_l = np.multiply(test_targets[i:(i+1)], 1.0/255)
                             #test_l = test_l[0]
-                            _ , acc = sess.run([network.summaries, network.accuracy], feed_dict={network.inputs: test_inputs[i:(i+1)], network.targets: test_targets[i:(i+1)], network.is_training: False})
+                            inputs, results, targets, _, acc = sess.run([network.inputs, network.segmentation_result, network.targets, network.summaries, network.accuracy], feed_dict={network.inputs: test_inputs[i:(i+1)], network.targets: test_targets[i:(i+1)], network.is_training: False})
                             #segmentation = sess.run(network.segmentation_result, feed_dict={network.inputs: np.reshape(test_i, [1, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1])})
                             #segmentation = segmentation[0]
                             #print(test_i.shape)
@@ -347,13 +347,30 @@ def train():
                             #print(test_l.shape)
                             #print(acc)
                             #acc, _ = tf.metrics.accuracy(labels=test_l , predictions=segmentation)
+                                        #seg_result = self.segmentation_result.eval()
+                            #print(seg_result)
+                            #print(seg_result.shape)
+                            inputs = inputs.eval()
+                            results = results.eval()
+                            print(results)
+                            print(results.shape)
+                            print(inputs)
+                            print(inputs.shape)
+                            #result = post_process_crf(seg_result, inputs)
+
+                            #argmax_probs = tf.round(results)  # 0x1
+                            #correct_pred = tf.cast(tf.equal(argmax_probs, self.targets), tf.float32)
+                            #self.accuracy = tf.reduce_mean(correct_pred)
                             test_accuracy += acc
                             #print(acc)
+
                         test_accuracy = test_accuracy/len(test_inputs)
                         print('Step {}, test accuracy: {}'.format(batch_num, test_accuracy))
 
                         n_examples = 12
-                        t_inputs, t_targets = dataset.test_inputs[:n_examples], dataset.test_targets[:n_examples]
+                        t_in
+
+                        puts, t_targets = dataset.test_inputs[:n_examples], dataset.test_targets[:n_examples]
                         test_segmentation = []
                         for i in range(n_examples):
                             test_i = np.multiply(t_inputs[i:(i+1)], 1.0 / 255)
