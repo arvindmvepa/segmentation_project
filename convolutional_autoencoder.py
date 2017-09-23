@@ -24,6 +24,9 @@ import datetime
 import io
 from PIL import Image
 from skimage import io as skio
+import pydensecrf.densecrf as dcrf
+
+from pydensecrf.utils import compute_unary, create_pairwise_bilateral, create_pairwise_gaussian, softmax_to_unary
 
 np.set_printoptions(threshold=np.nan)
 
@@ -290,7 +293,6 @@ def train():
     config.gpu_options.allow_growth = True
 
     with tf.Session(config=config) as sess:
-
         with tf.device('/gpu:0'):
             print(sess.run(tf.global_variables_initializer()))
 
@@ -303,7 +305,6 @@ def train():
             global_start = time.time()
             for epoch_i in range(n_epochs):
                 dataset.reset_batch_pointer()
-
                 for batch_i in range(dataset.num_batches_in_epoch()):
                     batch_num = epoch_i * dataset.num_batches_in_epoch() + batch_i + 1
 
@@ -322,38 +323,17 @@ def train():
                     cost, _ = sess.run([network.cost, network.train_op], feed_dict={network.inputs: batch_inputs, network.targets: batch_targets, network.is_training: True})
                     end = time.time()
                     print('{}/{}, epoch: {}, cost: {}, batch time: {}'.format(batch_num, n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost, end - start))
-
-                    """
-                    test_accuracy = 0.0
-                    
-                    for i in range(len(test_inputs)):
-                        _ , acc = sess.run([network.summaries, network.accuracy], feed_dict={network.inputs: test_inputs[i:(i+1)], network.targets: test_targets[i:(i+1)], network.is_training: False})
-                        test_accuracy += acc
-   
-                    test_accuracy = test_accuracy/len(test_inputs)
-                    print('Step {}, test accuracy: {}'.format(batch_num, test_accuracy))
-
-                    n_examples = 12
-                    t_inputs, t_targets = dataset.test_inputs[:n_examples], dataset.test_targets[:n_examples]
-                    test_segmentation = []
-                    for i in range(n_examples):
-                        test_i = np.multiply(t_inputs[i:(i+1)], 1.0 / 255)
-                        segmentation = sess.run(network.segmentation_result, feed_dict={network.inputs: np.reshape(test_i, [1, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1])})
-                        test_segmentation.append(segmentation[0])                            
-                    test_plot_buf = draw_results(t_inputs[:n_examples], np.multiply(t_targets[:n_examples],1.0/255), test_segmentation, test_accuracy, network, batch_num)
-
-                    image = tf.image.decode_png(test_plot_buf.getvalue(), channels=4)
-                    image = tf.expand_dims(image, 0)
-                    image_summary_op = tf.summary.image("plot", image)
-                    image_summary = sess.run(image_summary_op)
-                    summary_writer.add_summary(image_summary)
-                    """
                     
                     if batch_num % 100 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
 
                         test_accuracy = 0.0                    
                         for i in range(len(test_inputs)):
-                            _ , acc = sess.run([network.summaries, network.accuracy], feed_dict={network.inputs: test_inputs[i:(i+1)], network.targets: test_targets[i:(i+1)], network.is_training: False})
+                            test_i = np.multiply(t_inputs[i:(i+1)], 1.0 / 255)
+                            test_l = np.multiply(test_targets[i:(i+1)], 1.0/255)
+                            #_ , acc = sess.run([network.summaries, network.accuracy], feed_dict={network.inputs: test_inputs[i:(i+1)], network.targets: test_targets[i:(i+1)], network.is_training: False})
+                            segmentation = sess.run(network.segmentation_result, feed_dict={network.inputs: np.reshape(test_i, [1, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1])})
+                            segmentation = segmentation[0]
+                            acc = tf.metrics.accuracy(labels=test_l, predictions=segmentation)
                             test_accuracy += acc
                         test_accuracy = test_accuracy/len(test_inputs)
                         print('Step {}, test accuracy: {}'.format(batch_num, test_accuracy))
@@ -384,6 +364,19 @@ def train():
                             #checkpoint_path = os.path.join('save', network.description, timestamp, 'model.ckpt')
                             #saver.save(sess, checkpoint_path, global_step=batch_num)
 
+def post_process_crf(input_t, prediction_it):
+    unary = softmax_to_unary(predictions)
+    unary = np.ascontiguousarray(unary)
+    d = dcrf.DenseCRF(1024*1024, 2)
+    d.setUnaryEnergy(unary)
+    feats = create_pairwise_gaussian(sdims=(10, 10), shape=(1024,1024))
+    d.addPairwiseEnergy(feats, compat=3, kernel=dcrf.DIAG_KERNEL, normalization=dcrf.NORMALIZE_SYMMETRIC)
+    feats = create_pairwise_bilateral(sdims=(50, 50), schan=(20), img=input_it)
+    d.addPairwiseEnergy(feats, compat=10, kernel=dcrf.DIAG_KERNEL, normalization=dcrf.NORMALIZE_SYMMETRIC)
+    Q = d.inference(5)
+    res = np.argmax(Q, axis=0).reshape((1024, 1024))
+    return res
+    
 if __name__ == '__main__':
     p = multiprocessing.Process(target=train)
     p.start()
