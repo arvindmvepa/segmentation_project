@@ -376,8 +376,8 @@ def train():
                             #self.accuracy = tf.reduce_mean(correct_pred)
                             test_accuracy += acc
                             test_accuracy1 += acc1   
-                            print(acc)
-                            print(acc1)
+                            #print(acc)
+                            #print(acc1)
 
                         test_accuracy = test_accuracy/len(test_inputs)
                         test_accuracy1 = test_accuracy1/len(test_inputs)
