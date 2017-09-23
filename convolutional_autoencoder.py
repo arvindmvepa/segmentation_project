@@ -334,7 +334,8 @@ def train():
                     print(acc)
                     if batch_num % 10 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
                         #acc = 0.0
-                        test_accuracy = 0.0                    
+                        test_accuracy = 0.0
+                        test1_accuracy = 0.0
                         for i in range(len(test_inputs)):
                             #test_i = np.multiply(test_inputs[i:(i+1)], 1.0 / 255)
                             #test_l = np.multiply(test_targets[i:(i+1)], 1.0/255)
@@ -365,25 +366,27 @@ def train():
                             new_results[1] = 1-results
                             
                             crf_result = post_process_crf(inputs, new_results)
-                            print(crf_result)
+                            #print(crf_result)
                             argmax_probs = np.round(crf_result)  # 0x1
                             correct_pred = np.sum(argmax_probs == targets)
-                            print(correct_pred)
-                            acc = np.mean(correct_pred)
+                            #print(correct_pred)
+                            acc1 = correct_pred/(1024*1024)
                             #correct_pred = tf.cast(tf.equal(argmax_probs, self.targets), tf.float32)
                             #self.accuracy = tf.reduce_mean(correct_pred)
                             test_accuracy += acc
+                            test_accuracy1 += acc1   
                             print(acc)
+                            print(acc1)
 
                         test_accuracy = test_accuracy/len(test_inputs)
                         print('Step {}, test accuracy: {}'.format(batch_num, test_accuracy))
-
+                        print('Step {}, test accuracy1: {}'.format(batch_num, test_accuracy1))
                         n_examples = 12
 
                         puts, t_targets = dataset.test_inputs[:n_examples], dataset.test_targets[:n_examples]
                         test_segmentation = []
                         for i in range(n_examples):
-                            test_i = np.multiply(t_inputs[i:(i+1)], 1.0 / 255)
+                            test_i = np.multiply(test_inputs[i:(i+1)], 1.0 / 255)
                             segmentation = sess.run(network.segmentation_result, feed_dict={network.inputs: np.reshape(test_i, [1, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1])})
                             test_segmentation.append(segmentation[0])                            
 
