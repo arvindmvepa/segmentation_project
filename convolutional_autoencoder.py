@@ -363,6 +363,7 @@ def train():
 
                         test_accuracies.append((test_accuracy, batch_num))
                         print("Accuracies in time: ", [test_accuracies[x][0] for x in range(len(test_accuracies))])
+                        print(test_accuracies)
                         max_acc = max(test_accuracies)
                         print("Best accuracy: {} in batch {}".format(max_acc[0], max_acc[1]))
                         print("Total time: {}".format(time.time() - global_start))
