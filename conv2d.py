@@ -44,8 +44,8 @@ class Conv2d(Layer):
         # W = self.encoder[layer_index]
         with tf.variable_scope('conv', reuse=False):
             W = tf.get_variable('W{}_'.format(self.name[-3:]),
-                                shape=(self.kernel_size, self.kernel_size, self.number_of_input_channels, self.output_channels))
-            b = tf.Variable(tf.zeros([self.output_channels]))
+                                shape=(self.kernel_size, self.kernel_size, self.input_shape[3], self.output_channels))
+            b = tf.Variable(tf.zeros([W.get_shape().as_list()[2]]))
         # if self.strides==[1, 1, 1, 1]:
         #     print('Now')
         #     output = lrelu(tf.add(
