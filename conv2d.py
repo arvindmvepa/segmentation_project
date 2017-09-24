@@ -65,13 +65,13 @@ class Conv2d(Layer):
         # print('convd2_transposed: output_shape: {}'.format(utils.get_incoming_shape(output)))
 
         return output
-    """
-    def create_deconv_layer(
+
+    def create_deconv_layer(self, input)
         # print('convd2_transposed: input_shape: {}'.format(utils.get_incoming_shape(input)))
         # W = self.encoder[layer_index]
         with tf.variable_scope('conv', reuse=False):
-            W = tf.get_variable('W{}_'.format(self.name[-3:]),
-                                shape=(self.kernel_size, self.kernel_size, self.input_shape[3], self.output_channels))
+            W = tf.get_variable('W__'),
+                                shape=(993, 993, 1, 2))
             b = tf.Variable(tf.zeros([W.get_shape().as_list()[2]]))
         # if self.strides==[1, 1, 1, 1]:
         #     print('Now')
@@ -81,17 +81,16 @@ class Conv2d(Layer):
         #     print('1Now1')
         output = tf.nn.conv2d_transpose(
             input, W,
-            tf.stack([tf.shape(input)[0], self.input_shape[1], self.input_shape[2], self.input_shape[3]]),
+            tf.stack([tf.shape(input)[0], 1024, 1024, 1]),
             strides=self.strides, padding='SAME')
 
         Conv2d.layer_index += 1
-        output.set_shape([None, self.input_shape[1], self.input_shape[2], self.input_shape[3]])
+        output.set_shape([None, 1024, 1024, 1])
 
         output = lrelu(tf.add(tf.contrib.layers.batch_norm(output), b))
         # print('convd2_transposed: output_shape: {}'.format(utils.get_incoming_shape(output)))
 
         return output
-    """
 
     def get_description(self):
         return "C{},{},{}".format(self.kernel_size, self.output_channels, self.strides[1])
