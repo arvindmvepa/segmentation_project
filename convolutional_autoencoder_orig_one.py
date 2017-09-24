@@ -115,7 +115,7 @@ class Network:
             self.layers[layer.name] = net = layer.create_layer(net)
             self.description += "{}".format(layer.get_description())
 
-        self.layers["trans" + layers[0]] = net = layers[0].create_deconv_layer(net)
+        self.layers["trans" + layers[0].name] = net = layers[0].create_deconv_layer(net)
         print("Current input shape: ", net.get_shape())
 
         #layers.reverse()
