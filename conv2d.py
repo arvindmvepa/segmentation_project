@@ -66,7 +66,7 @@ class Conv2d(Layer):
 
         return output
 
-    def create_deconv_layer(self, input)
+    def create_deconv_layer(self, input):
         # print('convd2_transposed: input_shape: {}'.format(utils.get_incoming_shape(input)))
         # W = self.encoder[layer_index]
         with tf.variable_scope('conv', reuse=False):
