@@ -43,7 +43,7 @@ class Conv2d(Layer):
         # print('convd2_transposed: input_shape: {}'.format(utils.get_incoming_shape(input)))
         # W = self.encoder[layer_index]
         with tf.variable_scope('conv', reuse=False):
-            W = tf.get_variable('W{} deconv'.format(self.name[-3:]),
+            W = tf.get_variable('W{}'.format(self.name[-3:]),
                                 shape=(self.kernel_size, self.kernel_size, self.number_of_input_channels, self.output_channels))
             b = tf.Variable(tf.zeros([self.output_channels]))
         # if self.strides==[1, 1, 1, 1]:
