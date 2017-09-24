@@ -69,6 +69,7 @@ class Conv2d(Layer):
     def create_deconv_layer(self, input):
         # print('convd2_transposed: input_shape: {}'.format(utils.get_incoming_shape(input)))
         # W = self.encoder[layer_index]
+        print(self.input_shape)
         with tf.variable_scope('conv', reuse=False):
             W = tf.get_variable('W__', shape=(993, 993, 1, 2))
             b = tf.Variable(tf.zeros([W.get_shape().as_list()[2]]))
@@ -92,4 +93,4 @@ class Conv2d(Layer):
         return output
 
     def get_description(self):
-        return "C{},{},{}".format(self.kernel_size, self.output_channels, self.strides[1])
+        return "C{},{},{}".format(self.kernel_size, self.output_channel/;s, self.strides[1])
