@@ -31,7 +31,7 @@ class Conv2d(Layer):
         #self.encoder_matrix = W
         Conv2d.layer_index += 1
 
-        output = tf.nn.conv2d(input, W, strides=self.strides, padding='SAME')
+        output = tf.nn.conv2d(input, W, strides=self.strides, padding='VALID')
 
         # print('convd2: output_shape: {}'.format(utils.get_incoming_shape(output)))
 
@@ -55,7 +55,7 @@ class Conv2d(Layer):
         output = tf.nn.conv2d_transpose(
             input, W,
             tf.stack([tf.shape(input)[0], self.input_shape[1], self.input_shape[2], self.input_shape[3]]),
-            strides=self.strides, padding='SAME')
+            strides=self.strides, padding='VALID')
 
         Conv2d.layer_index += 1
         output.set_shape([None, self.input_shape[1], self.input_shape[2], self.input_shape[3]])
@@ -65,5 +65,6 @@ class Conv2d(Layer):
 
         return output
 
+    def create_deconv_layer(
     def get_description(self):
         return "C{},{},{}".format(self.kernel_size, self.output_channels, self.strides[1])
