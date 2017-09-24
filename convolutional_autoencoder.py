@@ -333,50 +333,27 @@ def train():
                     end = time.time()
                     print('{}/{}, epoch: {}, cost: {}, batch time: {}'.format(batch_num, n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost, end - start))
                     if batch_num % 100 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
-                        #acc = 0.0
                         test_accuracy = 0.0
                         test_accuracy1 = 0.0
                         for i in range(len(test_inputs)):
-                            #test_i = np.multiply(test_inputs[i:(i+1)], 1.0 / 255)
-                            #test_l = np.multiply(test_targets[i:(i+1)], 1.0/255)
-                            #test_l = test_l[0]
                             inputs, results, targets, _, acc = sess.run([network.inputs, network.segmentation_result, network.targets, network.summaries, network.accuracy], feed_dict={network.inputs: test_inputs[i:(i+1)], network.targets: test_targets[i:(i+1)], network.is_training: False})
-                            #segmentation = sess.run(network.segmentation_result, feed_dict={network.inputs: np.reshape(test_i, [1, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1])})
-                            #segmentation = segmentation[0]
-                            #print(test_i.shape)
-                            #print(segmentation.shape)
-                            #print(test_l.shape)
-                            #print(acc)
-                            #acc, _ = tf.metrics.accuracy(labels=test_l , predictions=segmentation)
-                            #seg_result = self.segmentation_result.eval()
-                            #print(seg_result)
-                            #print(seg_result.shape)
 
-                            #inputs = inputs.eval()
-                            #results = results.eval()
-                            #print(results)
                             results = results[0,:,:,0]
                             inputs = inputs[0,:,:,0]
                             targets = targets[0,:,:,0]
-                            #print(results.shape)
-                            #print(inputs)
-                            #print(inputs.shape)
+
                             new_results = np.zeros((2,1024,1024))
                             new_results[0] = results
                             new_results[1] = 1-results
                             
                             crf_result = post_process_crf(inputs, new_results)
-                            #print(crf_result)
+
                             argmax_probs = np.round(crf_result)  # 0x1
                             correct_pred = np.sum(argmax_probs == targets)
-                            #print(correct_pred)
+
                             acc1 = correct_pred/(1024*1024)
-                            #correct_pred = tf.cast(tf.equal(argmax_probs, self.targets), tf.float32)
-                            #self.accuracy = tf.reduce_mean(correct_pred)
                             test_accuracy += acc
                             test_accuracy1 += acc1   
-                            #print(acc)
-                            #print(acc1)
 
                         test_accuracy = test_accuracy/len(test_inputs)
                         test_accuracy1 = test_accuracy1/len(test_inputs)
@@ -412,21 +389,19 @@ def train():
                         max_acc = max(test_accuracies1)
                         print("Best accuracy1: {} in batch {}".format(max_acc[0], max_acc[1]))
                         print("Total time: {}".format(time.time() - global_start))                        
-                        #if test_accuracy >= max_acc[0]:
-                            #checkpoint_path = os.path.join('save', network.description, timestamp, 'model.ckpt')
-                            #saver.save(sess, checkpoint_path, global_step=batch_num)
 
 def post_process_crf(input_it, prediction_it):
     #for input_t, prediction_it in zip(inputs, predictions):
+    #also set kernel weights
     unary = softmax_to_unary(prediction_it)
     unary = np.ascontiguousarray(unary)
     d = dcrf.DenseCRF(1024*1024, 2)
     d.setUnaryEnergy(unary)
-    feats = create_pairwise_gaussian(sdims=(10, 10), shape=(1024,1024))
+    feats = create_pairwise_gaussian(sdims=(3, 3), shape=(1024,1024))
     d.addPairwiseEnergy(feats, compat=3, kernel=dcrf.DIAG_KERNEL, normalization=dcrf.NORMALIZE_SYMMETRIC)
-    feats = create_pairwise_bilateral(sdims=(50, 50), schan=(20), img=input_it)
+    feats = create_pairwise_bilateral(sdims=(10, 10), schan=(.01), img=input_it, chdim=0)
     d.addPairwiseEnergy(feats, compat=10, kernel=dcrf.DIAG_KERNEL, normalization=dcrf.NORMALIZE_SYMMETRIC)
-    Q = d.inference(5)
+    Q = d.inference(10)
     res = np.argmax(Q, axis=0).reshape((1024, 1024))
     return (1-res)
     
