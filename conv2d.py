@@ -65,7 +65,7 @@ class Conv2d(Layer):
         # print('convd2_transposed: output_shape: {}'.format(utils.get_incoming_shape(output)))
 
         return output
-
+    """
     def create_deconv_layer(
         # print('convd2_transposed: input_shape: {}'.format(utils.get_incoming_shape(input)))
         # W = self.encoder[layer_index]
@@ -91,7 +91,7 @@ class Conv2d(Layer):
         # print('convd2_transposed: output_shape: {}'.format(utils.get_incoming_shape(output)))
 
         return output
-
+    """
 
     def get_description(self):
         return "C{},{},{}".format(self.kernel_size, self.output_channels, self.strides[1])
