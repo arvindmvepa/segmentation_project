@@ -28,7 +28,7 @@ class Conv2d(Layer):
             W = tf.get_variable('W{}'.format(self.name[-3:]),
                                 shape=(self.kernel_size, self.kernel_size, number_of_input_channels, self.output_channels))
             b = tf.Variable(tf.zeros([self.output_channels]))
-        self.encoder_matrix = W
+        #self.encoder_matrix = W
         Conv2d.layer_index += 1
 
         output = tf.nn.conv2d(input, W, strides=self.strides, padding='SAME')
@@ -42,10 +42,10 @@ class Conv2d(Layer):
     def create_layer_reversed(self, input, prev_layer=None):
         # print('convd2_transposed: input_shape: {}'.format(utils.get_incoming_shape(input)))
         # W = self.encoder[layer_index]
-        with tf.variable_scope('conv', reuse=True):
-            W = tf.get_variable('W{}'.format(self.name[-3:]))
-            b = tf.Variable(tf.zeros([W.get_shape().as_list()[2]]))
-
+        with tf.variable_scope('conv', reuse=False):
+            W = tf.get_variable('W{} deconv'.format(self.name[-3:]),
+                                shape=(self.kernel_size, self.kernel_size, number_of_input_channels, self.output_channels))
+            b = tf.Variable(tf.zeros([self.output_channels]))
         # if self.strides==[1, 1, 1, 1]:
         #     print('Now')
         #     output = lrelu(tf.add(
