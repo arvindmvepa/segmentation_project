@@ -83,7 +83,7 @@ class Network:
             layers.append(Conv2d(kernel_size=2, strides=[1, 1, 1, 1], output_channels=4096, name='conv_6_2'))
             layers.append(Conv2d(kernel_size=2, strides=[1, 1, 1, 1], output_channels=1000, name='conv_6_3'))            
             layers.append(Conv2d(kernel_size=1, strides=[1, 1, 1, 1], output_channels=2, name='conv_6_4'))
-            layers.append(Conv2d(kernel_size=993, strides=[1, 1, 1, 1], output_channels=1024, name='trans_conv_7'))
+            layers.append(Conv2d(kernel_size=993, strides=[1, 1, 1, 1], output_channels=32, name='trans_conv_7'))
 
         self.inputs = tf.placeholder(tf.float32, [None, self.IMAGE_HEIGHT, self.IMAGE_WIDTH, self.IMAGE_CHANNELS],
                                      name='inputs')
@@ -104,7 +104,7 @@ class Network:
         for layer in layers:
             count +=1
             if count == len(layers):
-                self.layers[layer.name] = net = layer. create_deconv_layer(net)
+                self.layers[layer.name] = net = layer.create_deconv_layer(net)
                 self.description += "{}".format(layer.get_description())
             else:
                 self.layers[layer.name] = net = layer.create_layer(net)
