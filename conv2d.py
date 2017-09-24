@@ -72,7 +72,7 @@ class Conv2d(Layer):
         #input_shape = utils.get_incoming_shape(input)
         #print(input_shape)
         with tf.variable_scope('conv', reuse=False):
-            W = tf.get_variable('W__', shape=(992, 992, 1, 2))
+            W = tf.get_variable('W__', shape=(992, 992, 2, 1))
             b = tf.Variable(tf.zeros([W.get_shape().as_list()[2]]))
 
         # if self.strides==[1, 1, 1, 1]:
