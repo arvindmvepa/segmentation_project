@@ -65,6 +65,6 @@ class Conv2d(Layer):
 
         return output
 
-    def create_deconv_layer(
+    #def create_deconv_layer()
     def get_description(self):
         return "C{},{},{}".format(self.kernel_size, self.output_channels, self.strides[1])
