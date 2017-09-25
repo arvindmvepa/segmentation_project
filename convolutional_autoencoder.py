@@ -79,7 +79,7 @@ class Network:
 
             layers.append(MaxPool2d(kernel_size=2, name='max_5', skip_connection=True and skip_connections))
 
-            layers.append(Conv2d(kernel_size=32, strides=[1, 1, 1, 1], output_channels=4096, name='conv_6_1'))
+            layers.append(Conv2d(kernel_size=7, strides=[1, 1, 1, 1], output_channels=4096, name='conv_6_1'))
             layers.append(Conv2d(kernel_size=1, strides=[1, 1, 1, 1], output_channels=4096, name='conv_6_2'))
             #layers.append(Conv2d(kernel_size=1, strides=[1, 1, 1, 1], output_channels=1000, name='conv_6_3'))            
 
