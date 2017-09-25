@@ -149,8 +149,8 @@ class Dataset:
 
         #train_files, validation_files, test_files = self.train_valid_test_split(os.listdir(os.path.join(folder, 'inputs')))
 
-        #self.train_inputs, self.train_targets = self.file_paths_to_images(folder, train_files)
-        #self.test_inputs, self.test_targets = self.file_paths_to_images(folder, test_files, True)
+        self.train_inputs, self.train_targets = ([],[])
+        self.test_inputs, self.test_targets = ([],[])
 
         self.pointer = 0
 
@@ -264,8 +264,8 @@ def train():
     dataset = Dataset(folder='vessels', include_hair=True,
                       batch_size=BATCH_SIZE)
 
-    inputs, targets = dataset.next_batch()
-    print(inputs.shape, targets.shape)
+    #inputs, targets = dataset.next_batch()
+    #print(inputs.shape, targets.shape)
 
     # augmentation_seq = iaa.Sequential([
     #     iaa.Crop(px=(0, 16)),  # crop images from each side by 0 to 16px (randomly chosen)
@@ -300,6 +300,11 @@ def train():
         
         train_inputs, train_targets = dataset.file_paths_to_images(folder, train_indices, os.listdir(os.path.join(folder, 'inputs')))
         test_inputs, test_targets = dataset.file_paths_to_images(folder, validation_indices, os.listdir(os.path.join(folder, 'inputs')), True)
+
+        dataset.train_inputs = train_inputs
+        dataset.train_targets = train_targets
+        dataset.test_inputs = test_inputs
+        dataset.test_targets = test_targets
 
         # test_inputs, test_targets = test_inputs[:100], test_targets[:100]
         test_inputs = np.reshape(test_inputs, (-1, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1))
