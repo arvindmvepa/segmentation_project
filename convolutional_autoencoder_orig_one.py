@@ -52,7 +52,8 @@ class Network:
 
         if layers == None:
             layers = []
-            layers.append(Conv2d(kernel_size=3, strides=[1, 1, 1, 1], output_channels=64, name='conv_1_1'))
+            #modified number of channels
+            layers.append(Conv2d(kernel_size=3, strides=[1, 1, 1, 1], output_channels=2, name='conv_1_1'))
             layers.append(Conv2d(kernel_size=3, strides=[1, 1, 1, 1], output_channels=64, name='conv_1_2'))
             layers.append(MaxPool2d(kernel_size=2, name='max_1', skip_connection=True and skip_connections))
 
