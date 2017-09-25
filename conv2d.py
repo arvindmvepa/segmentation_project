@@ -73,7 +73,7 @@ class Conv2d(Layer):
         #print(input_shape)
         input_shape = utils.get_incoming_shape(input)
         print(input_shape)
-        print("hi")
+        #print("hi")
         with tf.variable_scope('conv', reuse=False):
             W = tf.get_variable('W__', shape=(10, 10, 1, 2))
             b = tf.Variable(tf.zeros([W.get_shape().as_list()[2]]))
@@ -84,10 +84,10 @@ class Conv2d(Layer):
         #         tf.nn.conv2d(input, W,strides=self.strides, padding='SAME'), b))
         # else:
         #     print('1Now1')
-        print(input_shape)
+        #print(input_shape)
         output = tf.nn.conv2d_transpose(
             input, W,
-            tf.stack([tf.shape(input)[0], self.input_shape[1], self.input_shape[2], self.input_shape[3]]),
+            tf.stack([input_shape[0], self.input_shape[1], self.input_shape[2], self.input_shape[3]]),
             strides=self.strides, padding='VALID')
 
         Conv2d.layer_index += 1
