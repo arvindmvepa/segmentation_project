@@ -117,9 +117,15 @@ class Network:
 
         #self.layers["trans" + layers[0].name] =
 
+        for layer in layers:
+            net = layer.create_layer_reversed(net, prev_layer=self.layers[layer.name])
+        
+
+        """
         net = layers[0].create_deconv_layer(net)
         print("Current input shape: ", net.get_shape())
-
+        """
+        
         #layers.reverse()
         #Conv2d.reverse_global_variables()
 
