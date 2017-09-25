@@ -120,8 +120,11 @@ class Network:
         layers.reverse()
         Conv2d.reverse_global_variables()
 
+        count = 0
         for layer in layers:
-            net = layer.create_layer_reversed(net, prev_layer=self.layers[layer.name])
+            count += 1
+            if count == len(layers)
+                net = layer.create_layer_reversed(net, prev_layer=self.layers[layer.name])
         
 
         """
