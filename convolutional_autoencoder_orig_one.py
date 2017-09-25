@@ -123,7 +123,7 @@ class Network:
         count = 0
         for layer in layers:
             count += 1
-            if count == len(layers)
+            if count == len(layers):
                 net = layer.create_layer_reversed(net, prev_layer=self.layers[layer.name])
         
 
