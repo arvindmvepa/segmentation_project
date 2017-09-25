@@ -88,7 +88,7 @@ class Conv2d(Layer):
             strides=self.strides, padding='VALID')
 
         Conv2d.layer_index += 1
-        output.set_shape([None, self.input_shape[1], self.input_shape[2], self.input_shape[3]])
+        output.set_shape([None, 32, 32, self.input_shape[3]])
 
         output = lrelu(tf.add(tf.contrib.layers.batch_norm(output), b))
 
