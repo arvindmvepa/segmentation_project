@@ -158,7 +158,7 @@ class Dataset:
         inputs = []
         targets = []
 
-        for file_index in files_indices:
+        for file_index in file_indices:
             file = files_list[file_index]
             input_image = os.path.join(folder, 'inputs', file)
             target_image = os.path.join(folder, 'targets' if self.include_hair else 'targets_face_only', file)
