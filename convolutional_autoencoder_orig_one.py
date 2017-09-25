@@ -117,6 +117,9 @@ class Network:
 
         #self.layers["trans" + layers[0].name] =
 
+        layers.reverse()
+        Conv2d.reverse_global_variables()
+
         for layer in layers:
             net = layer.create_layer_reversed(net, prev_layer=self.layers[layer.name])
         
