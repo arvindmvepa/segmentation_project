@@ -52,8 +52,7 @@ class Network:
 
         if layers == None:
             layers = []
-            #modified number of channels
-            layers.append(Conv2d(kernel_size=3, strides=[1, 1, 1, 1], output_channels=2, name='conv_1_1'))
+            layers.append(Conv2d(kernel_size=3, strides=[1, 1, 1, 1], output_channels=64, name='conv_1_1'))
             layers.append(Conv2d(kernel_size=3, strides=[1, 1, 1, 1], output_channels=64, name='conv_1_2'))
             layers.append(MaxPool2d(kernel_size=2, name='max_1', skip_connection=True and skip_connections))
 
@@ -118,6 +117,7 @@ class Network:
 
         #self.layers["trans" + layers[0].name] =
 
+        """
         layers.reverse()
         Conv2d.reverse_global_variables()
 
@@ -127,12 +127,13 @@ class Network:
             if count == len(layers):
                 net = layer.create_layer_reversed(net, prev_layer=self.layers[layer.name])
         
-
+        """
         """
         net = layers[0].create_deconv_layer(net)
         print("Current input shape: ", net.get_shape())
         """
-        
+        #misinterpretting the input of the deconv layer due to how I formatted things
+        net = layers[0].create_deconv_layer(net)
         #layers.reverse()
         #Conv2d.reverse_global_variables()
 
