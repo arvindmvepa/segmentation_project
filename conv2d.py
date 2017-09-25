@@ -71,6 +71,8 @@ class Conv2d(Layer):
         # W = self.encoder[layer_index]
         #input_shape = utils.get_incoming_shape(input)
         #print(input_shape)
+        print(tf.shape(input))
+        print("hi")
         with tf.variable_scope('conv', reuse=False):
             W = tf.get_variable('W__', shape=(10, 10, 1, 2))
             b = tf.Variable(tf.zeros([W.get_shape().as_list()[2]]))
