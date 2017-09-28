@@ -175,7 +175,7 @@ class Dataset:
                 # test_image = np.multiply(test_image, 1.0 / 255)
 
                 target1_image = np.array(skio.imread(target1_image))
-                target1_image = cv2.threshold(target1_image, 127, 1, cv2.THRESH_BINARY)[1]
+                target1_image = cv2.threshold(target1_image, 127, 1, cv2.THRESH_BINARY_INV)[1]
                 
                 targets.append(target1_image)
 
@@ -367,7 +367,7 @@ def train():
                         cost, _ = sess.run([network.cost, network.train_op], feed_dict={network.inputs: batch_inputs, network.targets: batch_targets, network.is_training: True})
                         end = time.time()
                         print('{}/{}, epoch: {}, cost: {}, batch time: {}'.format(batch_num, n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost, end - start))
-                        if batch_num % 100 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
+                        if batch_num % 10 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
                             test_accuracy = 0.0
                             test_accuracy1 = 0.0
                             for i in range(len(test_inputs)):
@@ -381,19 +381,19 @@ def train():
                                 new_results[0] = results
                                 new_results[1] = 1-results
                             
-                                crf_result = post_process_crf(inputs, new_results)
+                                #crf_result = post_process_crf(inputs, new_results)
 
-                                argmax_probs = np.round(crf_result)  # 0x1
-                                correct_pred = np.sum(argmax_probs == targets)
+                                #argmax_probs = np.round(crf_result)  # 0x1
+                                #correct_pred = np.sum(argmax_probs == targets)
 
-                                acc1 = correct_pred/(1024*1024)
+                                #acc1 = correct_pred/(1024*1024)
                                 test_accuracy += acc
-                                test_accuracy1 += acc1   
+                                #test_accuracy1 += acc1   
 
                             test_accuracy = test_accuracy/len(test_inputs)
-                            test_accuracy1 = test_accuracy1/len(test_inputs)
+                            #test_accuracy1 = test_accuracy1/len(test_inputs)
                             print('Step {}, test accuracy: {}'.format(batch_num, test_accuracy))
-                            print('Step {}, test accuracy1: {}'.format(batch_num, test_accuracy1))
+                            #print('Step {}, test accuracy1: {}'.format(batch_num, test_accuracy1))
                             n_examples = 12
 
                             t_inputs, t_targets = dataset.test_inputs[:n_examples], dataset.test_targets[:n_examples]
