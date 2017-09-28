@@ -161,16 +161,23 @@ class Dataset:
         for file_index in file_indices:
             file = files_list[file_index]
             input_image = os.path.join(folder, 'inputs', file)
-            target_image = os.path.join(folder, 'targets' if self.include_hair else 'targets_face_only', file)
-            test_image = cv2.imread(input_image, 0)
+            target1_image = os.path.join(folder, 'targets1', file)
+            target2_image = os.path.join(folder, 'targets2', file)
+
+
             # load grayscale
             # test_image = np.multiply(test_image, 1.0 / 255)
+
+            
+            test_image = cv2.imread(input_image, 0)
             inputs.append(test_image)
             print(np.array(skio.imread(target_image)).shape)
-            target_image = np.array(skio.imread(target_image))[:,:,3]
-            target_image = cv2.threshold(target_image, 127, 1, cv2.THRESH_BINARY_INV)[1]
-            print(np.sum(target_image))
-            targets.append(target_image)
+
+            target_image1 = np.array(skio.imread(target_image1))[:,:,3]
+            target_image1 = cv2.threshold(target_image1, 127, 1, cv2.THRESH_BINARY_INV)[1]
+
+            print(np.sum(target_image1))
+            targets.append(target_image1)
 
         return inputs, targets
 
@@ -193,9 +200,9 @@ class Dataset:
         return int(math.floor(len(self.train_inputs) / self.batch_size))
 
     def reset_batch_pointer(self):
-        permutation = np.random.permutation(len(self.train_inputs))
-        self.train_inputs = [self.train_inputs[i] for i in permutation]
-        self.train_targets = [self.train_targets[i] for i in permutation]
+        #permutation = np.random.permutation(len(self.train_inputs))
+        #self.train_inputs = [self.train_inputs[i] for i in permutation]
+        #self.train_targets = [self.train_targets[i] for i in permutation]
 
         self.pointer = 0
 
@@ -297,7 +304,7 @@ def train():
     folder = dataset.folder
 
     for train_indices, validation_indices in k_fold.split(os.listdir(os.path.join(folder, 'inputs'))):
-        
+     
         train_inputs, train_targets = dataset.file_paths_to_images(folder, train_indices, os.listdir(os.path.join(folder, 'inputs')))
         test_inputs, test_targets = dataset.file_paths_to_images(folder, validation_indices, os.listdir(os.path.join(folder, 'inputs')), True)
 
