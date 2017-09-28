@@ -352,6 +352,7 @@ def train():
                 n_epochs = 5000
                 global_start = time.time()
                 acc = 0.0
+                batch_num = 0
                 for epoch_i in range(n_epochs):
                     if batch_num > 40:
                         epoch_i = 0
