@@ -316,7 +316,9 @@ def train():
 
     f1 = open('out1.txt','w')
     f2 = open('out2.txt','w')
-    
+
+    f1.close() 
+    f2.close()
     for train_indices, validation_indices in k_fold.split(os.listdir(os.path.join(folder, 'inputs'))):
      
         train_inputs, train_targets = dataset.file_paths_to_images(folder, train_indices, os.listdir(os.path.join(folder, 'inputs')))
@@ -413,6 +415,8 @@ def train():
                             image_summary_op = tf.summary.image("plot", image)
                             image_summary = sess.run(image_summary_op)
                             summary_writer.add_summary(image_summary)
+                            f1 = open('out1.txt','w')
+                            f2 = open('out2.txt','w')
 
                             test_accuracies.append((test_accuracy, batch_num))
                             test_accuracies1.append((test_accuracy1, batch_num))
@@ -429,6 +433,9 @@ def train():
                             print("Best accuracy1: {} in batch {}".format(max_acc[0], max_acc[1]))
                             print("Total time: {}".format(time.time() - global_start))
                             f2.write("batch num: " + str(batch_num) + " " +str(test_accuracy1) + " max: " + str(max_acc[0]) +" "+str(max_acc[1]) +"\n")
+
+                            f1.close() 
+                            f2.close()
 
                         if batch_num == 40:
                             break
