@@ -185,8 +185,8 @@ class Dataset:
                 target2_image = cv2.threshold(target2_image, 127, 1, cv2.THRESH_BINARY_INV)[1]
                 
                 targets.append(target2_image)
-
-            print("here")
+            else:
+                print("here")
                 
         return inputs, targets
 
