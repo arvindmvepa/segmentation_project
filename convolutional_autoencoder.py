@@ -179,7 +179,7 @@ class Dataset:
                 
                 targets.append(target1_image)
 
-            elif os.path.exists(target2_image)::
+            elif os.path.exists(target2_image):
                 
                 target2_image = np.array(skio.imread(target2_image))[:,:,3]
                 target2_image = cv2.threshold(target2_image, 127, 1, cv2.THRESH_BINARY_INV)[1]
