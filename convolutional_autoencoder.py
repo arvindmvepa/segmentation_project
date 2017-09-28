@@ -194,7 +194,7 @@ class Dataset:
 
     def train_valid_test_split(self, X, ratio=None):
         if ratio is None:
-            ratio = (0.7, .15, .15)
+            ratio = (0.5, .25, .25)
 
         N = len(X)
         return (
@@ -422,8 +422,8 @@ def train():
                             image_summary_op = tf.summary.image("plot", image)
                             image_summary = sess.run(image_summary_op)
                             summary_writer.add_summary(image_summary)
-                            f1 = open('out1.txt','w')
-                            f2 = open('out2.txt','w')
+                            f1 = open('out1.txt','a')
+                            f2 = open('out2.txt','a')
 
                             test_accuracies.append((test_accuracy, batch_num))
                             test_accuracies1.append((test_accuracy1, batch_num))
