@@ -186,6 +186,8 @@ class Dataset:
                 
                 targets.append(target2_image)
             else:
+                print(target1_image)
+                print(target2_image)
                 print("here")
                 
         return inputs, targets
