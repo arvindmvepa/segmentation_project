@@ -175,13 +175,13 @@ class Dataset:
                 # test_image = np.multiply(test_image, 1.0 / 255)
 
                 target1_image = np.array(skio.imread(target_image1))[:,:,3]
-                target1_image = cv2.threshold(target_image1, 127, 1, cv2.THRESH_BINARY_INV)[1]
+                target1_image = cv2.threshold(target1_image, 127, 1, cv2.THRESH_BINARY_INV)[1]
                 
                 targets.append(target_image1)
             else:
                 
                 target2_image = np.array(skio.imread(target_image2))
-                target2_image = cv2.threshold(target_image2, 127, 1, cv2.THRESH_BINARY)[1]
+                target2_image = cv2.threshold(target2_image, 127, 1, cv2.THRESH_BINARY)[1]
                 
                 targets.append(target_image2)
                 
