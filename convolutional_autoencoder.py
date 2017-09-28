@@ -314,6 +314,9 @@ def train():
     k_fold = KFold(n_splits=4)
     folder = dataset.folder
 
+    f1 = open('out1.txt','w')
+    f2 = open('out2.txt','w')
+    
     for train_indices, validation_indices in k_fold.split(os.listdir(os.path.join(folder, 'inputs'))):
      
         train_inputs, train_targets = dataset.file_paths_to_images(folder, train_indices, os.listdir(os.path.join(folder, 'inputs')))
@@ -418,12 +421,16 @@ def train():
                             max_acc = max(test_accuracies)
                             print("Best accuracy: {} in batch {}".format(max_acc[0], max_acc[1]))
                             print("Total time: {}".format(time.time() - global_start))
+                            f1.write("batch num: " + str(batch_num) + " " +str(test_accuracy) + " max: " + str(max_acc) +"\n")
 
                             print("Accuracies1 in time: ", [test_accuracies1[x][0] for x in range(len(test_accuracies1))])
-                            print(test_accuracies1)
+                            print("batch num: " + str(batch_num) + " "+test_accuracies1)
                             max_acc = max(test_accuracies1)
                             print("Best accuracy1: {} in batch {}".format(max_acc[0], max_acc[1]))
-                            print("Total time: {}".format(time.time() - global_start))                        
+                            print("Total time: {}".format(time.time() - global_start))
+                            f2.write("batch num: " + str(batch_num) + " " +str(test_accuracy1) + " max: " + str(max_acc) +"\n")
+                        if batch_num = 200:
+                            break
 
 def post_process_crf(input_it, prediction_it):
     #for input_t, prediction_it in zip(inputs, predictions):
