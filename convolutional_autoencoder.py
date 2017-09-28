@@ -164,21 +164,27 @@ class Dataset:
             target1_image = os.path.join(folder, 'targets1', file)
             target2_image = os.path.join(folder, 'targets2', file)
 
-
-            # load grayscale
-            # test_image = np.multiply(test_image, 1.0 / 255)
-
-            
             test_image = cv2.imread(input_image, 0)
             inputs.append(test_image)
-            print(np.array(skio.imread(target_image)).shape)
 
-            target_image1 = np.array(skio.imread(target_image1))[:,:,3]
-            target_image1 = cv2.threshold(target_image1, 127, 1, cv2.THRESH_BINARY_INV)[1]
+            #print(np.array(skio.imread(target_image)).shape)
 
-            print(np.sum(target_image1))
-            targets.append(target_image1)
+            if os.path.exists(target1_image):
 
+                # load grayscale
+                # test_image = np.multiply(test_image, 1.0 / 255)
+
+                target_image1 = np.array(skio.imread(target_image1))[:,:,3]
+                target_image1 = cv2.threshold(target_image1, 127, 1, cv2.THRESH_BINARY_INV)[1]
+                
+                targets.append(target_image1)
+            else:
+                
+                target_image2 = np.array(skio.imread(target_image2))
+                target_image2 = cv2.threshold(target_image2, 127, 1, cv2.THRESH_BINARY)[1]
+                
+                targets.append(target_image2)
+                
         return inputs, targets
 
     def train_valid_test_split(self, X, ratio=None):
