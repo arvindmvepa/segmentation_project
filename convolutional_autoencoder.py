@@ -370,7 +370,7 @@ def train():
                         cost, _ = sess.run([network.cost, network.train_op], feed_dict={network.inputs: batch_inputs, network.targets: batch_targets, network.is_training: True})
                         end = time.time()
                         print('{}/{}, epoch: {}, cost: {}, batch time: {}'.format(batch_num, n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost, end - start))
-                        if batch_num % 100 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
+                        if batch_num % 10 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
                             test_accuracy = 0.0
                             test_accuracy1 = 0.0
                             for i in range(len(test_inputs)):
@@ -429,7 +429,7 @@ def train():
                             print("Best accuracy1: {} in batch {}".format(max_acc[0], max_acc[1]))
                             print("Total time: {}".format(time.time() - global_start))
                             f2.write("batch num: " + str(batch_num) + " " +str(test_accuracy1) + " max: " + str(max_acc) +"\n")
-                        if batch_num == 200:
+                        if batch_num == 40:
                             break
 
 def post_process_crf(input_it, prediction_it):
