@@ -421,14 +421,14 @@ def train():
                             max_acc = max(test_accuracies)
                             print("Best accuracy: {} in batch {}".format(max_acc[0], max_acc[1]))
                             print("Total time: {}".format(time.time() - global_start))
-                            f1.write("batch num: " + str(batch_num) + " " +str(test_accuracy) + " max: " + str(max_acc) +"\n")
+                            f1.write("batch num: " + str(batch_num) + " " +str(test_accuracy) + " max: " + str(max_acc[0]) +" "+str(max_acc[1]+ "\n")
 
                             print("Accuracies1 in time: ", [test_accuracies1[x][0] for x in range(len(test_accuracies1))])
                             print("batch num: " + str(batch_num) + " "+test_accuracies1)
                             max_acc = max(test_accuracies1)
                             print("Best accuracy1: {} in batch {}".format(max_acc[0], max_acc[1]))
                             print("Total time: {}".format(time.time() - global_start))
-                            f2.write("batch num: " + str(batch_num) + " " +str(test_accuracy1) + " max: " + str(max_acc) +"\n")
+                            f2.write("batch num: " + str(batch_num) + " " +str(test_accuracy1) + " max: " + str(max_acc[0]) +" "+str(max_acc[1]+ +"\n")
                         if batch_num == 40:
                             break
 
