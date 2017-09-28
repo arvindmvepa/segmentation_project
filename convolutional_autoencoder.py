@@ -353,9 +353,15 @@ def train():
                 global_start = time.time()
                 acc = 0.0
                 for epoch_i in range(n_epochs):
+                    if batch_num > 40:
+                        epoch_i = 0
+                        dataset.reset_batch_pointer()
+                        break
                     dataset.reset_batch_pointer()
                     for batch_i in range(dataset.num_batches_in_epoch()):
                         batch_num = epoch_i * dataset.num_batches_in_epoch() + batch_i + 1
+                        if batch_num > 40:
+                            break
 
                         augmentation_seq_deterministic = augmentation_seq.to_deterministic()
 
@@ -436,9 +442,6 @@ def train():
 
                             f1.close() 
                             f2.close()
-
-                    if batch_num == 40:
-                        break
 
 def post_process_crf(input_it, prediction_it):
     #for input_t, prediction_it in zip(inputs, predictions):
