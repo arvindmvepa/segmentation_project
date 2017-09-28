@@ -437,8 +437,8 @@ def train():
                             f1.close() 
                             f2.close()
 
-                        if batch_num == 40:
-                            break
+                    if batch_num == 40:
+                        break
 
 def post_process_crf(input_it, prediction_it):
     #for input_t, prediction_it in zip(inputs, predictions):
