@@ -177,13 +177,13 @@ class Dataset:
                 target1_image = np.array(skio.imread(target1_image))
                 target1_image = cv2.threshold(target1_image, 127, 1, cv2.THRESH_BINARY)[1]
                 
-                targets.append(target_image1)
+                targets.append(target1_image)
             else:
                 
                 target2_image = np.array(skio.imread(target2_image))[:,:,3]
                 target2_image = cv2.threshold(target2_image, 127, 1, cv2.THRESH_BINARY_INV)[1]
                 
-                targets.append(target_image2)
+                targets.append(target2_image)
                 
         return inputs, targets
 
