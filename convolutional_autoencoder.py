@@ -429,7 +429,7 @@ def train():
                             print("Best accuracy1: {} in batch {}".format(max_acc[0], max_acc[1]))
                             print("Total time: {}".format(time.time() - global_start))
                             f2.write("batch num: " + str(batch_num) + " " +str(test_accuracy1) + " max: " + str(max_acc) +"\n")
-                        if batch_num = 200:
+                        if batch_num == 200:
                             break
 
 def post_process_crf(input_it, prediction_it):
