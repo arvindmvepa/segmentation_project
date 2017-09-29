@@ -330,8 +330,8 @@ def train():
         dataset.test_targets = test_targets
 
         # test_inputs, test_targets = test_inputs[:100], test_targets[:100]
-        test_inputs = np.reshape(test_inputs, (-1, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1))
-        test_targets = np.reshape(test_targets, (-1, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1))
+        test_inputs = np.reshape(test_inputs, (-1, 1024, 1024, 1))
+        test_targets = np.reshape(test_targets, (-1, 1024, 1024, 1))
         test_inputs = np.multiply(test_inputs, 1.0 / 255)
 
         #config = tf.ConfigProto(device_count = {'GPU': 0,'GPU': 1})
