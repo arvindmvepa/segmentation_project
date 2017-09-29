@@ -44,9 +44,9 @@ class Conv2d(Layer):
 
     def create_layer_reversed(self, input, prev_layer=None):
         net_id = self.net_id
+        print(net_id)
         # print('convd2_transposed: input_shape: {}'.format(utils.get_incoming_shape(input)))
         # W = self.encoder[layer_index]
-        net_id=0
         with tf.variable_scope('conv', reuse=False):
             W = tf.get_variable('W{}_{}_'.format(self.name[-3:], net_id),
                                 shape=(self.kernel_size, self.kernel_size, self.input_shape[3], self.output_channels))
