@@ -436,8 +436,8 @@ def train(train_indices, validation_indices):
                         test_accuracy = 0.0
                         test_accuracy1 = 0.0
 
-                        target_array = np.zeros(len(test_inputs), 1024, 1024)
-                        prediction_array = np.zeros(len(test_inputs), 1024, 1024)
+                        target_array = np.zeros((len(test_inputs), 1024, 1024))
+                        prediction_array = np.zeros((len(test_inputs), 1024, 1024))
                         
                         for i in range(len(test_inputs)):
                             inputs, results, targets, _, acc = sess.run([network.inputs, network.segmentation_result, network.targets, network.summaries, network.accuracy], feed_dict={network.inputs: test_inputs[i:(i+1)], network.targets: test_targets[i:(i+1)], network.is_training: False})
