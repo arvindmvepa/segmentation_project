@@ -29,7 +29,7 @@ from sklearn.model_selection import KFold, cross_val_score
 import random
 from pydensecrf.utils import compute_unary, create_pairwise_bilateral, create_pairwise_gaussian, softmax_to_unary
 
-np.set_printoptions(threshold=np.nan)
+#np.set_printoptions(threshold=np.nan)
 
 """
 @ops.RegisterGradient("MaxPoolWithArgmax")
@@ -477,10 +477,10 @@ def train(train_indices, validation_indices):
                         TN = 1024*1024-TP-FP-FN
                         specificity = TN/(TN+FP)
                         
-
+                        #print(dice_coe_val)
                         test_accuracy = test_accuracy/len(test_inputs)
                         #test_accuracy1 = test_accuracy1/len(test_inputs)
-                        #print('Step {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, auc {}, specificity {}'.format(batch_num, test_accuracy, dice_coe_val, hard_dice_coe_val, iou_coe_val, recall, precision, auc, specificity))
+                        print('Step {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, auc {}, specificity {}'.format(batch_num, test_accuracy, dice_coe_val, hard_dice_coe_val, iou_coe_val, recall, precision, auc, specificity))
                         #print('Step {}, test accuracy1: {}'.format(batch_num, test_accuracy1))
                         n_examples = 12
 
