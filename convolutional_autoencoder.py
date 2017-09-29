@@ -464,8 +464,8 @@ def post_process_crf(input_it, prediction_it):
     return (1-res)
     
 if __name__ == '__main__':
-    k_fold = KFold(n_splits=4)
-    for train_indices, validation_indices in k_fold.split(os.listdir(os.path.join('vessels', 'inputs')), shuffle=True):
+    k_fold = KFold(n_splits=4, shuffle=True)
+    for train_indices, validation_indices in k_fold.split(os.listdir(os.path.join('vessels', 'inputs'))):
         p = multiprocessing.Process(target=train, args=(train_indices, validation_indices))
         p.start()
         p.join()
