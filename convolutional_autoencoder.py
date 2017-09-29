@@ -462,6 +462,9 @@ def train(train_indices, validation_indices):
                             test_accuracy += acc
                             #test_accuracy1 += acc1
 
+                        prediction_list = tf.convert_to_tensor(prediction_list, dtype=tf.float32)
+                        target_list = tf.convert_to_tensor(target_list, dtype=tf.float32)
+
                         dice_coe_val = dice_coe(prediction_list, target_list)
                         hard_dice_coe_val = dice_hard_coe(prediction_list, target_list)
                         iou_coe_val = iou_coe(prediction_list, target_list)
