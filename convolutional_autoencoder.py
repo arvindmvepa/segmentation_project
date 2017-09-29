@@ -270,10 +270,6 @@ def draw_results(test_inputs, test_targets, test_segmentation, test_accuracy, ne
 
 def train():
     BATCH_SIZE = 1
-    with tf.device('/gpu:1'):
-    #with tf.device('/cpu:0'):
-        network = Network()
-
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
 
     # create directory for saving models
@@ -320,7 +316,11 @@ def train():
     f1.close() 
     f2.close()
     for train_indices, validation_indices in k_fold.split(os.listdir(os.path.join(folder, 'inputs'))):
-     
+
+        with tf.device('/gpu:1'):
+            #with tf.device('/cpu:0'):
+            network = Network()
+        
         train_inputs, train_targets = dataset.file_paths_to_images(folder, train_indices, os.listdir(os.path.join(folder, 'inputs')))
         test_inputs, test_targets = dataset.file_paths_to_images(folder, validation_indices, os.listdir(os.path.join(folder, 'inputs')), True)
 
