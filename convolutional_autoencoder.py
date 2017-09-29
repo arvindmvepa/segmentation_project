@@ -28,7 +28,6 @@ import pydensecrf.densecrf as dcrf
 from sklearn.model_selection import KFold, cross_val_score
 
 from pydensecrf.utils import compute_unary, create_pairwise_bilateral, create_pairwise_gaussian, softmax_to_unary
-import random
 
 np.set_printoptions(threshold=np.nan)
 
@@ -85,7 +84,8 @@ class Network:
             layers.append(Conv2d(kernel_size=1, strides=[1, 1, 1, 1], output_channels=4096, name='conv_6_2', net_id = net_id))
             #layers.append(Conv2d(kernel_size=1, strides=[1, 1, 1, 1], output_channels=1000, name='conv_6_3'))            
 
-        self.inputs = tf.placeholder(tf.float32, [None, self.IMAGE_HEIGHT, self.IMAGE_WIDTH, self.IMAGE_CHANNELS], name='inputs')
+        self.inputs = tf.placeholder(tf.float32, [None, self.IMAGE_HEIGHT, self.IMAGE_WIDTH, self.IMAGE_CHANNELS],
+                                     name='inputs')
         self.targets = tf.placeholder(tf.float32, [None, self.IMAGE_HEIGHT, self.IMAGE_WIDTH, 1], name='targets')
         self.is_training = tf.placeholder_with_default(False, [], name='is_training')
         self.description = ""
@@ -160,7 +160,6 @@ class Dataset:
 
         for file_index in file_indices:
             file = files_list[file_index]
-            #print(file)
             input_image = os.path.join(folder, 'inputs', file)
             target1_image = os.path.join(folder, 'targets1', file)
             target2_image = os.path.join(folder, 'targets2', file)
@@ -269,11 +268,7 @@ def draw_results(test_inputs, test_targets, test_segmentation, test_accuracy, ne
     plt.savefig('{}/figure{}.jpg'.format(IMAGE_PLOT_DIR, batch_num))
     return buf
 
-def train(train_indices, validation_indices):
-
-    print(train_indices)
-    print(validation_indices)
-
+def train():
     BATCH_SIZE = 1
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
 
@@ -308,6 +303,8 @@ def train(train_indices, validation_indices):
             return default
 
     hooks_binmasks = imgaug.HooksImages(activator=activator_binmasks)
+
+    k_fold = KFold(n_splits=4)
     folder = dataset.folder
 
     f1 = open('out1.txt','w')
@@ -320,11 +317,11 @@ def train(train_indices, validation_indices):
     with tf.device('/gpu:1'):
         #with tf.device('/cpu:0'):
         network = Network(count)
-    #count +=1
-            
+    count +=1
+        
     # create directory for saving models
     os.makedirs(os.path.join('save', network.description+str(count), timestamp))
-    
+
     train_inputs, train_targets = dataset.file_paths_to_images(folder, train_indices, os.listdir(os.path.join(folder, 'inputs')))
     test_inputs, test_targets = dataset.file_paths_to_images(folder, validation_indices, os.listdir(os.path.join(folder, 'inputs')), True)
 
@@ -346,65 +343,65 @@ def train(train_indices, validation_indices):
     with tf.Session(config=config) as sess:
         with tf.device('/gpu:0'):
             print(sess.run(tf.global_variables_initializer()))
-                
-        summary_writer = tf.summary.FileWriter('{}/{}-{}'.format('logs', network.description, timestamp), graph=tf.get_default_graph())
-        saver = tf.train.Saver(tf.all_variables(), max_to_keep=None)
+            
+            summary_writer = tf.summary.FileWriter('{}/{}-{}'.format('logs', network.description, timestamp), graph=tf.get_default_graph())
+            saver = tf.train.Saver(tf.all_variables(), max_to_keep=None)
 
-        test_accuracies = []
-        test_accuracies1 = []
-        # Fit all training data
-        n_epochs = 5000
-        global_start = time.time()
-        acc = 0.0
-        batch_num = 0
-        dataset.reset_batch_pointer()
-        for epoch_i in range(n_epochs):
-            if batch_num > 40:
-                #epoch_i = 0
-                #dataset.reset_batch_pointer()
-                break
-            for batch_i in range(dataset.num_batches_in_epoch()):
-                batch_num = epoch_i * dataset.num_batches_in_epoch() + batch_i + 1
+            test_accuracies = []
+            test_accuracies1 = []
+            # Fit all training data
+            n_epochs = 5000
+            global_start = time.time()
+            acc = 0.0
+            batch_num = 0
+            for epoch_i in range(n_epochs):
                 if batch_num > 40:
+                    epoch_i = 0
+                    dataset.reset_batch_pointer()
                     break
+                dataset.reset_batch_pointer()
+                for batch_i in range(dataset.num_batches_in_epoch()):
+                    batch_num = epoch_i * dataset.num_batches_in_epoch() + batch_i + 1
+                    if batch_num > 40:
+                        break
 
-                augmentation_seq_deterministic = augmentation_seq.to_deterministic()
+                    augmentation_seq_deterministic = augmentation_seq.to_deterministic()
 
-                start = time.time()
-                batch_inputs, batch_targets = dataset.next_batch()
-                batch_inputs = np.reshape(batch_inputs, (dataset.batch_size, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1))
-                batch_targets = np.reshape(batch_targets, (dataset.batch_size, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1))
+                    start = time.time()
+                    batch_inputs, batch_targets = dataset.next_batch()
+                    batch_inputs = np.reshape(batch_inputs, (dataset.batch_size, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1))
+                    batch_targets = np.reshape(batch_targets, (dataset.batch_size, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1))
 
-                batch_inputs = augmentation_seq_deterministic.augment_images(batch_inputs)
-                batch_inputs = np.multiply(batch_inputs, 1.0 / 255)
+                    batch_inputs = augmentation_seq_deterministic.augment_images(batch_inputs)
+                    batch_inputs = np.multiply(batch_inputs, 1.0 / 255)
 
-                batch_targets = augmentation_seq_deterministic.augment_images(batch_targets, hooks=hooks_binmasks)
-                #with tf.device('/gpu:0'):
-                cost, _ = sess.run([network.cost, network.train_op], feed_dict={network.inputs: batch_inputs, network.targets: batch_targets, network.is_training: True})
-                end = time.time()
-                print('{}/{}, epoch: {}, cost: {}, batch time: {}'.format(batch_num, n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost, end - start))
-                if batch_num % 10 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
-                    test_accuracy = 0.0
-                    test_accuracy1 = 0.0
-                    for i in range(len(test_inputs)):
-                        inputs, results, targets, _, acc = sess.run([network.inputs, network.segmentation_result, network.targets, network.summaries, network.accuracy], feed_dict={network.inputs: test_inputs[i:(i+1)], network.targets: test_targets[i:(i+1)], network.is_training: False})
+                    batch_targets = augmentation_seq_deterministic.augment_images(batch_targets, hooks=hooks_binmasks)
+                    #with tf.device('/gpu:0'):
+                    cost, _ = sess.run([network.cost, network.train_op], feed_dict={network.inputs: batch_inputs, network.targets: batch_targets, network.is_training: True})
+                    end = time.time()
+                    print('{}/{}, epoch: {}, cost: {}, batch time: {}'.format(batch_num, n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost, end - start))
+                    if batch_num % 10 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
+                        test_accuracy = 0.0
+                        test_accuracy1 = 0.0
+                        for i in range(len(test_inputs)):
+                            inputs, results, targets, _, acc = sess.run([network.inputs, network.segmentation_result, network.targets, network.summaries, network.accuracy], feed_dict={network.inputs: test_inputs[i:(i+1)], network.targets: test_targets[i:(i+1)], network.is_training: False})
 
-                        results = results[0,:,:,0]
-                        inputs = inputs[0,:,:,0]
-                        targets = targets[0,:,:,0]
+                            results = results[0,:,:,0]
+                            inputs = inputs[0,:,:,0]
+                            targets = targets[0,:,:,0]
 
-                        new_results = np.zeros((2,1024,1024))
-                        new_results[0] = results
-                        new_results[1] = 1-results
-                            
-                        #crf_result = post_process_crf(inputs, new_results)
+                            new_results = np.zeros((2,1024,1024))
+                            new_results[0] = results
+                            new_results[1] = 1-results
+                        
+                            #crf_result = post_process_crf(inputs, new_results)
 
-                        #argmax_probs = np.round(crf_result)  # 0x1
-                        #correct_pred = np.sum(argmax_probs == targets)
+                            #argmax_probs = np.round(crf_result)  # 0x1
+                            #correct_pred = np.sum(argmax_probs == targets)
 
-                        #acc1 = correct_pred/(1024*1024)
-                        test_accuracy += acc
-                        #test_accuracy1 += acc1   
+                            #acc1 = correct_pred/(1024*1024)
+                            test_accuracy += acc
+                            #test_accuracy1 += acc1   
 
                         test_accuracy = test_accuracy/len(test_inputs)
                         #test_accuracy1 = test_accuracy1/len(test_inputs)
@@ -426,7 +423,6 @@ def train(train_indices, validation_indices):
                         image_summary_op = tf.summary.image("plot", image)
                         image_summary = sess.run(image_summary_op)
                         summary_writer.add_summary(image_summary)
-
                         f1 = open('out1.txt','a')
                         f2 = open('out2.txt','a')
 
@@ -465,7 +461,6 @@ def post_process_crf(input_it, prediction_it):
     return (1-res)
     
 if __name__ == '__main__':
-
     x = random.randint(1,100)                                     
     k_fold = KFold(n_splits=4, shuffle=True, random_state=x)
     for train_indices, validation_indices in k_fold.split(os.listdir(os.path.join('vessels', 'inputs'))):
