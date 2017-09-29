@@ -306,12 +306,6 @@ def train(train_indices, validation_indices):
 
     k_fold = KFold(n_splits=4)
     folder = dataset.folder
-
-    f1 = open('out1.txt','w')
-    f2 = open('out2.txt','w')
-
-    f1.close() 
-    f2.close()
     count = 0
 
     with tf.device('/gpu:1'):
@@ -463,6 +457,12 @@ def post_process_crf(input_it, prediction_it):
 if __name__ == '__main__':
     x = random.randint(1,100)                                     
     k_fold = KFold(n_splits=4, shuffle=True, random_state=x)
+
+    f1 = open('out1.txt','w')
+    f2 = open('out2.txt','w')
+
+    f1.close() 
+    f2.close()
     for train_indices, validation_indices in k_fold.split(os.listdir(os.path.join('vessels', 'inputs'))):
         p = multiprocessing.Process(target=train, args=(train_indices, validation_indices))
         p.start()
