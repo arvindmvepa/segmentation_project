@@ -407,14 +407,14 @@ def train(train_indices, validation_indices):
             acc = 0.0
             batch_num = 0
             for epoch_i in range(n_epochs):
-                if batch_num > 13000:
+                if batch_num > 2:
                     epoch_i = 0
                     dataset.reset_batch_pointer()
                     break
                 dataset.reset_batch_pointer()
                 for batch_i in range(dataset.num_batches_in_epoch()):
                     batch_num = epoch_i * dataset.num_batches_in_epoch() + batch_i + 1
-                    if batch_num > 13000:
+                    if batch_num > 3:
                         break
 
                     augmentation_seq_deterministic = augmentation_seq.to_deterministic()
@@ -520,6 +520,7 @@ def train(train_indices, validation_indices):
                         f2.write('Step {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, auc {}, specificity {}, max acc {} {}'.format(batch_num, test_accuracy, dice_coe_val, hard_dice_coe_val, iou_coe_val, recall, precision, auc, specificity, max_acc[0], max_acc[1]))
                         f1.close() 
                         f2.close()
+                        break
 
 def post_process_crf(input_it, prediction_it):
     #for input_t, prediction_it in zip(inputs, predictions):
