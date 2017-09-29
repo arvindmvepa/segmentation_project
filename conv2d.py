@@ -9,17 +9,19 @@ class Conv2d(Layer):
     # global things...
     layer_index = 0
 
-    def __init__(self, kernel_size, strides, output_channels, name):
+    def __init__(self, kernel_size, strides, output_channels, name, net_id):
         self.kernel_size = kernel_size
         self.strides = strides
         self.output_channels = output_channels
         self.name = name
+        self.net_id = net_id
 
     @staticmethod
     def reverse_global_variables():
         Conv2d.layer_index = 0
 
-    def create_layer(self, input, net_id):
+    def create_layer(self, input):
+        net_id = self.net_id
         # print('convd2: input_shape: {}'.format(utils.get_incoming_shape(input)))
         self.input_shape = utils.get_incoming_shape(input)
         print(self.input_shape)
@@ -40,6 +42,7 @@ class Conv2d(Layer):
         return output
 
     def create_layer_reversed(self, input, prev_layer=None):
+        net_id = self.net_id
         # print('convd2_transposed: input_shape: {}'.format(utils.get_incoming_shape(input)))
         # W = self.encoder[layer_index]
         net_id=0
