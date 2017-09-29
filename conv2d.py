@@ -19,8 +19,7 @@ class Conv2d(Layer):
     def reverse_global_variables():
         Conv2d.layer_index = 0
 
-    def create_layer(self, input):
-        net_id = 0
+    def create_layer(self, input, net_id):
         # print('convd2: input_shape: {}'.format(utils.get_incoming_shape(input)))
         self.input_shape = utils.get_incoming_shape(input)
         print(self.input_shape)
