@@ -321,7 +321,7 @@ def train():
         count +=1
             
         # create directory for saving models
-        os.makedirs(os.path.join('save', network.description, timestamp))
+        os.makedirs(os.path.join('save', network.description+str(count), timestamp))
     
         train_inputs, train_targets = dataset.file_paths_to_images(folder, train_indices, os.listdir(os.path.join(folder, 'inputs')))
         test_inputs, test_targets = dataset.file_paths_to_images(folder, validation_indices, os.listdir(os.path.join(folder, 'inputs')), True)
