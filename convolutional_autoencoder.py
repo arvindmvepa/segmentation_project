@@ -270,6 +270,9 @@ def draw_results(test_inputs, test_targets, test_segmentation, test_accuracy, ne
 
 def train(train_indices, validation_indices):
 
+    print(train_indices)
+    print(validation_indices)
+
     BATCH_SIZE = 1
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
 
