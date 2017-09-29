@@ -436,8 +436,8 @@ def train(train_indices, validation_indices):
                         test_accuracy = 0.0
                         test_accuracy1 = 0.0
 
-                        target_list = []
-                        prediction_list = []
+                        target_array = np.zeros(len(test_inputs), 1024, 1024)
+                        prediction_array = np.zeros(len(test_inputs), 1024, 1024)
                         
                         for i in range(len(test_inputs)):
                             inputs, results, targets, _, acc = sess.run([network.inputs, network.segmentation_result, network.targets, network.summaries, network.accuracy], feed_dict={network.inputs: test_inputs[i:(i+1)], network.targets: test_targets[i:(i+1)], network.is_training: False})
@@ -446,8 +446,8 @@ def train(train_indices, validation_indices):
                             inputs = inputs[0,:,:,0]
                             targets = targets[0,:,:,0]
 
-                            target_list.append(targets)
-                            prediction_list.append(results)
+                            target_array[i]=targets
+                            prediction_array[i]=results
 
                             new_results = np.zeros((2,1024,1024))
                             new_results[0] = results
@@ -462,8 +462,8 @@ def train(train_indices, validation_indices):
                             test_accuracy += acc
                             #test_accuracy1 += acc1
 
-                        prediction_list = tf.convert_to_tensor(prediction_list, dtype=tf.float32)
-                        target_list = tf.convert_to_tensor(target_list, dtype=tf.float32)
+                        prediction_array = tf.convert_to_tensor(prediction_list, dtype=tf.float32)
+                        target_array = tf.convert_to_tensor(target_list, dtype=tf.float32)
 
                         dice_coe_val = dice_coe(prediction_list, target_list)
                         hard_dice_coe_val = dice_hard_coe(prediction_list, target_list)
