@@ -44,36 +44,6 @@ def _MaxPoolWithArgmaxGrad(op, grad, unused_argmax_grad):
 """
 
 def dice_coe(output, target, loss_type='jaccard', axis=[1,2,3], smooth=1e-5):
-    """Soft dice (Sørensen or Jaccard) coefficient for comparing the similarity
-    of two batch of data, usually be used for binary image segmentation
-    i.e. labels are binary. The coefficient between 0 to 1, 1 means totally match.
-
-    Parameters
-    -----------
-    output : tensor
-        A distribution with shape: [batch_size, ....], (any dimensions).
-    target : tensor
-        A distribution with shape: [batch_size, ....], (any dimensions).
-    loss_type : string
-        ``jaccard`` or ``sorensen``, default is ``jaccard``.
-    axis : list of integer
-        All dimensions are reduced, default ``[1,2,3]``.
-    smooth : float
-        This small value will be added to the numerator and denominator.
-        If both output and target are empty, it makes sure dice is 1.
-        If either output or target are empty (all pixels are background), dice = ```smooth/(small_value + smooth)``,
-        then if smooth is very small, dice close to 0 (even the image values lower than the threshold),
-        so in this case, higher smooth can have a higher dice.
-
-    Examples
-    ---------
-    >>> outputs = tl.act.pixel_wise_softmax(network.outputs)
-    >>> dice_loss = 1 - tl.cost.dice_coe(outputs, y_)
-
-    References
-    -----------
-    - `Wiki-Dice <https://en.wikipedia.org/wiki/Sørensen–Dice_coefficient>`_
-    """
     inse = tf.reduce_sum(output * target, axis=axis)
     if loss_type == 'jaccard':
         l = tf.reduce_sum(output * output, axis=axis)
@@ -96,28 +66,7 @@ def dice_coe(output, target, loss_type='jaccard', axis=[1,2,3], smooth=1e-5):
 
 
 def dice_hard_coe(output, target, threshold=0.5, axis=[1,2,3], smooth=1e-5):
-    """Non-differentiable Sørensen–Dice coefficient for comparing the similarity
-    of two batch of data, usually be used for binary image segmentation i.e. labels are binary.
-    The coefficient between 0 to 1, 1 if totally match.
-
-    Parameters
-    -----------
-    output : tensor
-        A distribution with shape: [batch_size, ....], (any dimensions).
-    target : tensor
-        A distribution with shape: [batch_size, ....], (any dimensions).
-    threshold : float
-        The threshold value to be true.
-    axis : list of integer
-        All dimensions are reduced, default ``[1,2,3]``.
-    smooth : float
-        This small value will be added to the numerator and denominator, see ``dice_coe``.
-
-    References
-    -----------
-    - `Wiki-Dice <https://en.wikipedia.org/wiki/Sørensen–Dice_coefficient>`_
-    """
-    output = tf.cast(output > threshold, dtype=tf.float32)
+   output = tf.cast(output > threshold, dtype=tf.float32)
     target = tf.cast(target > threshold, dtype=tf.float32)
     inse = tf.reduce_sum(tf.multiply(output, target), axis=axis)
     l = tf.reduce_sum(output, axis=axis)
@@ -135,27 +84,7 @@ def dice_hard_coe(output, target, threshold=0.5, axis=[1,2,3], smooth=1e-5):
 
 
 def iou_coe(output, target, threshold=0.5, axis=[1,2,3], smooth=1e-5):
-    """Non-differentiable Intersection over Union (IoU) for comparing the
-    similarity of two batch of data, usually be used for evaluating binary image segmentation.
-    The coefficient between 0 to 1, 1 means totally match.
 
-    Parameters
-    -----------
-    output : tensor
-        A distribution with shape: [batch_size, ....], (any dimensions).
-    target : tensor
-        A distribution with shape: [batch_size, ....], (any dimensions).
-    threshold : float
-        The threshold value to be true.
-    axis : list of integer
-        All dimensions are reduced, default ``[1,2,3]``.
-    smooth : float
-        This small value will be added to the numerator and denominator, see ``dice_coe``.
-
-    Notes
-    ------
-    - IoU cannot be used as training loss, people usually use dice coefficient for training, IoU and hard-dice for evaluating.
-    """
     pre = tf.cast(output > threshold, dtype=tf.float32)
     truth = tf.cast(target > threshold, dtype=tf.float32)
     inse = tf.reduce_sum(tf.multiply(pre, truth), axis=axis) # AND
