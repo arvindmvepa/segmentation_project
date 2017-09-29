@@ -160,6 +160,7 @@ class Dataset:
 
         for file_index in file_indices:
             file = files_list[file_index]
+            print(file)
             input_image = os.path.join(folder, 'inputs', file)
             target1_image = os.path.join(folder, 'targets1', file)
             target2_image = os.path.join(folder, 'targets2', file)
@@ -464,7 +465,7 @@ def post_process_crf(input_it, prediction_it):
     
 if __name__ == '__main__':
     k_fold = KFold(n_splits=4)
-    for train_indices, validation_indices in k_fold.split(os.listdir(os.path.join('vessels', 'inputs'))):
+    for train_indices, validation_indices in k_fold.split(os.listdir(os.path.join('vessels', 'inputs')), shuffle=True):
         p = multiprocessing.Process(target=train, args=(train_indices, validation_indices))
         p.start()
         p.join()
