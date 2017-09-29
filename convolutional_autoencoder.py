@@ -121,8 +121,10 @@ class Network:
         print('segmentation_result.shape: {}, targets.shape: {}'.format(self.segmentation_result.get_shape(),
                                                                         self.targets.get_shape()))
 
-        # MSE loss
-        self.cost = tf.sqrt(tf.reduce_mean(tf.square(self.segmentation_result - self.targets)))
+        # MSE loss - change to log loss
+        
+        self.cost = tf.log_loss(self.targets,self.segmentation_result)
+        #= tf.sqrt(tf.reduce_mean(tf.square(self.segmentation_result - self.targets)))
         self.train_op = tf.train.AdamOptimizer().minimize(self.cost)
         with tf.name_scope('accuracy'):
             #seg_result = self.segmentation_result.eval()
@@ -456,7 +458,7 @@ def post_process_crf(input_it, prediction_it):
     
 if __name__ == '__main__':
     x = random.randint(1,100)                                     
-    k_fold = KFold(n_splits=4, shuffle=True, random_state=x)
+    k_fold = KFold(n_splits=3, shuffle=True, random_state=x)
 
     f1 = open('out1.txt','w')
     f2 = open('out2.txt','w')
