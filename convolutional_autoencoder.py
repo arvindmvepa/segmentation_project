@@ -357,12 +357,12 @@ def train(train_indices, validation_indices):
         global_start = time.time()
         acc = 0.0
         batch_num = 0
+        dataset.reset_batch_pointer()
         for epoch_i in range(n_epochs):
             if batch_num > 40:
                 #epoch_i = 0
                 #dataset.reset_batch_pointer()
                 break
-            dataset.reset_batch_pointer()
             for batch_i in range(dataset.num_batches_in_epoch()):
                 batch_num = epoch_i * dataset.num_batches_in_epoch() + batch_i + 1
                 if batch_num > 40:
@@ -426,6 +426,7 @@ def train(train_indices, validation_indices):
                         image_summary_op = tf.summary.image("plot", image)
                         image_summary = sess.run(image_summary_op)
                         summary_writer.add_summary(image_summary)
+
                         f1 = open('out1.txt','a')
                         f2 = open('out2.txt','a')
 
