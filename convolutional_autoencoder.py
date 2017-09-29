@@ -26,7 +26,7 @@ from PIL import Image
 from skimage import io as skio
 import pydensecrf.densecrf as dcrf
 from sklearn.model_selection import KFold, cross_val_score
-
+import random
 from pydensecrf.utils import compute_unary, create_pairwise_bilateral, create_pairwise_gaussian, softmax_to_unary
 
 np.set_printoptions(threshold=np.nan)
