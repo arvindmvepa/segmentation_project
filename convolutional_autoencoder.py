@@ -268,7 +268,7 @@ def draw_results(test_inputs, test_targets, test_segmentation, test_accuracy, ne
     plt.savefig('{}/figure{}.jpg'.format(IMAGE_PLOT_DIR, batch_num))
     return buf
 
-def train():
+def train(train_indices, validation_indices):
     BATCH_SIZE = 1
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
 
