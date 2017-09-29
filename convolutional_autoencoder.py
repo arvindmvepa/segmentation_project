@@ -272,9 +272,6 @@ def train():
     BATCH_SIZE = 1
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
 
-    # create directory for saving models
-    os.makedirs(os.path.join('save', network.description, timestamp))
-
     dataset = Dataset(folder='vessels', include_hair=True,
                       batch_size=BATCH_SIZE)
 
@@ -320,7 +317,10 @@ def train():
         with tf.device('/gpu:1'):
             #with tf.device('/cpu:0'):
             network = Network()
-        
+            
+        # create directory for saving models
+        os.makedirs(os.path.join('save', network.description, timestamp))
+    
         train_inputs, train_targets = dataset.file_paths_to_images(folder, train_indices, os.listdir(os.path.join(folder, 'inputs')))
         test_inputs, test_targets = dataset.file_paths_to_images(folder, validation_indices, os.listdir(os.path.join(folder, 'inputs')), True)
 
