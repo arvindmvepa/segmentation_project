@@ -48,7 +48,7 @@ class Network:
     IMAGE_WIDTH = 1024
     IMAGE_CHANNELS = 1
 
-    def __init__(self, layers = None, per_image_standardization=True, batch_norm=True, skip_connections=True):
+    def __init__(self, net_id, layers = None, per_image_standardization=True, batch_norm=True, skip_connections=True):
         # Define network - ENCODER (decoder will be symmetric).
 
         if layers == None:
@@ -100,7 +100,7 @@ class Network:
 
         # ENCODER
         for layer in layers:
-            self.layers[layer.name] = net = layer.create_layer(net)
+            self.layers[layer.name] = net = layer.create_layer(net_id, net)
             self.description += "{}".format(layer.get_description())
 
         print("Current input shape: ", net.get_shape())
@@ -110,7 +110,7 @@ class Network:
 
         # DECODER
         for layer in layers:
-            net = layer.create_layer_reversed(net, prev_layer=self.layers[layer.name])
+            net = layer.create_layer_reversed(net_id, net, prev_layer=self.layers[layer.name])
 
         self.segmentation_result = tf.sigmoid(net)
 
@@ -312,11 +312,13 @@ def train():
 
     f1.close() 
     f2.close()
+    count = 0
     for train_indices, validation_indices in k_fold.split(os.listdir(os.path.join(folder, 'inputs'))):
 
         with tf.device('/gpu:1'):
             #with tf.device('/cpu:0'):
-            network = Network()
+            network = Network(count)
+        count +=1
             
         # create directory for saving models
         os.makedirs(os.path.join('save', network.description, timestamp))
@@ -342,7 +344,7 @@ def train():
         with tf.Session(config=config) as sess:
             with tf.device('/gpu:0'):
                 print(sess.run(tf.global_variables_initializer()))
-
+                
                 summary_writer = tf.summary.FileWriter('{}/{}-{}'.format('logs', network.description, timestamp), graph=tf.get_default_graph())
                 saver = tf.train.Saver(tf.all_variables(), max_to_keep=None)
 

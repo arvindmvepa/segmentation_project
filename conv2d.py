@@ -19,14 +19,14 @@ class Conv2d(Layer):
     def reverse_global_variables():
         Conv2d.layer_index = 0
 
-    def create_layer(self, input):
+    def create_layer(self, net_id, input):
         # print('convd2: input_shape: {}'.format(utils.get_incoming_shape(input)))
         self.input_shape = utils.get_incoming_shape(input)
         print(self.input_shape)
         number_of_input_channels = self.input_shape[3]
         self.number_of_input_channels = number_of_input_channels
         with tf.variable_scope('conv', reuse=False):
-            W = tf.get_variable('W{}'.format(self.name[-3:]),
+            W = tf.get_variable(('W{}_{}'.format(self.name[-3:], net_id),
                                 shape=(self.kernel_size, self.kernel_size, number_of_input_channels, self.output_channels))
             b = tf.Variable(tf.zeros([self.output_channels]))
         #self.encoder_matrix = W
