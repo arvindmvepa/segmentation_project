@@ -26,7 +26,7 @@ class Conv2d(Layer):
         number_of_input_channels = self.input_shape[3]
         self.number_of_input_channels = number_of_input_channels
         with tf.variable_scope('conv', reuse=False):
-            W = tf.get_variable(('W{}_{}'.format(self.name[-3:], net_id),
+            W = tf.get_variable('W{}_{}'.format(self.name[-3:], net_id)),
                                 shape=(self.kernel_size, self.kernel_size, number_of_input_channels, self.output_channels))
             b = tf.Variable(tf.zeros([self.output_channels]))
         #self.encoder_matrix = W
