@@ -28,6 +28,7 @@ import pydensecrf.densecrf as dcrf
 from sklearn.model_selection import KFold, cross_val_score
 
 from pydensecrf.utils import compute_unary, create_pairwise_bilateral, create_pairwise_gaussian, softmax_to_unary
+import random
 
 np.set_printoptions(threshold=np.nan)
 
@@ -84,8 +85,7 @@ class Network:
             layers.append(Conv2d(kernel_size=1, strides=[1, 1, 1, 1], output_channels=4096, name='conv_6_2', net_id = net_id))
             #layers.append(Conv2d(kernel_size=1, strides=[1, 1, 1, 1], output_channels=1000, name='conv_6_3'))            
 
-        self.inputs = tf.placeholder(tf.float32, [None, self.IMAGE_HEIGHT, self.IMAGE_WIDTH, self.IMAGE_CHANNELS],
-                                     name='inputs')
+        self.inputs = tf.placeholder(tf.float32, [None, self.IMAGE_HEIGHT, self.IMAGE_WIDTH, self.IMAGE_CHANNEL, name='inputs')
         self.targets = tf.placeholder(tf.float32, [None, self.IMAGE_HEIGHT, self.IMAGE_WIDTH, 1], name='targets')
         self.is_training = tf.placeholder_with_default(False, [], name='is_training')
         self.description = ""
@@ -160,7 +160,7 @@ class Dataset:
 
         for file_index in file_indices:
             file = files_list[file_index]
-            print(file)
+            #print(file)
             input_image = os.path.join(folder, 'inputs', file)
             target1_image = os.path.join(folder, 'targets1', file)
             target2_image = os.path.join(folder, 'targets2', file)
@@ -464,7 +464,9 @@ def post_process_crf(input_it, prediction_it):
     return (1-res)
     
 if __name__ == '__main__':
-    k_fold = KFold(n_splits=4, shuffle=True)
+
+    x = random.randint(1,100)                                     
+    k_fold = KFold(n_splits=4, shuffle=True, random_state=x)
     for train_indices, validation_indices in k_fold.split(os.listdir(os.path.join('vessels', 'inputs'))):
         p = multiprocessing.Process(target=train, args=(train_indices, validation_indices))
         p.start()
