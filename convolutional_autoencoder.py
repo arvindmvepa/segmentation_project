@@ -290,7 +290,7 @@ def train():
         iaa.GaussianBlur((0, 3.0), name="GaussianBlur"),
         iaa.Dropout(0.02, name="Dropout"),
         iaa.AdditiveGaussianNoise(scale=0.01 * 255, name="GaussianNoise"),
-        iaa.Affine(translate_px={"x": (-network.IMAGE_HEIGHT // 3, network.IMAGE_WIDTH // 3)}, name="Affine")
+        iaa.Affine(translate_px={"x": (-1024 // 3, 1024 // 3)}, name="Affine")
     ])
 
     # change the activated augmenters for binary masks,
