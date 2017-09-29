@@ -407,14 +407,14 @@ def train(train_indices, validation_indices):
             acc = 0.0
             batch_num = 0
             for epoch_i in range(n_epochs):
-                if batch_num > 500:
+                if batch_num > 13000:
                     epoch_i = 0
                     dataset.reset_batch_pointer()
                     break
                 dataset.reset_batch_pointer()
                 for batch_i in range(dataset.num_batches_in_epoch()):
                     batch_num = epoch_i * dataset.num_batches_in_epoch() + batch_i + 1
-                    if batch_num > 500:
+                    if batch_num > 13000:
                         break
 
                     augmentation_seq_deterministic = augmentation_seq.to_deterministic()
@@ -505,15 +505,16 @@ def train(train_indices, validation_indices):
                         max_acc = max(test_accuracies)
                         print("Best accuracy: {} in batch {}".format(max_acc[0], max_acc[1]))
                         print("Total time: {}".format(time.time() - global_start))
-                        f1.write("batch num: " + str(batch_num) + " " +str(test_accuracy) + " max: " + str(max_acc[0]) +" "+str(max_acc[1])+ "\n")
+                        #f1.write("batch num: " + str(batch_num) + " " +str(test_accuracy) + " max: " + str(max_acc[0]) +" "+str(max_acc[1])+ "\n")
+                        f1.write('Step {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, auc {}, specificity {}, max acc {} {}'.format(batch_num, test_accuracy, dice_coe_val, hard_dice_coe_val, iou_coe_val, recall, precision, auc, specificity, max_acc[0], max_acc[1]))
 
                         print("Accuracies1 in time: ", [test_accuracies1[x][0] for x in range(len(test_accuracies1))])
                         print(str(test_accuracies1))
                         max_acc = max(test_accuracies1)
                         print("Best accuracy1: {} in batch {}".format(max_acc[0], max_acc[1]))
                         print("Total time: {}".format(time.time() - global_start))
-                        f2.write("batch num: " + str(batch_num) + " " +str(test_accuracy1) + " max: " + str(max_acc[0]) +" "+str(max_acc[1]) +"\n")
-
+                        #f2.write("batch num: " + str(batch_num) + " " +str(test_accuracy1) + " max: " + str(max_acc[0]) +" "+str(max_acc[1]) +"\n")
+                        f2.write('Step {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, auc {}, specificity {}, max acc {} {}'.format(batch_num, test_accuracy, dice_coe_val, hard_dice_coe_val, iou_coe_val, recall, precision, auc, specificity, max_acc[0], max_acc[1]))
                         f1.close() 
                         f2.close()
 
