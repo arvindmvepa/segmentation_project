@@ -469,7 +469,7 @@ def train(train_indices, validation_indices):
                         hard_dice_coe_val = dice_hard_coe(prediction_array, target_array)
                         iou_coe_val = iou_coe(prediction_array, target_array)
                         recall = tf.metrics.recall(target_array, prediction_array)
-                        precision = tf.metriccs.precision(target_array, prediction_array)
+                        precision = tf.metrics.precision(target_array, prediction_array)
                         auc = tf.metrics.auc(target_array, prediction_array)
                         TP = tf.metrics.true_positives(target_array, prediction_array)
                         FP = tf.metrics.false_positives(target_array, prediction_array)
