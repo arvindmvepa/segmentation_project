@@ -462,18 +462,18 @@ def train(train_indices, validation_indices):
                             test_accuracy += acc
                             #test_accuracy1 += acc1
 
-                        prediction_array = tf.convert_to_tensor(prediction_list, dtype=tf.float32)
-                        target_array = tf.convert_to_tensor(target_list, dtype=tf.float32)
+                        prediction_array = tf.convert_to_tensor(prediction_array, dtype=tf.float32)
+                        target_array = tf.convert_to_tensor(target_array, dtype=tf.float32)
 
-                        dice_coe_val = dice_coe(prediction_list, target_list)
-                        hard_dice_coe_val = dice_hard_coe(prediction_list, target_list)
-                        iou_coe_val = iou_coe(prediction_list, target_list)
-                        recall = tf.metrics.recall(target_list, prediction_list)
-                        precision = tf.contrib.precision(target_list, prediction_list)
-                        auc = tf.contrib.auc(target_list, prediction_list)
-                        TP = true_positives(target_list, prediction_list)
-                        FP = false_positives(target_list, prediction_list)
-                        FN = false_negatives(target_list, prediction_list)
+                        dice_coe_val = dice_coe(prediction_array, target_array)
+                        hard_dice_coe_val = dice_hard_coe(prediction_array, target_array)
+                        iou_coe_val = iou_coe(prediction_array, target_array)
+                        recall = tf.metrics.recall(target_array, prediction_array)
+                        precision = tf.contrib.precision(target_array, prediction_array)
+                        auc = tf.contrib.auc(target_array, prediction_array)
+                        TP = true_positives(target_array, prediction_array)
+                        FP = false_positives(target_array, prediction_array)
+                        FN = false_negatives(target_array, prediction_array)
                         TN = 1024*1024-TP-FP-FN
                         specificity = TN/(TN+FP)
                         
