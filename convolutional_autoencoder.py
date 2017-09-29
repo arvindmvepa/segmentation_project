@@ -100,7 +100,7 @@ class Network:
 
         # ENCODER
         for layer in layers:
-            self.layers[layer.name] = net = layer.create_layer(net)
+            self.layers[layer.name] = net = layer.create_layer(net_id, net)
             self.description += "{}".format(layer.get_description())
 
         print("Current input shape: ", net.get_shape())
