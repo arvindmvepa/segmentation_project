@@ -320,7 +320,7 @@ def train(train_indices, validation_indices):
     with tf.device('/gpu:1'):
         #with tf.device('/cpu:0'):
         network = Network(count)
-    count +=1
+    #count +=1
             
     # create directory for saving models
     os.makedirs(os.path.join('save', network.description+str(count), timestamp))
@@ -359,8 +359,8 @@ def train(train_indices, validation_indices):
         batch_num = 0
         for epoch_i in range(n_epochs):
             if batch_num > 40:
-                epoch_i = 0
-                dataset.reset_batch_pointer()
+                #epoch_i = 0
+                #dataset.reset_batch_pointer()
                 break
             dataset.reset_batch_pointer()
             for batch_i in range(dataset.num_batches_in_epoch()):
