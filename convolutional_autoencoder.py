@@ -43,7 +43,7 @@ def _MaxPoolWithArgmaxGrad(op, grad, unused_argmax_grad):
                                      data_format='NHWC')
 """
 
-def dice_coe(output, target, loss_type='jaccard', axis=[1,2,3], smooth=1e-5):
+def dice_coe(output, target, loss_type='jaccard', axis=None, smooth=1e-5):
     inse = tf.reduce_sum(output * target, axis=axis)
     if loss_type == 'jaccard':
         l = tf.reduce_sum(output * output, axis=axis)
@@ -65,7 +65,7 @@ def dice_coe(output, target, loss_type='jaccard', axis=[1,2,3], smooth=1e-5):
 
 
 
-def dice_hard_coe(output, target, threshold=0.5, axis=[1,2,3], smooth=1e-5):
+def dice_hard_coe(output, target, threshold=0.5, axis=None, smooth=1e-5):
     output = tf.cast(output > threshold, dtype=tf.float32)
     target = tf.cast(target > threshold, dtype=tf.float32)
     inse = tf.reduce_sum(tf.multiply(output, target), axis=axis)
@@ -83,7 +83,7 @@ def dice_hard_coe(output, target, threshold=0.5, axis=[1,2,3], smooth=1e-5):
 
 
 
-def iou_coe(output, target, threshold=0.5, axis=[1,2,3], smooth=1e-5):
+def iou_coe(output, target, threshold=0.5, axis=None, smooth=1e-5):
 
     pre = tf.cast(output > threshold, dtype=tf.float32)
     truth = tf.cast(target > threshold, dtype=tf.float32)
