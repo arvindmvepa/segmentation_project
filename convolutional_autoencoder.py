@@ -123,7 +123,7 @@ class Network:
 
         # MSE loss - change to log loss
         
-        self.cost = tf.log_loss(self.targets,self.segmentation_result)
+        self.cost = tf.losses.log_loss(self.targets,self.segmentation_result)
         #= tf.sqrt(tf.reduce_mean(tf.square(self.segmentation_result - self.targets)))
         self.train_op = tf.train.AdamOptimizer().minimize(self.cost)
         with tf.name_scope('accuracy'):
