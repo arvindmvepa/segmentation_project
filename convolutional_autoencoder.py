@@ -100,7 +100,7 @@ class Network:
 
         # ENCODER
         for layer in layers:
-            self.layers[layer.name] = net = layer.create_layer(net_id, net)
+            self.layers[layer.name] = net = layer.create_layer(net)
             self.description += "{}".format(layer.get_description())
 
         print("Current input shape: ", net.get_shape())
@@ -110,7 +110,7 @@ class Network:
 
         # DECODER
         for layer in layers:
-            net = layer.create_layer_reversed(net_id, net, prev_layer=self.layers[layer.name])
+            net = layer.create_layer_reversed(net, prev_layer=self.layers[layer.name])
 
         self.segmentation_result = tf.sigmoid(net)
 
