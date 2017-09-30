@@ -394,7 +394,8 @@ def train(train_indices, validation_indices):
 
     with tf.Session(config=config) as sess:
         with tf.device('/gpu:0'):
-            print(sess.run(tf.global_variables_initializer()))
+            init_op = tf.initialize_all_variables()
+            print(sess.run(init_op))
             
             summary_writer = tf.summary.FileWriter('{}/{}-{}'.format('logs', network.description, timestamp), graph=tf.get_default_graph())
             saver = tf.train.Saver(tf.all_variables(), max_to_keep=None)
