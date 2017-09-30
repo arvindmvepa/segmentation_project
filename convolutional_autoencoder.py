@@ -497,7 +497,7 @@ def train(train_indices, validation_indices):
                         #print(dice_coe_val)
                         test_accuracy = test_accuracy/len(test_inputs)
                         #test_accuracy1 = test_accuracy1/len(test_inputs)
-                        print('Step {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, auc {}, specificity {}'.format(batch_num, test_accuracy, dice_coe_val, hard_dice_coe_val, iou_coe_val, recall, precision, auc, specificity))
+                        print('Step {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, auc {}, specificity {}, max acc {} {}'.format(batch_num, test_accuracy, dice_coe_val.eval(), hard_dice_coe_val.eval(), iou_coe_val.eval(), recall.eval(), precision.eval(), auc.eval(), specificity.eval(), max_acc[0], max_acc[1]))
                         #print('Step {}, test accuracy1: {}'.format(batch_num, test_accuracy1))
                         n_examples = 12
 
@@ -526,7 +526,7 @@ def train(train_indices, validation_indices):
                         print("Best accuracy: {} in batch {}".format(max_acc[0], max_acc[1]))
                         print("Total time: {}".format(time.time() - global_start))
                         #f1.write("batch num: " + str(batch_num) + " " +str(test_accuracy) + " max: " + str(max_acc[0]) +" "+str(max_acc[1])+ "\n")
-                        f1.write('Step {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, auc {}, specificity {}, max acc {} {}'.format(batch_num, test_accuracy, dice_coe_val.eval(), hard_dice_coe_val.eval(), iou_coe_val.eval(), recall.eval(), precision, auc, specificity.eval(), max_acc[0], max_acc[1]))
+                        f1.write('Step {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, auc {}, specificity {}, max acc {} {}'.format(batch_num, test_accuracy, dice_coe_val.eval(), hard_dice_coe_val.eval(), iou_coe_val.eval(), recall.eval(), precision.eval(), auc.eval(), specificity.eval(), max_acc[0], max_acc[1]))
 
                         print("Accuracies1 in time: ", [test_accuracies1[x][0] for x in range(len(test_accuracies1))])
                         print(str(test_accuracies1))
@@ -534,7 +534,7 @@ def train(train_indices, validation_indices):
                         print("Best accuracy1: {} in batch {}".format(max_acc[0], max_acc[1]))
                         print("Total time: {}".format(time.time() - global_start))
                         #f2.write("batch num: " + str(batch_num) + " " +str(test_accuracy1) + " max: " + str(max_acc[0]) +" "+str(max_acc[1]) +"\n")
-                        f2.write('Step {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, auc {}, specificity {}, max acc {} {}'.format(batch_num, test_accuracy, dice_coe_val, hard_dice_coe_val, iou_coe_val, recall, precision, auc, specificity, max_acc[0], max_acc[1]))
+                        f2.write('Step {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, auc {}, specificity {}, max acc {} {}'.format(batch_num, test_accuracy1, dice_coe_val.eval(), hard_dice_coe_val.eval(), iou_coe_val.eval(), recall.eval(), precision.eval(), auc.eval(), specificity.eval(), max_acc[0], max_acc[1]))
                         f1.close() 
                         f2.close()
                         break
