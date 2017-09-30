@@ -400,7 +400,7 @@ def train(train_indices, validation_indices, run_id):
     with tf.Session(config=config) as sess:
         with tf.device('/gpu:0'):
             saver.restore(sess, "/tmp/model" + str(10) + "_"+str(run_id)+".ckpt")
-            print(sess.run(tf.global_variables_initializer()))
+            #print(sess.run(tf.global_variables_initializer()))
             
             summary_writer = tf.summary.FileWriter('{}/{}-{}'.format('logs', network.description, timestamp), graph=tf.get_default_graph())
             saver = tf.train.Saver(tf.all_variables(), max_to_keep=None)
