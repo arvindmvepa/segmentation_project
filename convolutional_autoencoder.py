@@ -490,6 +490,9 @@ def train(train_indices, validation_indices):
                         FN = tf.metrics.false_negatives(target_array, prediction_array)[0]
                         TN = 1024*1024-TP-FP-FN
                         specificity = TN/(TN+FP)
+
+                        sess.run(tf.local_variables_initializer())
+                        sess.run(tf.global_variables_initializer())
                         
                         #print(dice_coe_val)
                         test_accuracy = test_accuracy/len(test_inputs)
