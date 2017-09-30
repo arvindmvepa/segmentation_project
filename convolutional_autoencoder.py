@@ -28,6 +28,9 @@ import pydensecrf.densecrf as dcrf
 from sklearn.model_selection import KFold, cross_val_score
 import random
 from pydensecrf.utils import compute_unary, create_pairwise_bilateral, create_pairwise_gaussian, softmax_to_unary
+from sklearn.metrics import precision_recall_fscore_support
+from sklearn.metrics import roc_auc_score
+from sklearn.metrics import confusion_matrix
 
 #np.set_printoptions(threshold=np.nan)
 
@@ -462,33 +465,49 @@ def train(train_indices, validation_indices):
                             test_accuracy += acc
                             #test_accuracy1 += acc1
 
-                        prediction_array = tf.convert_to_tensor(prediction_array, dtype=tf.float32)
-                        target_array = tf.convert_to_tensor(target_array, dtype=tf.float32)
+                        prediction_tensor = tf.convert_to_tensor(prediction_array, dtype=tf.float32)
+                        target_tensor = tf.convert_to_tensor(target_array, dtype=tf.float32)
 
-                        dice_coe_val = dice_coe(prediction_array, target_array)
-                        hard_dice_coe_val = dice_hard_coe(prediction_array, target_array)
-                        iou_coe_val = iou_coe(prediction_array, target_array)
-                        recall = tf.metrics.recall(target_array, prediction_array)[0]
-                        precision = tf.metrics.precision(target_array, prediction_array)[0]
-                        auc = tf.metrics.auc(target_array, prediction_array)[0]
-                        TP = tf.metrics.true_positives(target_array, prediction_array)[0]
-                        FP = tf.metrics.false_positives(target_array, prediction_array)[0]
-                        FN = tf.metrics.false_negatives(target_array, prediction_array)[0]
-                        TN = 1024*1024-TP-FP-FN
-                        specificity = TN/(TN+FP)
-                        test = tf.contrib.metrics.streaming_precision(prediction_array, target_array)[0]
+                        prediction_flat = prediction_array.flatten()
+                        target_flat = target_array.flatten()
+
+                        auc = roc_auc_score(target_flat, prediction_flat)
+
+                        prediction_flat = np.round(prediction_flat)
+                        target_flat = np.round(target_flat)
+
+                        dice_coe_val = dice_coe(prediction_tensor, target_tensor)
+                        hard_dice_coe_val = dice_hard_coe(prediction_tensor, target_tensor)
+                        iou_coe_val = iou_coe(prediction_tensor, target_tensor)
+
+                        (precision, recall, fbeta_score, _) = precision_recall_fscore_support(target_flat, prediction_flat, average='binary')
+
+                        tn, fp, fn, tp = confusion_matrix(target_flat, prediction_flat).ravel()
+                        specificity = tn / (tn+fp)
+                        
+                        #recall = tf.metrics.recall(target_tensor, prediction_tensor)[0]
+                        #precision = tf.metrics.precision(target_tensor, prediction_tensor)[0]
+                        #auc = tf.metrics.auc(target_tensor, prediction_tensor)[0]
+                        #f1_score
+
+                        #TP = tf.metrics.true_positives(target_tensor, prediction_tensor)[0]
+                        #FP = tf.metrics.false_positives(target_tensor, prediction_tensor)[0]
+                        #FN = tf.metrics.false_negatives(target_tensor, prediction_tensor)[0]
+                        #TN = 1024*1024-TP-FP-FN
+                        #specificity = TN/(TN+FP)
+                        #test = tf.contrib.metrics.streaming_precision(prediction_tensor, target_tensor)[0]
                         sess.run(tf.local_variables_initializer())
 
-                        print(TP.eval())
-                        print(FP.eval())
-                        print(FN.eval())
-                        print(TN.eval())
-                        print(test.eval())
+                        #print(TP.eval())
+                        #print(FP.eval())
+                        #print(FN.eval())
+                        #print(TN.eval())
+                        #print(test.eval())
 
 
                         test_accuracy = test_accuracy/len(test_inputs)
                         #test_accuracy1 = test_accuracy1/len(test_inputs)
-                        print('Step {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, auc {}, specificity {}'.format(batch_num, test_accuracy, dice_coe_val.eval(), hard_dice_coe_val.eval(), iou_coe_val.eval(), recall.eval(), precision.eval(), auc.eval(), specificity.eval()))
+                        print('Step {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, specificity {}'.format(batch_num, test_accuracy, dice_coe_val.eval(), hard_dice_coe_val.eval(), iou_coe_val.eval(), recall, precision, fbeta_score, auc, specificity))
                         #print('Step {}, test accuracy1: {}'.format(batch_num, test_accuracy1))
 
                         n_examples = 12
@@ -518,7 +537,7 @@ def train(train_indices, validation_indices):
                         print("Best accuracy: {} in batch {}".format(max_acc[0], max_acc[1]))
                         print("Total time: {}".format(time.time() - global_start))
                         #f1.write("batch num: " + str(batch_num) + " " +str(test_accuracy) + " max: " + str(max_acc[0]) +" "+str(max_acc[1])+ "\n")
-                        f1.write('Step {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, auc {}, specificity {}, max acc {} {} \n'.format(batch_num, test_accuracy, dice_coe_val.eval(), hard_dice_coe_val.eval(), iou_coe_val.eval(), recall.eval(), precision.eval(), auc.eval(), specificity.eval(), max_acc[0], max_acc[1]))
+                        f1.write('Step {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, specificity {}, max acc {} {} \n'.format(batch_num, test_accuracy, dice_coe_val.eval(), hard_dice_coe_val.eval(), iou_coe_val.eval(), recall, precision, fbeta_score, auc, specificity, max_acc[0], max_acc[1]))
 
                         print("Accuracies1 in time: ", [test_accuracies1[x][0] for x in range(len(test_accuracies1))])
                         print(str(test_accuracies1))
@@ -526,7 +545,7 @@ def train(train_indices, validation_indices):
                         print("Best accuracy1: {} in batch {}".format(max_acc[0], max_acc[1]))
                         print("Total time: {}".format(time.time() - global_start))
                         #f2.write("batch num: " + str(batch_num) + " " +str(test_accuracy1) + " max: " + str(max_acc[0]) +" "+str(max_acc[1]) +"\n")
-                        f2.write('Step {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, auc {}, specificity {}, max acc {} {} \n'.format(batch_num, test_accuracy1, dice_coe_val.eval(), hard_dice_coe_val.eval(), iou_coe_val.eval(), recall.eval(), precision.eval(), auc.eval(), specificity.eval(), max_acc[0], max_acc[1]))
+                        f2.write('Step {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, specificity {}, max acc {} {} \n'.format(batch_num, test_accuracy1, dice_coe_val.eval(), hard_dice_coe_val.eval(), iou_coe_val.eval(), recall, precision, fbeta_score, auc, specificity, max_acc[0], max_acc[1]))
                         f1.close() 
                         f2.close()
 
