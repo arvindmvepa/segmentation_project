@@ -394,8 +394,7 @@ def train(train_indices, validation_indices):
 
     with tf.Session(config=config) as sess:
         with tf.device('/gpu:0'):
-            init_op = tf.initialize_all_variables()
-            print(sess.run(init_op))
+            print(sess.run(tf.global_variables_initializer()))
             
             summary_writer = tf.summary.FileWriter('{}/{}-{}'.format('logs', network.description, timestamp), graph=tf.get_default_graph())
             saver = tf.train.Saver(tf.all_variables(), max_to_keep=None)
@@ -465,6 +464,8 @@ def train(train_indices, validation_indices):
 
                         prediction_array = tf.convert_to_tensor(prediction_array, dtype=tf.float32)
                         target_array = tf.convert_to_tensor(target_array, dtype=tf.float32)
+
+                        sess.run(tf.local_variables_initializer())
 
                         dice_coe_val = tf.global_variables_initializer()
                         hard_dice_val = tf.global_variables_initializer()
