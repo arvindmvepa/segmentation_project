@@ -465,6 +465,7 @@ def train(train_indices, validation_indices):
                         prediction_array = tf.convert_to_tensor(prediction_array, dtype=tf.float32)
                         target_array = tf.convert_to_tensor(target_array, dtype=tf.float32)
 
+                        """
                         sess.run(tf.local_variables_initializer())
 
                         dice_coe_val = tf.global_variables_initializer()
@@ -478,6 +479,7 @@ def train(train_indices, validation_indices):
                         FN = tf.global_variables_initializer()
                         TN = tf.global_variables_initializer()
                         specificity = tf.global_variables_initializer()
+                        """
                         
                         dice_coe_val = dice_coe(prediction_array, target_array)
                         hard_dice_coe_val = dice_hard_coe(prediction_array, target_array)
@@ -492,7 +494,7 @@ def train(train_indices, validation_indices):
                         specificity = TN/(TN+FP)
 
                         sess.run(tf.local_variables_initializer())
-                        sess.run(tf.global_variables_initializer())
+                        #sess.run(tf.global_variables_initializer())
                         
                         #print(dice_coe_val)
                         test_accuracy = test_accuracy/len(test_inputs)
