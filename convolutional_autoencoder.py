@@ -465,6 +465,18 @@ def train(train_indices, validation_indices):
                         prediction_array = tf.convert_to_tensor(prediction_array, dtype=tf.float32)
                         target_array = tf.convert_to_tensor(target_array, dtype=tf.float32)
 
+                        dice_coe_val = tf.global_variables_initializer()
+                        hard_dice_val = tf.global_variables_initializer()
+                        iou_coe_val = tf.global_variables_initializer()
+                        recall =  tf.global_variables_initializer()
+                        precision = tf.global_variables_initializer()
+                        auc = tf.global_variables_initializer()
+                        TP = tf.global_variables_initializer()
+                        FP = tf.global_variables_initializer()
+                        FN = tf.global_variables_initializer()
+                        TN = tf.global_variables_initializer()
+                        specificity = tf.global_variables_initializer()
+                        
                         dice_coe_val = dice_coe(prediction_array, target_array)
                         hard_dice_coe_val = dice_hard_coe(prediction_array, target_array)
                         iou_coe_val = iou_coe(prediction_array, target_array)
