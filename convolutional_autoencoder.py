@@ -476,16 +476,15 @@ def train(train_indices, validation_indices):
                         FN = tf.metrics.false_negatives(target_array, prediction_array)[0]
                         TN = 1024*1024-TP-FP-FN
                         specificity = TN/(TN+FP)
+                        test = tf.contrib.metrics.streaming_precision(prediction_array, target_array)[0]
+                        sess.run(tf.local_variables_initializer())
 
                         print(TP.eval())
                         print(FP.eval())
                         print(FN.eval())
                         print(TN.eval())
-
-                        test = tf.contrib.metrics.streaming_precision(prediction_array, target_array)[0]
                         print(test.eval())
 
-                        sess.run(tf.local_variables_initializer())
 
                         test_accuracy = test_accuracy/len(test_inputs)
                         #test_accuracy1 = test_accuracy1/len(test_inputs)
