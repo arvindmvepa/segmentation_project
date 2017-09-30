@@ -399,8 +399,7 @@ def train(train_indices, validation_indices, run_id):
 
     with tf.Session(config=config) as sess:
         with tf.device('/gpu:0'):
-            saver.restore(sess, "/tmp/model" + str(10) + "_"+str(run_id)+".ckpt")
-            #print(sess.run(tf.global_variables_initializer()))
+            print(sess.run(tf.global_variables_initializer()))
             
             summary_writer = tf.summary.FileWriter('{}/{}-{}'.format('logs', network.description, timestamp), graph=tf.get_default_graph())
             saver = tf.train.Saver(tf.all_variables(), max_to_keep=None)
@@ -413,14 +412,14 @@ def train(train_indices, validation_indices, run_id):
             acc = 0.0
             batch_num = 0
             for epoch_i in range(n_epochs):
-                if batch_num > 40:
+                if batch_num > 13000:
                     epoch_i = 0
                     dataset.reset_batch_pointer()
                     break
                 dataset.reset_batch_pointer()
                 for batch_i in range(dataset.num_batches_in_epoch()):
                     batch_num = epoch_i * dataset.num_batches_in_epoch() + batch_i + 1
-                    if batch_num > 40:
+                    if batch_num > 13000:
                         break
 
                     augmentation_seq_deterministic = augmentation_seq.to_deterministic()
@@ -438,9 +437,10 @@ def train(train_indices, validation_indices, run_id):
                     cost, _ = sess.run([network.cost, network.train_op], feed_dict={network.inputs: batch_inputs, network.targets: batch_targets, network.is_training: True})
                     end = time.time()
                     print('{}/{}, epoch: {}, cost: {}, batch time: {}'.format(batch_num, n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost, end - start))
-                    if batch_num % 10 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
-                        #save_path = saver.save(sess, "/tmp/model" + str(batch_num) + "_"+str(run_id)+".ckpt")
-                        #print("Model saved in file: %s" % save_path)
+                    if batch_num % 100 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
+                        if batch_num % 1000 == 0:
+                            save_path = saver.save(sess, "/tmp/model_"+str(run_id)+".ckpt")
+                            print("Model saved in file: %s" % save_path)
                         test_accuracy = 0.0
                         test_accuracy1 = 0.0
 
