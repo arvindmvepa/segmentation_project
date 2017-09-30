@@ -329,7 +329,7 @@ def draw_results(test_inputs, test_targets, test_segmentation, test_accuracy, ne
     plt.savefig('{}/figure{}.jpg'.format(IMAGE_PLOT_DIR, batch_num))
     return buf
 
-def train(train_indices, validation_indices):
+def train(train_indices, validation_indices, run_id):
     BATCH_SIZE = 1
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
 
@@ -395,6 +395,8 @@ def train(train_indices, validation_indices):
     config = tf.ConfigProto(allow_soft_placement=True, log_device_placement=True)
     config.gpu_options.allow_growth = True
 
+    saver = tf.train.Saver()
+
     with tf.Session(config=config) as sess:
         with tf.device('/gpu:0'):
             print(sess.run(tf.global_variables_initializer()))
@@ -427,15 +429,17 @@ def train(train_indices, validation_indices):
                     batch_inputs = np.reshape(batch_inputs, (dataset.batch_size, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1))
                     batch_targets = np.reshape(batch_targets, (dataset.batch_size, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1))
 
-                    batch_inputs = augmentation_seq_deterministic.augment_images(batch_inputs)
+                    #batch_inputs = augmentation_seq_deterministic.augment_images(batch_inputs)
                     batch_inputs = np.multiply(batch_inputs, 1.0 / 255)
 
-                    batch_targets = augmentation_seq_deterministic.augment_images(batch_targets, hooks=hooks_binmasks)
+                    #batch_targets = augmentation_seq_deterministic.augment_images(batch_targets, hooks=hooks_binmasks)
                     #with tf.device('/gpu:0'):
                     cost, _ = sess.run([network.cost, network.train_op], feed_dict={network.inputs: batch_inputs, network.targets: batch_targets, network.is_training: True})
                     end = time.time()
                     print('{}/{}, epoch: {}, cost: {}, batch time: {}'.format(batch_num, n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost, end - start))
                     if batch_num % 10 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
+                        save_path = saver.save(sess, "/tmp/model" + str(batch_num) + "_"+str(run_id)+".ckpt")
+                        print("Model saved in file: %s" % save_path)
                         test_accuracy = 0.0
                         test_accuracy1 = 0.0
 
@@ -484,25 +488,8 @@ def train(train_indices, validation_indices):
 
                         tn, fp, fn, tp = confusion_matrix(target_flat, prediction_flat).ravel()
                         specificity = tn / (tn+fp)
-                        
-                        #recall = tf.metrics.recall(target_tensor, prediction_tensor)[0]
-                        #precision = tf.metrics.precision(target_tensor, prediction_tensor)[0]
-                        #auc = tf.metrics.auc(target_tensor, prediction_tensor)[0]
-                        #f1_score
-
-                        #TP = tf.metrics.true_positives(target_tensor, prediction_tensor)[0]
-                        #FP = tf.metrics.false_positives(target_tensor, prediction_tensor)[0]
-                        #FN = tf.metrics.false_negatives(target_tensor, prediction_tensor)[0]
-                        #TN = 1024*1024-TP-FP-FN
-                        #specificity = TN/(TN+FP)
-                        #test = tf.contrib.metrics.streaming_precision(prediction_tensor, target_tensor)[0]
                         sess.run(tf.local_variables_initializer())
 
-                        #print(TP.eval())
-                        #print(FP.eval())
-                        #print(FN.eval())
-                        #print(TN.eval())
-                        #print(test.eval())
 
 
                         test_accuracy = test_accuracy/len(test_inputs)
@@ -573,7 +560,10 @@ if __name__ == '__main__':
 
     f1.close() 
     f2.close()
+
+    count = 0
     for train_indices, validation_indices in k_fold.split(os.listdir(os.path.join('vessels', 'inputs'))):
-        p = multiprocessing.Process(target=train, args=(train_indices, validation_indices))
+        p = multiprocessing.Process(target=train, args=(train_indices, validation_indices, count))
         p.start()
         p.join()
+        count += 1
