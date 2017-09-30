@@ -526,7 +526,7 @@ def train(train_indices, validation_indices):
                         print(test_accuracies)
                         max_acc = max(test_accuracies)
                         print("Best accuracy: {} in batch {}".format(max_acc[0], max_acc[1]))
-                        print("Total time: {}".format(time.time() - global_start))
+                        print("Total time: {}".format(time.time() - global_start))/
                         #f1.write("batch num: " + str(batch_num) + " " +str(test_accuracy) + " max: " + str(max_acc[0]) +" "+str(max_acc[1])+ "\n")
                         f1.write('Step {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, auc {}, specificity {}, max acc {} {}'.format(batch_num, test_accuracy, dice_coe_val.eval(), hard_dice_coe_val.eval(), iou_coe_val.eval(), recall.eval(), precision.eval(), auc.eval(), specificity.eval(), max_acc[0], max_acc[1]))
 
@@ -539,7 +539,6 @@ def train(train_indices, validation_indices):
                         f2.write('Step {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, auc {}, specificity {}, max acc {} {}'.format(batch_num, test_accuracy1, dice_coe_val.eval(), hard_dice_coe_val.eval(), iou_coe_val.eval(), recall.eval(), precision.eval(), auc.eval(), specificity.eval(), max_acc[0], max_acc[1]))
                         f1.close() 
                         f2.close()
-                        break
 
 def post_process_crf(input_it, prediction_it):
     #for input_t, prediction_it in zip(inputs, predictions):
