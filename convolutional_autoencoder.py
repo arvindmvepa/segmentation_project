@@ -399,6 +399,7 @@ def train(train_indices, validation_indices, run_id):
 
     with tf.Session(config=config) as sess:
         with tf.device('/gpu:0'):
+            saver.restore(sess, "/tmp/model" + str(10) + "_"+str(run_id)+".ckpt")
             print(sess.run(tf.global_variables_initializer()))
             
             summary_writer = tf.summary.FileWriter('{}/{}-{}'.format('logs', network.description, timestamp), graph=tf.get_default_graph())
@@ -438,8 +439,8 @@ def train(train_indices, validation_indices, run_id):
                     end = time.time()
                     print('{}/{}, epoch: {}, cost: {}, batch time: {}'.format(batch_num, n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost, end - start))
                     if batch_num % 10 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
-                        save_path = saver.save(sess, "/tmp/model" + str(batch_num) + "_"+str(run_id)+".ckpt")
-                        print("Model saved in file: %s" % save_path)
+                        #save_path = saver.save(sess, "/tmp/model" + str(batch_num) + "_"+str(run_id)+".ckpt")
+                        #print("Model saved in file: %s" % save_path)
                         test_accuracy = 0.0
                         test_accuracy1 = 0.0
 
@@ -563,6 +564,12 @@ if __name__ == '__main__':
 
     count = 0
     for train_indices, validation_indices in k_fold.split(os.listdir(os.path.join('vessels', 'inputs'))):
+        f1 = open('out1.txt','a')
+        f2 = open('out2.txt','a')
+        f1.write('Train Indices {} Validation Indices {} \n'.format(train_indices, validation_indices))
+        f2.write('Train Indices {} Validation Indices {} \n'.format(train_indices, validation_indices))
+        f1.close()
+        f2.close()
         p = multiprocessing.Process(target=train, args=(train_indices, validation_indices, count))
         p.start()
         p.join()
