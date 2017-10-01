@@ -121,29 +121,27 @@ class Network:
 
             layers.append(MaxPool2d(kernel_size=2, name='max_2', skip_connection=True and skip_connections))
 
-            layers.append(Conv2d(kernel_size=3, dilation = 2, output_channels=256, name='conv_3_1', net_id = net_id))
+            layers.append(Conv2d(kernel_size=3, output_channels=256, name='conv_3_1', net_id = net_id))
             layers.append(Conv2d(kernel_size=3, dilation = 2,  output_channels=256, name='conv_3_2', net_id = net_id))
             #layers.append(Conv2d(kernel_size=3, strides=[1, 1, 1, 1], output_channels=256, name='conv_3_3'))
 
             layers.append(MaxPool2d(kernel_size=2, name='max_3', skip_connection=True and skip_connections))
 
-            layers.append(Conv2d(kernel_size=3,  dilation = 2, output_channels=512, name='conv_4_1', net_id = net_id))
-            layers.append(Conv2d(kernel_size=3, dilation = 2, output_channels=512, name='conv_4_2', net_id = net_id))
+            layers.append(Conv2d(kernel_size=3,  output_channels=512, name='conv_4_1', net_id = net_id))
+            layers.append(Conv2d(kernel_size=3, output_channels=512, name='conv_4_2', net_id = net_id))
             #layers.append(Conv2d(kernel_size=3, strides=[1, 1, 1, 1], output_channels=512, name='conv_4_3'))
 
             layers.append(MaxPool2d(kernel_size=2, name='max_4', skip_connection=True and skip_connections))
 
-            layers.append(Conv2d(kernel_size=3, dilation = 2, output_channels=512, name='conv_5_1', net_id = net_id))
-            layers.append(Conv2d(kernel_size=3, dilation = 2, output_channels=512, name='conv_5_2', net_id = net_id))
+            layers.append(Conv2d(kernel_size=3, output_channels=512, name='conv_5_1', net_id = net_id))
+            layers.append(Conv2d(kernel_size=3, output_channels=512, name='conv_5_2', net_id = net_id))
             #layers.append(Conv2d(kernel_size=3, strides=[1, 1, 1, 1], output_channels=512, name='conv_5_3'))
 
             layers.append(MaxPool2d(kernel_size=2, name='max_5', skip_connection=True and skip_connections))
 
-            layers.append(Conv2d(kernel_size=7, dilation = 3, output_channels=4096, name='conv_6_1', net_id = net_id))
-            layers.append(Conv2d(kernel_size=1, dilation = 3, output_channels=4096, name='conv_6_2', net_id = net_id))
-            #layers.append(Conv2d(kernel_size=1, strides=[1, 1, 1, 1], output_channels=1000, name='conv_6_3'))           
-
-        self.inputs = tf.placeholder(tf.float32, [None, self.IMAGE_HEIGHT, self.IMAGE_WIDTH, self.IMAGE_CHANNELS],
+            layers.append(Conv2d(kernel_size=7, output_channels=4096, name='conv_6_1', net_id = net_id))
+            layers.append(Conv2d(kernel_size=1, output_channels=4096, name='conv_6_2', net_id = net_id))
+            #layers.append(Conv2d(kernel_size=1, strides=[1, 1, 1, 1], output_channels=1000, name='conv_6_3'))         self.inputs = tf.placeholder(tf.float32, [None, self.IMAGE_HEIGHT, self.IMAGE_WIDTH, self.IMAGE_CHANNELS],
                                      name='inputs')
         self.targets = tf.placeholder(tf.float32, [None, self.IMAGE_HEIGHT, self.IMAGE_WIDTH, 1], name='targets')
         self.is_training = tf.placeholder_with_default(False, [], name='is_training')
@@ -182,7 +180,7 @@ class Network:
 
         # MSE loss - change to log loss
         
-        self.cost = tf.losses.log_loss(self.targets,self.segmentation_result)
+        self.cost = tf.nn.weighted_cross_entropy_with_logits(self.targets, net, pos_weight=9)
         #= tf.sqrt(tf.reduce_mean(tf.square(self.segmentation_result - self.targets)))
         self.train_op = tf.train.AdamOptimizer().minimize(self.cost)
         with tf.name_scope('accuracy'):
@@ -236,14 +234,14 @@ class Dataset:
                 # test_image = np.multiply(test_image, 1.0 / 255)
 
                 target1_image = np.array(skio.imread(target1_image))
-                target1_image = cv2.threshold(target1_image, 127, 1, cv2.THRESH_BINARY)[1]
+                target1_image = cv2.threshold(target1_image, 127, 1, cv2.THRESH_BINARY_INV)[1]
                 
                 targets.append(target1_image)
 
             elif os.path.exists(target2_image):
                 
                 target2_image = np.array(skio.imread(target2_image))[:,:,3]
-                target2_image = cv2.threshold(target2_image, 127, 1, cv2.THRESH_BINARY)[1]
+                target2_image = cv2.threshold(target2_image, 127, 1, cv2.THRESH_BINARY_INV)[1]
                 
                 targets.append(target2_image)
             else:
