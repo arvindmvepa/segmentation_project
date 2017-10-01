@@ -429,15 +429,15 @@ def train(train_indices, validation_indices, run_id):
                     batch_inputs = np.reshape(batch_inputs, (dataset.batch_size, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1))
                     batch_targets = np.reshape(batch_targets, (dataset.batch_size, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1))
 
-                    #batch_inputs = augmentation_seq_deterministic.augment_images(batch_inputs)
+                    batch_inputs = augmentation_seq_deterministic.augment_images(batch_inputs)
                     batch_inputs = np.multiply(batch_inputs, 1.0 / 255)
 
-                    #batch_targets = augmentation_seq_deterministic.augment_images(batch_targets, hooks=hooks_binmasks)
+                    batch_targets = augmentation_seq_deterministic.augment_images(batch_targets, hooks=hooks_binmasks)
                     #with tf.device('/gpu:0'):
                     cost, _ = sess.run([network.cost, network.train_op], feed_dict={network.inputs: batch_inputs, network.targets: batch_targets, network.is_training: True})
                     end = time.time()
                     print('{}/{}, epoch: {}, cost: {}, batch time: {}'.format(batch_num, n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost, end - start))
-                    if batch_num % 1000 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
+                    if batch_num % 10 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
                         test_accuracy = 0.0
                         test_accuracy1 = 0.0
 
