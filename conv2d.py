@@ -9,7 +9,7 @@ class Conv2d(Layer):
     # global things...
     layer_index = 0
 
-    def __init__(self, kernel_size, strides, output_channels, name, net_id, dilation = 1):
+    def __init__(self, kernel_size, output_channels, name, net_id, dilation = 1):
         self.kernel_size = kernel_size
         self.dilation = dilation
         self.output_channels = output_channels
