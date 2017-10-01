@@ -102,7 +102,7 @@ def modify_validation_files(file_indices, min_dist):
         new_clusters_centers = new_clusters.cluster_centers_
         new_clusters_distance = [dist[2] for dist in new_clusters_centers]
         max_dist_cluster_label = np.argmax(new_clusters_distance)
-        if min(new_clusters_distance > min_dist:    
+        if min(new_clusters_distance) > min_dist:    
             i = 0
             j = 0
 
