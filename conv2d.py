@@ -9,9 +9,9 @@ class Conv2d(Layer):
     # global things...
     layer_index = 0
 
-    def __init__(self, kernel_size, strides, output_channels, name, net_id):
+    def __init__(self, kernel_size, strides, output_channels, dilation = 1, name, net_id):
         self.kernel_size = kernel_size
-        self.strides = strides
+        self.dilation = dilation
         self.output_channels = output_channels
         self.name = name
         self.net_id = net_id
@@ -34,7 +34,7 @@ class Conv2d(Layer):
         #self.encoder_matrix = W
         Conv2d.layer_index += 1
 
-        output = tf.nn.conv2d(input, W, strides=self.strides, padding='SAME')
+        output = tf.nn.atrous_conv2d(input, W, rate=self.dilation, padding='SAME')
 
         # print('convd2: output_shape: {}'.format(utils.get_incoming_shape(output)))
 
@@ -60,7 +60,7 @@ class Conv2d(Layer):
         output = tf.nn.conv2d_transpose(
             input, W,
             tf.stack([tf.shape(input)[0], self.input_shape[1], self.input_shape[2], self.input_shape[3]]),
-            strides=self.strides, padding='SAME')
+            strides=1, padding='SAME')
 
         Conv2d.layer_index += 1
         output.set_shape([None, self.input_shape[1], self.input_shape[2], self.input_shape[3]])
