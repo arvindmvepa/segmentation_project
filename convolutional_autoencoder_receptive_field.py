@@ -437,7 +437,7 @@ def train(train_indices, validation_indices, run_id):
                     cost, _ = sess.run([network.cost, network.train_op], feed_dict={network.inputs: batch_inputs, network.targets: batch_targets, network.is_training: True})
                     end = time.time()
                     print('{}/{}, epoch: {}, cost: {}, batch time: {}'.format(batch_num, n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost, end - start))
-                    if batch_num % 10 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
+                    if batch_num % 1000 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
                         test_accuracy = 0.0
                         test_accuracy1 = 0.0
 
