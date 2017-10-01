@@ -181,7 +181,8 @@ class Network:
 
         # MSE loss - change to log loss
         
-        self.cost = tf.nn.weighted_cross_entropy_with_logits(self.targets, net, pos_weight=9)
+        self.cost = tf.losses.log_loss(self.targets,self.segmentation_result)
+        #self.cost = tf.nn.weighted_cross_entropy_with_logits(self.targets, net, pos_weight=9)
         #= tf.sqrt(tf.reduce_mean(tf.square(self.segmentation_result - self.targets)))
         self.train_op = tf.train.AdamOptimizer().minimize(self.cost)
         with tf.name_scope('accuracy'):
