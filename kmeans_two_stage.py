@@ -20,17 +20,22 @@ import os
 import glob
 
 from shutil import copyfile
+import random
+from sklearn.model_selection import KFold, cross_val_score
 
 #numpy.set_printoptions(threshold=numpy.nan)
 
 
 #min distance is incorrect - fix later!!!!!!
+#also decision on replacement color, white or the mean in the image
 
 def test_clustering():
+    x = random.randint(1,100)                                     
+    k_fold = KFold(n_splits=3, shuffle=True, random_state=x)
     count = 0
     for train_indices, validation_indices in k_fold.split(os.listdir(os.path.join('vessels', 'inputs'))):
         results = two_stage_kmeans(train_indices)
-        new_results = modify_validation_files(validation_indicies, results[0])
+        new_results = modify_validation_files(validation_indices, results[0])
         count += 1
         if count > 0:
             break
@@ -41,6 +46,13 @@ def modify_validation_files(file_indices, min_dist):
 
     for f in files:
         os.remove(f) 
+    files_list = os.listdir(os.path.join('vessels', 'inputs'))
+
+    noise_removed = 0
+    segmented_noise_overall = 0
+    net_noise_removed = 0
+    segmentation_total = 0
+    total_modified_images = 0
     
     for file_index in file_indices:
         
@@ -48,7 +60,7 @@ def modify_validation_files(file_indices, min_dist):
         new_path = os.path.join('vessels', 'val_transformed', file)
 
         input_image = os.path.join('vessels', 'inputs', file)
-        copyFile(input_image, new_path)
+        copyfile(input_image, new_path)
 
         file_loc = input_image
         min_dist = 1024*math.pow(2,.5)
@@ -122,7 +134,7 @@ def modify_validation_files(file_indices, min_dist):
                             max_dist_cluster_total += 1
                             if seg_imarray[x,y] > 127:
                                 segmented_noise_total += 1
-                        imarray[x,y]=255 #or mean
+                            imarray[x,y]=255 #or mean
                         new_image[x,y]=int((cur_label+1)*scale)
                         j+=1
                     else:
@@ -135,7 +147,7 @@ def modify_validation_files(file_indices, min_dist):
             noise_removed += max_dist_cluster_total
             segmented_noise_overall += segmented_noise_total
             net_noise_removed += max_dist_cluster_total-segmented_noise_total
-            io.imsave("vessels/train_inputs_transformed/"+file, imarray)
+            io.imsave("vessels/train_inputs_transformed/m"+file, imarray)
             total_modified_images += 1
 
     return (net_noise_removed, noise_removed, segmented_noise_overall, total_modified_images)
@@ -157,14 +169,14 @@ def two_stage_kmeans(file_indices):
     image_map = dict()
     segmentation_total = 0
     total_modified_images = 0
-    
+    files_list = os.listdir(os.path.join('vessels', 'inputs'))
     for file_index in file_indices:
         
         file = files_list[file_index]
         new_path = os.path.join('vessels', 'train_inputs_transformed', file)
 
         input_image = os.path.join('vessels', 'inputs', file)
-        copyFile(input_image, new_path)
+        copyfile(input_image, new_path)
         
         target1_image = os.path.join('vessels', 'targets1', file)
         target2_image = os.path.join('vessels', 'targets2', file)
@@ -225,10 +237,9 @@ def two_stage_kmeans(file_indices):
         new_clusters_centers = new_clusters.cluster_centers_
         new_clusters_distance = [dist[2] for dist in new_clusters_centers]
         max_dist_cluster_label = np.argmax(new_clusters_distance)
-
         if os.path.exists(target1_image):
             seg_im = io.imread(target1_image)
-            seg_imarry = numpy.array(seg_im)
+            seg_imarray = numpy.array(seg_im)
         elif os.path.exists(target2_image):
             seg_im = io.imread(target2_image)
             seg_imarray = numpy.array(seg_im)[:,:,3]
@@ -239,6 +250,8 @@ def two_stage_kmeans(file_indices):
 
         segmented_image_total = 0
         segmented_noise_total = 0
+
+        mean_pixel = np.mean(imarray)
 
         for x in range(imarray.shape[0]):
             for y in range(imarray.shape[1]):
@@ -251,7 +264,7 @@ def two_stage_kmeans(file_indices):
                         max_dist_cluster_total += 1
                         if seg_imarray[x,y] > 127:
                             segmented_noise_total += 1
-                    imarray[x,y]=255 #or mean
+                        imarray[x,y]=255 #or mean
                     new_image[x,y]=int((cur_label+1)*scale)
                     j+=1
                 else:
@@ -264,11 +277,11 @@ def two_stage_kmeans(file_indices):
             noise_removed += max_dist_cluster_total
             segmented_noise_overall += segmented_noise_total
             net_noise_removed += max_dist_cluster_total-segmented_noise_total
-            io.imsave("vessels/train_inputs_transformed/"+file, imarray)
+            io.imsave("vessels/train_inputs_transformed/m"+file, imarray)
             total_modified_images += 1
             #wrong way to do it, fix later
             if min(new_clusters_distance) < min_dist:
                 min_dist = min(new_clusters_distance)
-    return (min_dist, net_noise_removed, noise_removed, segmented_noise_overall, total_modified_images, segmentation_total/len(images))
+    return (min_dist, net_noise_removed, noise_removed, segmented_noise_overall, total_modified_images, segmentation_total/len(file_indices))
 
 test_clustering()
