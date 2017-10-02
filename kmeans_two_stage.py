@@ -119,7 +119,7 @@ def modify_validation_files(file_indices, min_dist):
         new_clusters_distance = [dist[2] for dist in new_clusters_centers]
         max_dist_cluster_label = np.argmax(new_clusters_distance)
         
-        if max(new_clusters_distance) < min_dist:
+        if max(new_clusters_distance) > min_dist:
 
             if os.path.exists(target1_image):
                 seg_im = io.imread(target1_image)
