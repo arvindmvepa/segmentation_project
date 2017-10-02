@@ -465,7 +465,7 @@ def train(train_indices, validation_indices, run_id):
                                 for c in tests:
                                     test_accuracy1 = 0.0
                                     crf_prediction_array = np.zeros((len(test_inputs), 1024, 1024))
-                                    for i in range(len(test_input)):
+                                    for i in range(len(test_inputs)):
                                         results = prediction_array[i]
                                         new_results = np.zeros((2,1024,1024))
                                         new_results[0] = results
