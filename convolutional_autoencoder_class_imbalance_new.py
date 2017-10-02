@@ -24,7 +24,6 @@ import datetime
 import io
 from PIL import Image
 from skimage import io as skio
-import pydensecrf.densecrf as dcrf
 from sklearn.model_selection import KFold, cross_val_score
 import random
 from sklearn.metrics import precision_recall_fscore_support
