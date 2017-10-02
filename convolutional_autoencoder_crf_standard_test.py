@@ -430,8 +430,7 @@ def train(train_indices, validation_indices, run_id):
                     batch_targets = np.reshape(batch_targets, (dataset.batch_size, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1))
 
                     batch_inputs = augmentation_seq_deterministic.augment_images(batch_inputs)
-                    batch_inputs = np.multiply(batch
-                                               _inputs, 1.0 / 255)
+                    batch_inputs = np.multiply(batch_inputs, 1.0 / 255)
 
                     batch_targets = augmentation_seq_deterministic.augment_images(batch_targets, hooks=hooks_binmasks)
                     #with tf.device('/gpu:0'):
