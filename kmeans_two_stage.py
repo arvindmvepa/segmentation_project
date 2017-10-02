@@ -84,6 +84,7 @@ def modify_validation_files(file_indices, min_dist):
         centers = db.cluster_centers_
 
         dark_cluster_label = np.argmin(centers)
+        replacement_color = np.max(centers)
 
         new_image = np.zeros((imarray.shape[0], imarray.shape[1]), dtype=np.int8)
 
@@ -148,7 +149,7 @@ def modify_validation_files(file_indices, min_dist):
                             max_dist_cluster_total += 1
                             if seg_imarray[x,y] > 127:
                                 segmented_noise_total += 1
-                            imarray[x,y]=mean_pixel #or mean
+                            imarray[x,y]=replacement_color
                         new_image[x,y]=int((cur_label+1)*scale)
                         j+=1
                     else:
@@ -217,6 +218,8 @@ def two_stage_kmeans(file_indices):
         centers = db.cluster_centers_
 
         dark_cluster_label = np.argmin(centers)
+        replacement_color = np.max(centers)
+        
         print(dark_cluster_label)
         print(n_clusters_)
         print(centers)
@@ -281,7 +284,7 @@ def two_stage_kmeans(file_indices):
                         max_dist_cluster_total += 1
                         if seg_imarray[x,y] > 127:
                             segmented_noise_total += 1
-                        imarray[x,y]=mean_pixel #or mean
+                        imarray[x,y]=replacement_color
                         alt_image[x,y] = 255
                     new_image[x,y]=int((cur_label+1)*scale)
                     j+=1
