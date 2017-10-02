@@ -406,6 +406,7 @@ def train(train_indices, validation_indices, run_id):
 
             test_accuracies = []
             test_accuracies1 = []
+            test_accuracies2 = []
             # Fit all training data
             n_epochs = 5000
             global_start = time.time()
@@ -440,7 +441,8 @@ def train(train_indices, validation_indices, run_id):
                     if batch_num % 100 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
                         test_accuracy = 0.0
                         test_accuracy1 = 0.0
-
+                        test_accuracy2 = 0.0
+                        
                         target_array = np.zeros((len(test_inputs), 1024, 1024))
                         prediction_array = np.zeros((len(test_inputs), 1024, 1024))
                         crf_prediction_array = np.zeros((len(test_inputs), 1024, 1024))
@@ -469,7 +471,9 @@ def train(train_indices, validation_indices, run_id):
                                 for b in test2:
                                     for c in test3:
                                         test_accuracy1 = 0.0
+                                        test_accuracy2 = 0.0
                                         crf_prediction_array = np.zeros((len(test_inputs), 1024, 1024))
+                                        opp_crf_prediction_array = np.zeros((len(test_inputs), 1024, 1024))
                                         for i in range(len(test_inputs)):
                                             results = prediction_array[i]
                                             new_results = np.zeros((2,1024,1024))
@@ -477,12 +481,21 @@ def train(train_indices, validation_indices, run_id):
                                             new_results[1] = 1-results
 
                                             crf_result = post_process_crf(inputs, new_results, a, b, c)
+                                            opp_crf_result = 1-crf_result
+
                                             argmax_probs = np.round(crf_result)
                                             crf_prediction_array[i] = argmax_probs
                                             correct_pred = np.sum(argmax_probs == targets)
 
+                                            opp_argmax_probs = np.round(opp_crf_result)
+                                            opp_crf_prediction_array[i] = opp_argmax_probs
+                                            opp_correct_pred = np.sum(opp_argmax_probs == targets)
+
                                             acc1 = correct_pred/(1024*1024)
                                             test_accuracy1 += acc1
+                                            
+                                            acc2 = opp_correct_pred/(1024*1024)
+                                            test_accuracy2 += acc2
 
                                         f2 = open('out2.txt','a')
 
@@ -508,6 +521,31 @@ def train(train_indices, validation_indices, run_id):
                                         test_accuracies1.append((test_accuracy1, batch_num))
                                         max_acc = max(test_accuracies1)
                                         f2.write('Step {}, hyperparameters a: {} b: {} c: {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, specificity {}, max acc {} {} \n'.format(batch_num, a, b, c, test_accuracy1, dice_coe_val.eval(), hard_dice_coe_val.eval(), iou_coe_val.eval(), recall, precision, fbeta_score, auc, specificity, max_acc[0], max_acc[1]))
+
+
+                                        prediction_tensor = tf.convert_to_tensor(opp_crf_prediction_array, dtype=tf.float32)
+                                        prediction_flat = opp_crf_prediction_array.flatten()
+
+                                        auc = roc_auc_score(target_flat, prediction_flat)
+
+                                        prediction_flat = np.round(prediction_flat)
+                                        target_flat = np.round(target_flat)
+
+                                        dice_coe_val = dice_coe(prediction_tensor, target_tensor)
+                                        hard_dice_coe_val = dice_hard_coe(prediction_tensor, target_tensor)
+                                        iou_coe_val = iou_coe(prediction_tensor, target_tensor)
+
+                                        (precision, recall, fbeta_score, _) = precision_recall_fscore_support(target_flat, prediction_flat, average='binary')
+
+                                        tn, fp, fn, tp = confusion_matrix(target_flat, prediction_flat).ravel()
+                                        specificity = tn / (tn+fp)
+                                        sess.run(tf.local_variables_initializer())
+
+                                        test_accuracy2 = test_accuracy2/len(test_inputs)
+                                        test_accuracies2.append((test_accuracy2, batch_num))
+                                        max_acc = max(test_accuracies2)
+                                        f2.write('Step {}, hyperparameters a: {} b: {} c: {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, specificity {}, max acc {} {} \n'.format(batch_num, a, b, c, test_accuracy2, dice_coe_val.eval(), hard_dice_coe_val.eval(), iou_coe_val.eval(), recall, precision, fbeta_score, auc, specificity, max_acc[0], max_acc[1]))
+                                        
                                         f2.close()
 
                         prediction_tensor = tf.convert_to_tensor(prediction_array, dtype=tf.float32)
