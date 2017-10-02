@@ -83,7 +83,7 @@ def two_stage_kmeans(file_indices):
         max_dist = 0
         
         im = skio.imread(file_loc)
-        imarray = numpy.array(im)
+        imarray = np.array(im)
         im_features = np.zeros((imarray.shape[0]*imarray.shape[1],1))
         i=0
         for x in range(imarray.shape[0]):
@@ -139,10 +139,10 @@ def two_stage_kmeans(file_indices):
         max_dist_cluster_label = np.argmax(new_clusters_distance)
         if os.path.exists(target1_image):
             seg_im = skio.imread(target1_image)
-            seg_imarray = numpy.array(seg_im)
+            seg_imarray = np.array(seg_im)
         elif os.path.exists(target2_image):
             seg_im = skio.imread(target2_image)
-            seg_imarray = numpy.array(seg_im)[:,:,3]
+            seg_imarray = np.array(seg_im)[:,:,3]
         i = 0
         j = 0
 
@@ -225,7 +225,7 @@ def modify_validation_files(file_indices, min_dist):
         target2_image = os.path.join('vessels', 'targets2', file)
 
         im = skio.imread(file_loc)
-        imarray = numpy.array(im)
+        imarray = np.array(im)
         im_features = np.zeros((imarray.shape[0]*imarray.shape[1],1))
         i=0
         for x in range(imarray.shape[0]):
@@ -279,10 +279,10 @@ def modify_validation_files(file_indices, min_dist):
 
             if os.path.exists(target1_image):
                 seg_im = skio.imread(target1_image)
-                seg_imarray = numpy.array(seg_im)
+                seg_imarray = np.array(seg_im)
             elif os.path.exists(target2_image):
                 seg_im = skio.imread(target2_image)
-                seg_imarray = numpy.array(seg_im)[:,:,3]
+                seg_imarray = np.array(seg_im)[:,:,3]
 
             mean_pixel = np.mean(imarray)
 
