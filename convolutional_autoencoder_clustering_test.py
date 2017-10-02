@@ -82,7 +82,7 @@ def two_stage_kmeans(file_indices):
         file_loc = input_image
         max_dist = 0
         
-        im = io.imread(file_loc)
+        im = skio.imread(file_loc)
         imarray = numpy.array(im)
         im_features = np.zeros((imarray.shape[0]*imarray.shape[1],1))
         i=0
@@ -138,10 +138,10 @@ def two_stage_kmeans(file_indices):
         new_clusters_distance = [dist[2] for dist in new_clusters_centers]
         max_dist_cluster_label = np.argmax(new_clusters_distance)
         if os.path.exists(target1_image):
-            seg_im = io.imread(target1_image)
+            seg_im = skio.imread(target1_image)
             seg_imarray = numpy.array(seg_im)
         elif os.path.exists(target2_image):
-            seg_im = io.imread(target2_image)
+            seg_im = skio.imread(target2_image)
             seg_imarray = numpy.array(seg_im)[:,:,3]
         i = 0
         j = 0
@@ -179,7 +179,7 @@ def two_stage_kmeans(file_indices):
             noise_removed += max_dist_cluster_total
             segmented_noise_overall += segmented_noise_total
             net_noise_removed += max_dist_cluster_total-segmented_noise_total
-            io.imsave("vessels/train_inputs_transformed/"+file, imarray)
+            skio.imsave("vessels/train_inputs_transformed/"+file, imarray)
             total_modified_images += 1
             min_dist_cand.append(max(new_clusters_distance))
         else:
@@ -224,7 +224,7 @@ def modify_validation_files(file_indices, min_dist):
         target1_image = os.path.join('vessels', 'targets1', file)
         target2_image = os.path.join('vessels', 'targets2', file)
 
-        im = io.imread(file_loc)
+        im = skio.imread(file_loc)
         imarray = numpy.array(im)
         im_features = np.zeros((imarray.shape[0]*imarray.shape[1],1))
         i=0
@@ -278,10 +278,10 @@ def modify_validation_files(file_indices, min_dist):
         if max(new_clusters_distance) > min_dist:
 
             if os.path.exists(target1_image):
-                seg_im = io.imread(target1_image)
+                seg_im = skio.imread(target1_image)
                 seg_imarray = numpy.array(seg_im)
             elif os.path.exists(target2_image):
-                seg_im = io.imread(target2_image)
+                seg_im = skio.imread(target2_image)
                 seg_imarray = numpy.array(seg_im)[:,:,3]
 
             mean_pixel = np.mean(imarray)
@@ -318,7 +318,7 @@ def modify_validation_files(file_indices, min_dist):
             noise_removed += max_dist_cluster_total
             segmented_noise_overall += segmented_noise_total
             net_noise_removed += max_dist_cluster_total-segmented_noise_total
-            io.imsave("vessels/val_transformed/"+file, imarray)
+            skio.imsave("vessels/val_transformed/"+file, imarray)
             total_modified_images += 1
 
     return (net_noise_removed, noise_removed, segmented_noise_overall, total_modified_images)
