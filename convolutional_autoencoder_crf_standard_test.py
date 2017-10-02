@@ -430,7 +430,8 @@ def train(train_indices, validation_indices, run_id):
                     batch_targets = np.reshape(batch_targets, (dataset.batch_size, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1))
 
                     batch_inputs = augmentation_seq_deterministic.augment_images(batch_inputs)
-                    batch_inputs = np.multiply(batch_inputs, 1.0 / 255)
+                    batch_inputs = np.multiply(batch
+                                               _inputs, 1.0 / 255)
 
                     batch_targets = augmentation_seq_deterministic.augment_images(batch_targets, hooks=hooks_binmasks)
                     #with tf.device('/gpu:0'):
@@ -445,9 +446,6 @@ def train(train_indices, validation_indices, run_id):
                         prediction_array = np.zeros((len(test_inputs), 1024, 1024))
                         crf_prediction_array = np.zeros((len(test_inputs), 1024, 1024))
                         
-                        target_tensor = tf.convert_to_tensor(target_array, dtype=tf.float32)
-                        target_flat = target_array.flatten()
-
                         for i in range(len(test_inputs)):
                             inputs, results, targets, _, acc = sess.run([network.inputs, network.segmentation_result, network.targets, network.summaries, network.accuracy], feed_dict={network.inputs: test_inputs[i:(i+1)], network.targets: test_targets[i:(i+1)], network.is_training: False})
                             test_accuracy += acc
@@ -458,6 +456,9 @@ def train(train_indices, validation_indices, run_id):
 
                             target_array[i]=targets
                             prediction_array[i]=results
+
+                        target_tensor = tf.convert_to_tensor(target_array, dtype=tf.float32)
+                        target_flat = target_array.flatten()
 
                         tests = [.01,.1, 3, 10]
                         for a in tests:
