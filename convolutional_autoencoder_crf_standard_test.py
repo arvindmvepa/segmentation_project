@@ -586,27 +586,6 @@ def train(train_indices, validation_indices, run_id):
                         f1.close() 
                         f2.close()
 
-def test_crf():
-    tests = [.01,.1, 3, 10]
-    
-    for a in tests:
-        for b in tests:
-            for c in tests:
-                
-    #for input_t, prediction_it in zip(inputs, predictions):
-    #also set kernel weights
-    unary = softmax_to_unary(prediction_it)
-    unary = np.ascontiguousarray(unary)
-    d = dcrf.DenseCRF(1024*1024, 2)
-    d.setUnaryEnergy(unary)
-    feats = create_pairwise_gaussian(sdims=(3, 3), shape=(1024,1024))
-    d.addPairwiseEnergy(feats, compat=3, kernel=dcrf.DIAG_KERNEL, normalization=dcrf.NORMALIZE_SYMMETRIC)
-    feats = create_pairwise_bilateral(sdims=(10, 10), schan=(.01), img=input_it, chdim=-1)
-    d.addPairwiseEnergy(feats, compat=10, kernel=dcrf.DIAG_KERNEL, normalization=dcrf.NORMALIZE_SYMMETRIC)
-    Q = d.inference(10)
-    res = np.argmax(Q, axis=0).reshape((1024, 1024))
-    return res
-
 def post_process_crf(input_it, prediction_it, a, b, c):
     #for input_t, prediction_it in zip(inputs, predictions):
     #also set kernel weights
