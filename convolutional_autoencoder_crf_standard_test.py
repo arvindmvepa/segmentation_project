@@ -500,7 +500,7 @@ def train(train_indices, validation_indices, run_id):
                                     sess.run(tf.local_variables_initializer())
 
                                     test_accuracy1 = test_accuracy1/len(test_inputs)
-                                    test_accuracies1.append(test_accuracy1)
+                                    test_accuracies1.append((test_accuracy1, batch_num))
                                     max_acc = max(test_accuracies1)
                                     f2.write('Step {}, hyperparameters a: {} b: {} c: {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, specificity {}, max acc {} {} \n'.format(batch_num, a, b, c, test_accuracy1, dice_coe_val.eval(), hard_dice_coe_val.eval(), iou_coe_val.eval(), recall, precision, fbeta_score, auc, specificity, max_acc[0], max_acc[1]))
                                     f2.close()
@@ -548,7 +548,6 @@ def train(train_indices, validation_indices, run_id):
                         f2 = open('out2.txt','a')
 
                         test_accuracies.append((test_accuracy, batch_num))
-                        test_accuracies1.append((test_accuracy1, batch_num))
                         print("Accuracies in time: ", [test_accuracies[x][0] for x in range(len(test_accuracies))])
                         print(test_accuracies)
                         max_acc = max(test_accuracies)
