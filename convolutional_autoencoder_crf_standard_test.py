@@ -465,9 +465,9 @@ def train(train_indices, validation_indices, run_id):
                             #test1 = [3,10]
                             #test2 = [3,10]
                             #test3 = [.01,.1]
-                            for a in tests:
-                                for b in tests:
-                                    for c in tests:
+                            for a in test1:
+                                for b in test2:
+                                    for c in test3:
                                         test_accuracy1 = 0.0
                                         crf_prediction_array = np.zeros((len(test_inputs), 1024, 1024))
                                         for i in range(len(test_inputs)):
