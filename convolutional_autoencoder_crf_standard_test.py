@@ -413,14 +413,14 @@ def train(train_indices, validation_indices, run_id):
             acc = 0.0
             batch_num = 0
             for epoch_i in range(n_epochs):
-                if batch_num > 100:
+                if batch_num > 5000:
                     epoch_i = 0
                     dataset.reset_batch_pointer()
                     break
                 dataset.reset_batch_pointer()
                 for batch_i in range(dataset.num_batches_in_epoch()):
                     batch_num = epoch_i * dataset.num_batches_in_epoch() + batch_i + 1
-                    if batch_num > 100:
+                    if batch_num > 5000:
                         break
 
                     augmentation_seq_deterministic = augmentation_seq.to_deterministic()
@@ -434,11 +434,10 @@ def train(train_indices, validation_indices, run_id):
                     batch_inputs = np.multiply(batch_inputs, 1.0 / 255)
 
                     batch_targets = augmentation_seq_deterministic.augment_images(batch_targets, hooks=hooks_binmasks)
-                    #with tf.device('/gpu:0'):
                     cost, _ = sess.run([network.cost, network.train_op], feed_dict={network.inputs: batch_inputs, network.targets: batch_targets, network.is_training: True})
                     end = time.time()
                     print('{}/{}, epoch: {}, cost: {}, batch time: {}'.format(batch_num, n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost, end - start))
-                    if batch_num % 100 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
+                    if batch_num % 1000 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
                         test_accuracy = 0.0
                         test_accuracy1 = 0.0
                         test_accuracy2 = 0.0
@@ -460,13 +459,10 @@ def train(train_indices, validation_indices, run_id):
 
                         target_tensor = tf.convert_to_tensor(target_array, dtype=tf.float32)
                         target_flat = target_array.flatten()
-                        if batch_num % 100 == 0:
-                            test1 = [3]
-                            test2 = [10]
-                            test3 = [.01]
-                            #test1 = [3,10]
-                            #test2 = [3,10]
-                            #test3 = [.01,.1]
+                        if batch_num % 5000 == 0:
+                            test1 = [3,10]
+                            test2 = [3,10]
+                            test3 = [.01,.1]
                             for a in test1:
                                 for b in test2:
                                     for c in test3:
