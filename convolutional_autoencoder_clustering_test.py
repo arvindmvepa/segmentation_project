@@ -33,6 +33,7 @@ from sklearn.metrics import roc_auc_score
 from sklearn.metrics import confusion_matrix
 import os
 import glob
+from sklearn.cluster import KMeans
 
 from shutil import copyfile
 
