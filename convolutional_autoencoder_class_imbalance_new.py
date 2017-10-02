@@ -27,7 +27,6 @@ from skimage import io as skio
 import pydensecrf.densecrf as dcrf
 from sklearn.model_selection import KFold, cross_val_score
 import random
-from pydensecrf.utils import compute_unary, create_pairwise_bilateral, create_pairwise_gaussian, softmax_to_unary
 from sklearn.metrics import precision_recall_fscore_support
 from sklearn.metrics import roc_auc_score
 from sklearn.metrics import confusion_matrix
@@ -545,21 +544,6 @@ def train(train_indices, validation_indices, run_id):
                         f1.close() 
                         f2.close()
 
-def post_process_crf(input_it, prediction_it):
-    #for input_t, prediction_it in zip(inputs, predictions):
-    #also set kernel weights
-    unary = softmax_to_unary(prediction_it)
-    unary = np.ascontiguousarray(unary)
-    d = dcrf.DenseCRF(1024*1024, 2)
-    d.setUnaryEnergy(unary)
-    feats = create_pairwise_gaussian(sdims=(3, 3), shape=(1024,1024))
-    d.addPairwiseEnergy(feats, compat=3, kernel=dcrf.DIAG_KERNEL, normalization=dcrf.NORMALIZE_SYMMETRIC)
-    feats = create_pairwise_bilateral(sdims=(10, 10), schan=(.01), img=input_it, chdim=-1)
-    d.addPairwiseEnergy(feats, compat=10, kernel=dcrf.DIAG_KERNEL, normalization=dcrf.NORMALIZE_SYMMETRIC)
-    Q = d.inference(10)
-    res = np.argmax(Q, axis=0).reshape((1024, 1024))
-    return (1-res)
-    
 if __name__ == '__main__':
     x = random.randint(1,100)                                     
     k_fold = KFold(n_splits=3, shuffle=True, random_state=x)
