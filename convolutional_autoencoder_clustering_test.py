@@ -34,6 +34,7 @@ from sklearn.metrics import confusion_matrix
 import os
 import glob
 from sklearn.cluster import KMeans
+import copy
 
 from shutil import copyfile
 
