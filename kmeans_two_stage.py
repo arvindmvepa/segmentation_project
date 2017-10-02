@@ -114,7 +114,11 @@ def modify_validation_files(file_indices, min_dist):
         new_clusters_centers = new_clusters.cluster_centers_
         new_clusters_distance = [dist[2] for dist in new_clusters_centers]
         max_dist_cluster_label = np.argmax(new_clusters_distance)
+        
         if min(new_clusters_distance) > min_dist:    
+
+            mean_pixel = np.mean(imarray)
+
             i = 0
             j = 0
 
@@ -134,7 +138,7 @@ def modify_validation_files(file_indices, min_dist):
                             max_dist_cluster_total += 1
                             if seg_imarray[x,y] > 127:
                                 segmented_noise_total += 1
-                            imarray[x,y]=255 #or mean
+                            imarray[x,y]=mean_pixel #or mean
                         new_image[x,y]=int((cur_label+1)*scale)
                         j+=1
                     else:
@@ -264,7 +268,7 @@ def two_stage_kmeans(file_indices):
                         max_dist_cluster_total += 1
                         if seg_imarray[x,y] > 127:
                             segmented_noise_total += 1
-                        imarray[x,y]=255 #or mean
+                        imarray[x,y]=mean_pixel #or mean
                     new_image[x,y]=int((cur_label+1)*scale)
                     j+=1
                 else:
