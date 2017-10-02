@@ -570,7 +570,7 @@ def post_process_crf(input_it, prediction_it, a, b, c):
     d.addPairwiseEnergy(feats, compat=10, kernel=dcrf.DIAG_KERNEL, normalization=dcrf.NORMALIZE_SYMMETRIC)
     Q = d.inference(10)
     res = np.argmax(Q, axis=0).reshape((1024, 1024))
-    return res
+    return 1-res
     
 if __name__ == '__main__':
     x = random.randint(1,100)                                     
