@@ -843,7 +843,7 @@ if __name__ == '__main__':
         f2.write('Train Indices {} Validation Indices {} \n'.format(train_indices, validation_indices))
         results = two_stage_kmeans(train_indices)
         f1.write("cluster train function return {} \n".format(results))
-        addtl_results = modify_validation_files(validation_indicies, results[0])
+        addtl_results = modify_validation_files(validation_indices, results[0])
         f1.write("cluster validation function return {} \n".format(addtl_results))
         f1.close()
         f2.close()
