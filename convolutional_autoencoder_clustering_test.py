@@ -200,11 +200,8 @@ def two_stage_kmeans(file_indices):
     return (min_dist, net_noise_removed, noise_removed, segmented_noise_overall, total_modified_images, segmentation_total/len(file_indices))
 
 def modify_validation_files(file_indices, min_dist):
-    path = os.path.join('vessels', 'val_transformed')
-    files = glob.glob(path+"/*")
+    path = os.path.join('vessels', 'train_inputs_transformed')
 
-    for f in files:
-        os.remove(f) 
     files_list = os.listdir(os.path.join('vessels', 'inputs'))
 
     noise_removed = 0
@@ -216,7 +213,7 @@ def modify_validation_files(file_indices, min_dist):
     for file_index in file_indices:
         
         file = files_list[file_index]
-        new_path = os.path.join('vessels', 'val_transformed', file)
+        new_path = os.path.join('vessels', 'train_inputs_transformed', file)
 
         input_image = os.path.join('vessels', 'inputs', file)
         copyfile(input_image, new_path)
@@ -320,7 +317,7 @@ def modify_validation_files(file_indices, min_dist):
             noise_removed += max_dist_cluster_total
             segmented_noise_overall += segmented_noise_total
             net_noise_removed += max_dist_cluster_total-segmented_noise_total
-            skio.imsave("vessels/val_transformed/"+file, imarray)
+            skio.imsave("vessels/train_inputs_transformed/"+file, imarray)
             total_modified_images += 1
 
     return (net_noise_removed, noise_removed, segmented_noise_overall, total_modified_images)
@@ -500,7 +497,7 @@ class Dataset:
 
         for file_index in file_indices:
             file = files_list[file_index]
-            input_image = os.path.join(folder, 'inputs', file)
+            input_image = os.path.join(folder, 'train_inputs_transformed', file)
             target1_image = os.path.join(folder, 'targets1', file)
             target2_image = os.path.join(folder, 'targets2', file)
 
@@ -656,8 +653,8 @@ def train(train_indices, validation_indices, run_id):
     # create directory for saving models
     os.makedirs(os.path.join('save', network.description+str(count), timestamp))
 
-    train_inputs, train_targets = dataset.file_paths_to_images(folder, train_indices, os.listdir(os.path.join(folder, 'inputs')))
-    test_inputs, test_targets = dataset.file_paths_to_images(folder, validation_indices, os.listdir(os.path.join(folder, 'inputs')), True)
+    train_inputs, train_targets = dataset.file_paths_to_images(folder, train_indices, os.listdir(os.path.join(folder, 'train_inputs_transformed')))
+    test_inputs, test_targets = dataset.file_paths_to_images(folder, validation_indices, os.listdir(os.path.join(folder, 'train_inputs_transformed')), True)
 
     dataset.train_inputs = train_inputs
     dataset.train_targets = train_targets
