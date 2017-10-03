@@ -377,9 +377,6 @@ def train(train_indices, validation_indices, run_id):
     folder = dataset.folder
     count = 0
 
-    # create directory for saving models
-    os.makedirs(os.path.join('save', network.description+str(count), timestamp))
-
     train_inputs, train_targets = dataset.file_paths_to_images(folder, train_indices, os.listdir(os.path.join(folder, 'inputs')))
     test_inputs, test_targets = dataset.file_paths_to_images(folder, validation_indices, os.listdir(os.path.join(folder, 'inputs')), True)
     pos_weight = find_positive_weight(train_targets)
@@ -388,6 +385,10 @@ def train(train_indices, validation_indices, run_id):
         #with tf.device('/cpu:0'):
         network = Network(net_id = count, weight=pos_weight)
     count +=1
+
+
+    # create directory for saving models
+    os.makedirs(os.path.join('save', network.description+str(count), timestamp))
 
     dataset.train_inputs = train_inputs
     dataset.train_targets = train_targets
