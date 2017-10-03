@@ -368,7 +368,7 @@ def train(train_indices, validation_indices, run_id):
     folder = dataset.folder
     count = 0
 
-    with tf.device('/gpu:7'):
+    with tf.device('/gpu:2'):
         #with tf.device('//cpu:0'):
         network = Network(count, weight=9)
     count +=1
