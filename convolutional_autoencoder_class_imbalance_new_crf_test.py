@@ -381,7 +381,7 @@ def train(train_indices, validation_indices, run_id):
     test_inputs, test_targets = dataset.file_paths_to_images(folder, validation_indices, os.listdir(os.path.join(folder, 'inputs')), True)
     pos_weight = find_positive_weight(train_targets)
 
-    with tf.device('/gpu:1):
+    with tf.device('/gpu:1'):
         #with tf.device('/cpu:0'):
         network = Network(net_id = count, weight=pos_weight)
     count +=1
