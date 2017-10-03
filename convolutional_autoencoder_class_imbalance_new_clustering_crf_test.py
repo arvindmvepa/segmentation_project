@@ -328,7 +328,7 @@ def modify_validation_files(file_indices, min_dist):
 
     return (net_noise_removed, noise_removed, segmented_noise_overall, total_modified_images)
 
- find_positive_weight(targets):
+def find_positive_weight(targets):
     total = 0
     for target in targets:
         total += np.count_nonzero(target)
@@ -705,14 +705,14 @@ def train(train_indices, validation_indices, run_id):
         acc = 0.0
         batch_num = 0
         for epoch_i in range(n_epochs):
-            if batch_num > 5000:
+            if batch_num > 7000:
                 epoch_i = 0
                 dataset.reset_batch_pointer()
                 break
             dataset.reset_batch_pointer()
             for batch_i in range(dataset.num_batches_in_epoch()):
                 batch_num = epoch_i * dataset.num_batches_in_epoch() + batch_i + 1
-                if batch_num > 5000:
+                if batch_num > 7000:
                     break
 
                 augmentation_seq_deterministic = augmentation_seq.to_deterministic()
@@ -751,7 +751,7 @@ def train(train_indices, validation_indices, run_id):
 
                     target_tensor = tf.convert_to_tensor(target_array, dtype=tf.float32)
                     target_flat = target_array.flatten()
-                    if batch_num % 5000 == 0:
+                    if batch_num % 7000 == 0:
                         test1 = [3,10]
                         test2 = [3,10]
                         test3 = [.01,.1]
