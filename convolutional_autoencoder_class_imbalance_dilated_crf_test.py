@@ -36,6 +36,8 @@ from sklearn.cluster import KMeans
 import copy
 
 from shutil import copyfile
+import pydensecrf.densecrf as dcrf
+from pydensecrf.utils import compute_unary, create_pairwise_bilateral, create_pairwise_gaussian, softmax_to_unary
 
 
 #np.set_printoptions(threshold=np.nan)
