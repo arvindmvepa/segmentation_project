@@ -552,52 +552,52 @@ def train(train_indices, validation_indices, run_id):
                                     
                                     f2.close()
 
-                        prediction_tensor = tf.convert_to_tensor(prediction_array, dtype=tf.float32)
-                        prediction_flat = prediction_array.flatten()
+                    prediction_tensor = tf.convert_to_tensor(prediction_array, dtype=tf.float32)
+                    prediction_flat = prediction_array.flatten()
 
-                        auc = roc_auc_score(target_flat, prediction_flat)
+                    auc = roc_auc_score(target_flat, prediction_flat)
 
-                        prediction_flat = np.round(prediction_flat)
-                        target_flat = np.round(target_flat)
+                    prediction_flat = np.round(prediction_flat)
+                    target_flat = np.round(target_flat)
 
-                        dice_coe_val = dice_coe(prediction_tensor, target_tensor)
-                        hard_dice_coe_val = dice_hard_coe(prediction_tensor, target_tensor)
-                        iou_coe_val = iou_coe(prediction_tensor, target_tensor)
+                    dice_coe_val = dice_coe(prediction_tensor, target_tensor)
+                    hard_dice_coe_val = dice_hard_coe(prediction_tensor, target_tensor)
+                    iou_coe_val = iou_coe(prediction_tensor, target_tensor)
 
-                        (precision, recall, fbeta_score, _) = precision_recall_fscore_support(target_flat, prediction_flat, average='binary')
+                    (precision, recall, fbeta_score, _) = precision_recall_fscore_support(target_flat, prediction_flat, average='binary')
 
-                        tn, fp, fn, tp = confusion_matrix(target_flat, prediction_flat).ravel()
-                        specificity = tn / (tn+fp)
-                        sess.run(tf.local_variables_initializer())
+                    tn, fp, fn, tp = confusion_matrix(target_flat, prediction_flat).ravel()
+                    specificity = tn / (tn+fp)
+                    sess.run(tf.local_variables_initializer())
 
-                        test_accuracy = test_accuracy/len(test_inputs)
-                        print('Step {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, specificity {}'.format(batch_num, test_accuracy, dice_coe_val.eval(), hard_dice_coe_val.eval(), iou_coe_val.eval(), recall, precision, fbeta_score, auc, specificity))
-                        n_examples = 12
+                    test_accuracy = test_accuracy/len(test_inputs)
+                    print('Step {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, specificity {}'.format(batch_num, test_accuracy, dice_coe_val.eval(), hard_dice_coe_val.eval(), iou_coe_val.eval(), recall, precision, fbeta_score, auc, specificity))
+                    n_examples = 12
 
-                        t_inputs, t_targets = dataset.test_inputs[:n_examples], dataset.test_targets[:n_examples]
-                        test_segmentation = []
-                        for i in range(n_examples):
-                            test_i = np.multiply(t_inputs[i:(i+1)], 1.0 / 255)
-                            segmentation = sess.run(network.segmentation_result, feed_dict={network.inputs: np.reshape(test_i, [1, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1])})
-                            test_segmentation.append(segmentation[0])                            
+                    t_inputs, t_targets = dataset.test_inputs[:n_examples], dataset.test_targets[:n_examples]
+                    test_segmentation = []
+                    for i in range(n_examples):
+                        test_i = np.multiply(t_inputs[i:(i+1)], 1.0 / 255)
+                        segmentation = sess.run(network.segmentation_result, feed_dict={network.inputs: np.reshape(test_i, [1, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1])})
+                        test_segmentation.append(segmentation[0])                            
 
-                        test_plot_buf = draw_results(t_inputs[:n_examples], np.multiply(t_targets[:n_examples],1.0/255), test_segmentation, test_accuracy, network, batch_num)
+                    test_plot_buf = draw_results(t_inputs[:n_examples], np.multiply(t_targets[:n_examples],1.0/255), test_segmentation, test_accuracy, network, batch_num)
 
-                        image = tf.image.decode_png(test_plot_buf.getvalue(), channels=4)
-                        image = tf.expand_dims(image, 0)
-                        image_summary_op = tf.summary.image("plot", image)
-                        image_summary = sess.run(image_summary_op)
-                        summary_writer.add_summary(image_summary)
-                        f1 = open('out1.txt','a')
+                    image = tf.image.decode_png(test_plot_buf.getvalue(), channels=4)
+                    image = tf.expand_dims(image, 0)
+                    image_summary_op = tf.summary.image("plot", image)
+                    image_summary = sess.run(image_summary_op)
+                    summary_writer.add_summary(image_summary)
+                    f1 = open('out1.txt','a')
 
-                        test_accuracies.append((test_accuracy, batch_num))
-                        print("Accuracies in time: ", [test_accuracies[x][0] for x in range(len(test_accuracies))])
-                        print(test_accuracies)
-                        max_acc = max(test_accuracies)
-                        print("Best accuracy: {} in batch {}".format(max_acc[0], max_acc[1]))
-                        print("Total time: {}".format(time.time() - global_start))
-                        f1.write('Step {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, specificity {}, max acc {} {} \n'.format(batch_num, test_accuracy, dice_coe_val.eval(), hard_dice_coe_val.eval(), iou_coe_val.eval(), recall, precision, fbeta_score, auc, specificity, max_acc[0], max_acc[1]))
-                        f1.close() 
+                    test_accuracies.append((test_accuracy, batch_num))
+                    print("Accuracies in time: ", [test_accuracies[x][0] for x in range(len(test_accuracies))])
+                    print(test_accuracies)
+                    max_acc = max(test_accuracies)
+                    print("Best accuracy: {} in batch {}".format(max_acc[0], max_acc[1]))
+                    print("Total time: {}".format(time.time() - global_start))
+                    f1.write('Step {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, specificity {}, max acc {} {} \n'.format(batch_num, test_accuracy, dice_coe_val.eval(), hard_dice_coe_val.eval(), iou_coe_val.eval(), recall, precision, fbeta_score, auc, specificity, max_acc[0], max_acc[1]))
+                    f1.close() 
 
 def post_process_crf(input_it, prediction_it):
     #for input_t, prediction_it in zip(inputs, predictions):
