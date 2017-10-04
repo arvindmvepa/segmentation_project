@@ -203,11 +203,11 @@ class Network:
         self.cost = tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(self.targets, net, pos_weight=weight))
         self.train_op = tf.train.AdamOptimizer().minimize(self.cost)
 
-        with tf.name_scape('test_log_loss'):
+        with tf.name_scope('test_log_loss'):
             self.test_log_loss = tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(self.targets, net, pos_weight=1))
             tf.summary.scalar('test_log_loss', self.test_log_loss)
 
-        with tf.name_scape('test_weighted_log_loss'):
+        with tf.name_scope('test_weighted_log_loss'):
             self.test_log_loss = tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(self.targets, net, pos_weight=9))
             tf.summary.scalar('test_log_loss', self.test_log_loss)
 
