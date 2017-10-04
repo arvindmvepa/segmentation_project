@@ -499,9 +499,6 @@ def train(run_id=1):
                             test_log_loss += tell
                             test_weighted_log_loss += tewll
 
-                        for i in range(len(test_inputs)):
-                            np.savetxt("out_"+str(i)+".txt", prediction_array[i], delimiter=",")
-
                         target_tensor = tf.convert_to_tensor(target_array, dtype=tf.float32)
                         target_flat = target_array.flatten()
                         prediction_tensor = tf.convert_to_tensor(prediction_array, dtype=tf.float32)
