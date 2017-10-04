@@ -239,7 +239,7 @@ class Dataset:
         inputs = []
         targets = []
 
-        for file in file_indices:
+        for file in files_list:
             if subfolder == 'inputs':
                 input_image = os.path.join(folder, 'inputs', file)
                 target1_image = os.path.join(folder, 'targets1', file)
