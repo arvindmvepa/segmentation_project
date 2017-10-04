@@ -445,14 +445,14 @@ def train(run_id=1):
             acc = 0.0
             batch_num = 0
             for epoch_i in range(n_epochs):
-                if batch_num > 40:
+                if batch_num > 15000:
                     epoch_i = 0
                     dataset.reset_batch_pointer()
                     break
                 dataset.reset_batch_pointer()
                 for batch_i in range(dataset.num_batches_in_epoch()):
                     batch_num = epoch_i * dataset.num_batches_in_epoch() + batch_i + 1
-                    if batch_num > 40:
+                    if batch_num > 15000:
                         break
 
                     augmentation_seq_deterministic = augmentation_seq.to_deterministic()
@@ -469,7 +469,7 @@ def train(run_id=1):
                     cost, _ = sess.run([network.cost, network.train_op], feed_dict={network.inputs: batch_inputs, network.targets: batch_targets, network.is_training: True})
                     end = time.time()
                     print('{}/{}, epoch: {}, cost: {}, batch time: {}'.format(batch_num, n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost, end - start))
-                    if batch_num % 10 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
+                    if batch_num % 250 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
                         test_accuracy = 0.0
                         test_accuracy1 = 0.0
                         test_accuracy2 = 0.0
@@ -530,24 +530,30 @@ def train(run_id=1):
                         test_weighted_log_loss = test_weighted_log_loss/len(test_inputs)
                         
                         print('Step {}, cost function {}, test cost function {}, test log loss {}, train log loss {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, specificity {}, TP {}, FP {}, TN {}, FN {}'.format(batch_num, train_log_loss, cost, test_log_loss, test_weighted_log_loss, test_accuracy, dice_coe_val.eval(), hard_dice_coe_val.eval(), iou_coe_val.eval(), recall, precision, fbeta_score, auc, specificity, tp, fp, tn, fn))
-                        n_examples = 12
 
-                        t_inputs, t_targets = dataset.test_inputs[:n_examples], dataset.test_targets[:n_examples]
-                        test_segmentation = []
-                        for i in range(n_examples):
-                            test_i = np.multiply(t_inputs[i:(i+1)], 1.0 / 255)
-                            segmentation = sess.run(network.segmentation_result, feed_dict={network.inputs: np.reshape(test_i, [1, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1])})
-                            test_segmentation.append(segmentation[0])                            
+                        if batch_num % 1000 == 0:
+                            for i in range(len(test_inputs)):
+                                np.savetxt("out_"+str(i)+".txt", prediction_array[i], delimiter=",")
 
-                        test_plot_buf = draw_results(t_inputs[:n_examples], np.multiply(t_targets[:n_examples],1.0/255), test_segmentation, test_accuracy, network, batch_num)
+                            n_examples = 12
 
-                        image = tf.image.decode_png(test_plot_buf.getvalue(), channels=4)
-                        image = tf.expand_dims(image, 0)
-                        image_summary_op = tf.summary.image("plot", image)
-                        image_summary = sess.run(image_summary_op)
-                        summary_writer.add_summary(image_summary)
+                            t_inputs, t_targets = dataset.test_inputs[:n_examples], dataset.test_targets[:n_examples]
+                            test_segmentation = []
+                            for i in range(n_examples):
+                                test_i = np.multiply(t_inputs[i:(i+1)], 1.0 / 255)
+                                segmentation = sess.run(network.segmentation_result, feed_dict={network.inputs: np.reshape(test_i, [1, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1])})
+                                test_segmentation.append(segmentation[0])                            
+
+                            test_plot_buf = draw_results(t_inputs[:n_examples], np.multiply(t_targets[:n_examples],1.0/255), test_segmentation, test_accuracy, network, batch_num)
+
+                            image = tf.image.decode_png(test_plot_buf.getvalue(), channels=4)
+                            image = tf.expand_dims(image, 0)
+                            image_summary_op = tf.summary.image("plot", image)
+                            image_summary = sess.run(image_summary_op)
+                            summary_writer.add_summary(image_summary)
+
+
                         f1 = open('out1.txt','a')
-
                         test_accuracies.append((test_accuracy, batch_num))
                         print("Accuracies in time: ", [test_accuracies[x][0] for x in range(len(test_accuracies))])
                         print(test_accuracies)
