@@ -412,7 +412,7 @@ def train(train_indices, validation_indices, run_id):
 
         count = 0
 
-    with tf.device('/gpu:1'):
+    with tf.device('/gpu:3'):
         #with tf.device('/cpu:0'):
         network = Network(net_id = count, weight=9)
     count +=1
