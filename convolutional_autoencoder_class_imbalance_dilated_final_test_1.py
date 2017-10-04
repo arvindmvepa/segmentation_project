@@ -245,7 +245,7 @@ class Dataset:
                 target1_image = os.path.join(folder, 'targets1', file)
                 target2_image = os.path.join(folder, 'targets2', file)
             if subfolder == 'test_data':
-                input_image = os.path.join(folder, 'inputs', file)
+                input_image = os.path.join(folder, 'test_data', file)
                 target1_image = os.path.join(folder, 'test_targets1', file)
                 target2_image = os.path.join(folder, 'test_targets2', file)
     
