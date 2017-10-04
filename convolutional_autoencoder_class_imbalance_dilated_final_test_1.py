@@ -165,7 +165,6 @@ class Network:
         self.targets = tf.placeholder(tf.float32, [None, self.IMAGE_HEIGHT, self.IMAGE_WIDTH, 1], name='targets')
         self.is_training = tf.placeholder_with_default(False, [], name='is_training')
         self.description = ""
-        self.net = net
 
         self.layers = {}
 
@@ -199,7 +198,7 @@ class Network:
                                                                         self.targets.get_shape()))
 
         # MSE loss - change to log loss
-        
+        self.net = net
         self.train_log_loss = tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(self.targets, net, pos_weight=1))
         self.cost = tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(self.targets, net, pos_weight=weight))
         self.train_op = tf.train.AdamOptimizer().minimize(self.cost)
