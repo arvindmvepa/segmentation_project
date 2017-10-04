@@ -404,7 +404,7 @@ def train(run_id=1):
 
         i = 0
         for target in test_targets:
-            np.savetxt("t_out_"+i+".txt", target)
+            np.savetxt("t_out_"+str(i)+".txt", target)
             i+=1
 
         # test_inputs, test_targets = test_inputs[:100], test_targets[:100]
@@ -501,7 +501,7 @@ def train(run_id=1):
                             np.savetxt(prediction_array, delimiter=',')
 
                         for i in range(len(test_inputs)):
-                            np.savetxt("out_"+i+".txt", prediction_array[i])
+                            np.savetxt("out_"+str(i)+".txt", prediction_array[i])
 
                         target_tensor = tf.convert_to_tensor(target_array, dtype=tf.float32)
                         target_flat = target_array.flatten()
