@@ -528,7 +528,7 @@ def train(run_id=1):
                         
                         print('Step {}, cost function {}, test cost function {}, test log loss {}, train log loss {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, specificity {}, TP {}, FP {}, TN {}, FN {}'.format(batch_num, train_log_loss, cost, test_log_loss, test_weighted_log_loss, test_accuracy, dice_coe_val.eval(), hard_dice_coe_val.eval(), iou_coe_val.eval(), recall, precision, fbeta_score, auc, specificity, tp, fp, tn, fn))
 
-                        if batch_num % 1000 == 0:
+                        if batch_num % 20 == 0:
                             for i in range(len(test_inputs)):
                                 np.savetxt("out_"+str(i)+".txt", prediction_array[i], delimiter=",")
 
