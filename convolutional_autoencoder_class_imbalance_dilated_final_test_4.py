@@ -165,7 +165,6 @@ class Network:
         self.targets = tf.placeholder(tf.float32, [None, self.IMAGE_HEIGHT, self.IMAGE_WIDTH, 1], name='targets')
         self.is_training = tf.placeholder_with_default(False, [], name='is_training')
         self.description = ""
-        self.net = net
 
         self.layers = {}
 
@@ -199,17 +198,17 @@ class Network:
                                                                         self.targets.get_shape()))
 
         # MSE loss - change to log loss
-        
+        self.net = net
         self.train_log_loss = tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(self.targets, net, pos_weight=1))
         self.cost = tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(self.targets, net, pos_weight=weight))
         self.train_op = tf.train.AdamOptimizer().minimize(self.cost)
 
-        with tf.name_scape('test_log_loss'):
+        with tf.name_scope('test_log_loss'):
             self.test_log_loss = tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(self.targets, net, pos_weight=1))
             tf.summary.scalar('test_log_loss', self.test_log_loss)
 
-        with tf.name_scape('test_weighted_log_loss'):
-            self.test_log_loss = tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(self.targets, net, pos_weight=9))
+        with tf.name_scope('test_weighted_log_loss'):
+            self.test_weighted_log_loss = tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(self.targets, net, pos_weight=9))
             tf.summary.scalar('test_log_loss', self.test_log_loss)
 
         with tf.name_scope('accuracy'):
@@ -239,13 +238,13 @@ class Dataset:
         inputs = []
         targets = []
 
-        for file in file_indices:
+        for file in files_list:
             if subfolder == 'inputs':
                 input_image = os.path.join(folder, 'inputs', file)
                 target1_image = os.path.join(folder, 'targets1', file)
                 target2_image = os.path.join(folder, 'targets2', file)
-            if subfolder == 'test':
-                input_image = os.path.join(folder, 'inputs', file)
+            if subfolder == 'test_data':
+                input_image = os.path.join(folder, 'test_data', file)
                 target1_image = os.path.join(folder, 'test_targets1', file)
                 target2_image = os.path.join(folder, 'test_targets2', file)
     
@@ -353,7 +352,7 @@ def draw_results(test_inputs, test_targets, test_segmentation, test_accuracy, ne
     plt.savefig('{}/figure{}.jpg'.format(IMAGE_PLOT_DIR, batch_num))
     return buf
 
-def train(train_indices, validation_indices, run_id):
+def train(run_id=1):
     with tf.device('/cpu:0'):
         BATCH_SIZE = 1
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
@@ -394,7 +393,7 @@ def train(train_indices, validation_indices, run_id):
         folder = dataset.folder
 
         train_inputs, train_targets = dataset.file_paths_to_images(folder, 'inputs',os.listdir(os.path.join(folder, 'inputs')))
-        test_inputs, test_targets = dataset.file_paths_to_images(folder, 'test', os.listdir(os.path.join(folder, 'test')), True)
+        test_inputs, test_targets = dataset.file_paths_to_images(folder, 'test_data', os.listdir(os.path.join(folder, 'test_data')), True)
 
         pos_weight = find_positive_weight(train_targets)
 
@@ -402,6 +401,11 @@ def train(train_indices, validation_indices, run_id):
         dataset.train_targets = train_targets
         dataset.test_inputs = test_inputs
         dataset.test_targets = test_targets
+
+        i = 0
+        for target in test_targets:
+            np.savetxt("t_out_"+str(i)+".txt", target, delimiter=",")
+            i+=1
 
         # test_inputs, test_targets = test_inputs[:100], test_targets[:100]
         test_inputs = np.reshape(test_inputs, (-1, 1024, 1024, 1))
@@ -415,7 +419,7 @@ def train(train_indices, validation_indices, run_id):
     with tf.device('/gpu:4'):
         #with tf.device('/cpu:0'):
         network = Network(net_id = count, weight=9)
-    count +=1
+        count +=1
 
     with tf.device('/cpu:0'):
         # create directory for saving models
@@ -441,14 +445,14 @@ def train(train_indices, validation_indices, run_id):
             acc = 0.0
             batch_num = 0
             for epoch_i in range(n_epochs):
-                if batch_num > 10000:
+                if batch_num > 15000:
                     epoch_i = 0
                     dataset.reset_batch_pointer()
                     break
                 dataset.reset_batch_pointer()
                 for batch_i in range(dataset.num_batches_in_epoch()):
                     batch_num = epoch_i * dataset.num_batches_in_epoch() + batch_i + 1
-                    if batch_num > 10000:
+                    if batch_num > 15000:
                         break
 
                     augmentation_seq_deterministic = augmentation_seq.to_deterministic()
@@ -465,7 +469,7 @@ def train(train_indices, validation_indices, run_id):
                     cost, _ = sess.run([network.cost, network.train_op], feed_dict={network.inputs: batch_inputs, network.targets: batch_targets, network.is_training: True})
                     end = time.time()
                     print('{}/{}, epoch: {}, cost: {}, batch time: {}'.format(batch_num, n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost, end - start))
-                    if batch_num % 200 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
+                    if batch_num % 250 == 0 or batch_num == 13500 or batch_num == n_epochs * dataset.num_batches_in_epoch():
                         test_accuracy = 0.0
                         test_accuracy1 = 0.0
                         test_accuracy2 = 0.0
@@ -523,24 +527,30 @@ def train(train_indices, validation_indices, run_id):
                         test_weighted_log_loss = test_weighted_log_loss/len(test_inputs)
                         
                         print('Step {}, cost function {}, test cost function {}, test log loss {}, train log loss {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, specificity {}, TP {}, FP {}, TN {}, FN {}'.format(batch_num, train_log_loss, cost, test_log_loss, test_weighted_log_loss, test_accuracy, dice_coe_val.eval(), hard_dice_coe_val.eval(), iou_coe_val.eval(), recall, precision, fbeta_score, auc, specificity, tp, fp, tn, fn))
-                        n_examples = 12
 
-                        t_inputs, t_targets = dataset.test_inputs[:n_examples], dataset.test_targets[:n_examples]
-                        test_segmentation = []
-                        for i in range(n_examples):
-                            test_i = np.multiply(t_inputs[i:(i+1)], 1.0 / 255)
-                            segmentation = sess.run(network.segmentation_result, feed_dict={network.inputs: np.reshape(test_i, [1, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1])})
-                            test_segmentation.append(segmentation[0])                            
+                        if batch_num % 1000 == 0:
+                            for i in range(len(test_inputs)):
+                                np.savetxt("out_"+str(i)+".txt", prediction_array[i], delimiter=",")
 
-                        test_plot_buf = draw_results(t_inputs[:n_examples], np.multiply(t_targets[:n_examples],1.0/255), test_segmentation, test_accuracy, network, batch_num)
+                            n_examples = 12
 
-                        image = tf.image.decode_png(test_plot_buf.getvalue(), channels=4)
-                        image = tf.expand_dims(image, 0)
-                        image_summary_op = tf.summary.image("plot", image)
-                        image_summary = sess.run(image_summary_op)
-                        summary_writer.add_summary(image_summary)
+                            t_inputs, t_targets = dataset.test_inputs[:n_examples], dataset.test_targets[:n_examples]
+                            test_segmentation = []
+                            for i in range(n_examples):
+                                test_i = np.multiply(t_inputs[i:(i+1)], 1.0 / 255)
+                                segmentation = sess.run(network.segmentation_result, feed_dict={network.inputs: np.reshape(test_i, [1, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1])})
+                                test_segmentation.append(segmentation[0])                            
+
+                            test_plot_buf = draw_results(t_inputs[:n_examples], np.multiply(t_targets[:n_examples],1.0/255), test_segmentation, test_accuracy, network, batch_num)
+
+                            image = tf.image.decode_png(test_plot_buf.getvalue(), channels=4)
+                            image = tf.expand_dims(image, 0)
+                            image_summary_op = tf.summary.image("plot", image)
+                            image_summary = sess.run(image_summary_op)
+                            summary_writer.add_summary(image_summary)
+
+
                         f1 = open('out1.txt','a')
-
                         test_accuracies.append((test_accuracy, batch_num))
                         print("Accuracies in time: ", [test_accuracies[x][0] for x in range(len(test_accuracies))])
                         print(test_accuracies)
@@ -561,6 +571,6 @@ if __name__ == '__main__':
     f1.close() 
     f2.close()
     count = 0
-    p = multiprocessing.Process(target=train, args=(count))
+    p = multiprocessing.Process(target=train)
     p.start()
     p.join()
