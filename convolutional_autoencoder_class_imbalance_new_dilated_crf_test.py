@@ -152,29 +152,28 @@ class Network:
 
             layers.append(MaxPool2d(kernel_size=2, name='max_2', skip_connection=True and skip_connections))
 
-            layers.append(Conv2d(kernel_size=3, output_channels=256, name='conv_3_1', net_id = net_id))
+            layers.append(Conv2d(kernel_size=3, dilation = 2, output_channels=256, name='conv_3_1', net_id = net_id))
             layers.append(Conv2d(kernel_size=3, dilation = 2,  output_channels=256, name='conv_3_2', net_id = net_id))
             #layers.append(Conv2d(kernel_size=3, strides=[1, 1, 1, 1], output_channels=256, name='conv_3_3'))
 
             layers.append(MaxPool2d(kernel_size=2, name='max_3', skip_connection=True and skip_connections))
 
-            layers.append(Conv2d(kernel_size=3,  output_channels=512, name='conv_4_1', net_id = net_id))
-            layers.append(Conv2d(kernel_size=3, output_channels=512, name='conv_4_2', net_id = net_id))
+            layers.append(Conv2d(kernel_size=3,  dilation = 2, output_channels=512, name='conv_4_1', net_id = net_id))
+            layers.append(Conv2d(kernel_size=3, dilation = 2, output_channels=512, name='conv_4_2', net_id = net_id))
             #layers.append(Conv2d(kernel_size=3, strides=[1, 1, 1, 1], output_channels=512, name='conv_4_3'))
 
             layers.append(MaxPool2d(kernel_size=2, name='max_4', skip_connection=True and skip_connections))
 
-            layers.append(Conv2d(kernel_size=3, output_channels=512, name='conv_5_1', net_id = net_id))
-            layers.append(Conv2d(kernel_size=3, output_channels=512, name='conv_5_2', net_id = net_id))
+            layers.append(Conv2d(kernel_size=3, dilation = 2, output_channels=512, name='conv_5_1', net_id = net_id))
+            layers.append(Conv2d(kernel_size=3, dilation = 2, output_channels=512, name='conv_5_2', net_id = net_id))
             #layers.append(Conv2d(kernel_size=3, strides=[1, 1, 1, 1], output_channels=512, name='conv_5_3'))
 
             layers.append(MaxPool2d(kernel_size=2, name='max_5', skip_connection=True and skip_connections))
 
-            layers.append(Conv2d(kernel_size=7, output_channels=4096, name='conv_6_1', net_id = net_id))
-            layers.append(Conv2d(kernel_size=1, output_channels=4096, name='conv_6_2', net_id = net_id))
+            layers.append(Conv2d(kernel_size=7, dilation = 3, output_channels=4096, name='conv_6_1', net_id = net_id))
+            layers.append(Conv2d(kernel_size=1, dilation = 3, output_channels=4096, name='conv_6_2', net_id = net_id))
             #layers.append(Conv2d(kernel_size=1, strides=[1, 1, 1, 1], output_channels=1000, name='conv_6_3'))
-            self.inputs = tf.placeholder(tf.float32, [None, self.IMAGE_HEIGHT, self.IMAGE_WIDTH, self.IMAGE_CHANNELS],
-                                     name='inputs')
+        self.inputs = tf.placeholder(tf.float32, [None, self.IMAGE_HEIGHT, self.IMAGE_WIDTH, self.IMAGE_CHANNELS], name='inputs')
         self.targets = tf.placeholder(tf.float32, [None, self.IMAGE_HEIGHT, self.IMAGE_WIDTH, 1], name='targets')
         self.is_training = tf.placeholder_with_default(False, [], name='is_training')
         self.description = ""
@@ -490,6 +489,7 @@ def train(train_indices, validation_indices, run_id):
 
                     target_tensor = tf.convert_to_tensor(target_array, dtype=tf.float32)
                     target_flat = target_array.flatten()
+                    """
                     if batch_num % 10000 == 0:
                         test1 = [3,10]
                         test2 = [3,10]
@@ -574,7 +574,7 @@ def train(train_indices, validation_indices, run_id):
                                     f2.write('Step {}, hyperparameters a: {} b: {} c: {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, specificity {}, max acc {} {} \n'.format(batch_num, a, b, c, test_accuracy2, dice_coe_val.eval(), hard_dice_coe_val.eval(), iou_coe_val.eval(), recall, precision, fbeta_score, auc, specificity, max_acc[0], max_acc[1]))
                                     
                                     f2.close()
-
+                    """
                     prediction_tensor = tf.convert_to_tensor(prediction_array, dtype=tf.float32)
                     prediction_flat = prediction_array.flatten()
 
