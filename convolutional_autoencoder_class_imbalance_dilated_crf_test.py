@@ -417,7 +417,7 @@ def train(train_indices, validation_indices, run_id):
     #config = tf.ConfigProto(device_count = {'GPU': 0,'GPU': 1})
 
     count = 0
-    with tf.device('/gpu:0):
+    with tf.device('/gpu:0'):
         #with tf.device('/cpu:0'):
         network = Network(net_id = count, weight=9)
     count +=1
