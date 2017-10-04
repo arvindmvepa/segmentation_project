@@ -244,7 +244,7 @@ class Dataset:
                 input_image = os.path.join(folder, 'inputs', file)
                 target1_image = os.path.join(folder, 'targets1', file)
                 target2_image = os.path.join(folder, 'targets2', file)
-            if subfolder == 'test':
+            if subfolder == 'test_data':
                 input_image = os.path.join(folder, 'inputs', file)
                 target1_image = os.path.join(folder, 'test_targets1', file)
                 target2_image = os.path.join(folder, 'test_targets2', file)
@@ -394,7 +394,7 @@ def train(run_id=1):
         folder = dataset.folder
 
         train_inputs, train_targets = dataset.file_paths_to_images(folder, 'inputs',os.listdir(os.path.join(folder, 'inputs')))
-        test_inputs, test_targets = dataset.file_paths_to_images(folder, 'test', os.listdir(os.path.join(folder, 'test')), True)
+        test_inputs, test_targets = dataset.file_paths_to_images(folder, 'test_data', os.listdir(os.path.join(folder, 'test_data')), True)
 
         pos_weight = find_positive_weight(train_targets)
 
