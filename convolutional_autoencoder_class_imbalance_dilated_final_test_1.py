@@ -353,7 +353,7 @@ def draw_results(test_inputs, test_targets, test_segmentation, test_accuracy, ne
     plt.savefig('{}/figure{}.jpg'.format(IMAGE_PLOT_DIR, batch_num))
     return buf
 
-def train(run_id):
+def train(run_id=1):
     with tf.device('/cpu:0'):
         BATCH_SIZE = 1
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
@@ -561,6 +561,6 @@ if __name__ == '__main__':
     f1.close() 
     f2.close()
     count = 0
-    p = multiprocessing.Process(target=train, args=(count))
+    p = multiprocessing.Process(target=train)
     p.start()
     p.join()
