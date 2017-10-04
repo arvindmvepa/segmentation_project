@@ -402,6 +402,11 @@ def train(run_id=1):
         dataset.test_inputs = test_inputs
         dataset.test_targets = test_targets
 
+        i = 0
+        for target in test_targets:
+            np.savetxt("t_out_"+i+".txt", target)
+            i+=1
+
         # test_inputs, test_targets = test_inputs[:100], test_targets[:100]
         test_inputs = np.reshape(test_inputs, (-1, 1024, 1024, 1))
         test_targets = np.reshape(test_targets, (-1, 1024, 1024, 1))
@@ -414,7 +419,7 @@ def train(run_id=1):
     with tf.device('/gpu:1'):
         #with tf.device('/cpu:0'):
         network = Network(net_id = count, weight=9)
-    count +=1
+        count +=1
 
     with tf.device('/cpu:0'):
         # create directory for saving models
@@ -493,6 +498,10 @@ def train(run_id=1):
                             cost += c
                             test_log_loss += tell
                             test_weighted_log_loss += tewll
+                            np.savetxt(prediction_array, delimiter=',')
+
+                        for i in range(len(test_inputs))
+                            np.savetxt("out_"+i+".txt", prediction_array[i])
 
                         target_tensor = tf.convert_to_tensor(target_array, dtype=tf.float32)
                         target_flat = target_array.flatten()
