@@ -550,7 +550,7 @@ def train(run_id=1):
                         max_acc = max(test_accuracies)
                         print("Best accuracy: {} in batch {}".format(max_acc[0], max_acc[1]))
                         print("Total time: {}".format(time.time() - global_start))
-                        print('Step {}, cost function {}, test cost function {}, test log loss {}, train log loss {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, specificity {}, TP {}, FP {}, TN {}, FN {}'.format(batch_num, train_log_loss, cost, test_log_loss, test_weighted_log_loss, test_accuracy, dice_coe_val.eval(), hard_dice_coe_val.eval(), iou_coe_val.eval(), recall, precision, fbeta_score, auc, specificity, tp, fp, tn, fn))
+                        f1.write('Step {}, cost function {}, test cost function {}, test log loss {}, train log loss {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, specificity {}, TP {}, FP {}, TN {}, FN {}'.format(batch_num, train_log_loss, cost, test_log_loss, test_weighted_log_loss, test_accuracy, dice_coe_val.eval(), hard_dice_coe_val.eval(), iou_coe_val.eval(), recall, precision, fbeta_score, auc, specificity, tp, fp, tn, fn))
                         f1.close() 
     
 
