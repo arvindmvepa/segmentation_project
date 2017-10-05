@@ -440,14 +440,14 @@ def train(run_id=1):
             acc = 0.0
             batch_num = 0
             for epoch_i in range(n_epochs):
-                if batch_num > 40:
+                if batch_num > 15000:
                     epoch_i = 0
                     dataset.reset_batch_pointer()
                     break
                 dataset.reset_batch_pointer()
                 for batch_i in range(dataset.num_batches_in_epoch()):
                     batch_num = epoch_i * dataset.num_batches_in_epoch() + batch_i + 1
-                    if batch_num > 40:
+                    if batch_num > 15000:
                         break
 
                     augmentation_seq_deterministic = augmentation_seq.to_deterministic()
@@ -464,7 +464,7 @@ def train(run_id=1):
                     cost, _ = sess.run([network.cost, network.train_op], feed_dict={network.inputs: batch_inputs, network.targets: batch_targets, network.is_training: True})
                     end = time.time()
                     print('{}/{}, epoch: {}, cost: {}, batch time: {}'.format(batch_num, n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost, end - start))
-                    if batch_num % 10 == 0 or batch_num == 13500 or batch_num == n_epochs * dataset.num_batches_in_epoch():
+                    if batch_num % 250 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
                         test_accuracy = 0.0
                         test_accuracy1 = 0.0
                         test_accuracy2 = 0.0
@@ -523,7 +523,7 @@ def train(run_id=1):
                         
                         print('Step {}, cost function {}, test cost function {}, test log loss {}, train log loss {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, specificity {}, TP {}, FP {}, TN {}, FN {}'.format(batch_num, train_log_loss, cost, test_log_loss, test_weighted_log_loss, test_accuracy, dice_coe_val.eval(), hard_dice_coe_val.eval(), iou_coe_val.eval(), recall, precision, fbeta_score, auc, specificity, tp, fp, tn, fn))
 
-                        if batch_num % 20 == 0:
+                        if batch_num % 1000 == 0:
 
                             n_examples = 12
 
@@ -550,7 +550,7 @@ def train(run_id=1):
                         max_acc = max(test_accuracies)
                         print("Best accuracy: {} in batch {}".format(max_acc[0], max_acc[1]))
                         print("Total time: {}".format(time.time() - global_start))
-                        f1.write('Step {}, cost function {}, test cost function {}, test log loss {}, train log loss {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, specificity {}, TP {}, FP {}, TN {}, FN {}'.format(batch_num, train_log_loss, cost, test_log_loss, test_weighted_log_loss, test_accuracy, dice_coe_val.eval(), hard_dice_coe_val.eval(), iou_coe_val.eval(), recall, precision, fbeta_score, auc, specificity, tp, fp, tn, fn))
+                        f1.write('Step {}, cost function {}, test cost function {}, test log loss {}, train log loss {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, specificity {}, TP {}, FP {}, TN {}, FN {} \n'.format(batch_num, train_log_loss, cost, test_log_loss, test_weighted_log_loss, test_accuracy, dice_coe_val.eval(), hard_dice_coe_val.eval(), iou_coe_val.eval(), recall, precision, fbeta_score, auc, specificity, tp, fp, tn, fn))
                         f1.close() 
     
 
