@@ -545,16 +545,19 @@ if __name__ == '__main__':
     x = random.randint(1,100)                                     
     k_fold = KFold(n_splits=3, shuffle=True, random_state=x)
 
-    f1 = open('out1.txt','w')
-    f2 = open('out2.txt','w')
+    #f1 = open('out1.txt','w')
+    #f2 = open('out2.txt','w')
 
-    f1.close() 
-    f2.close()
+    #f1.close()
+    #f2.close()
 
     count = 0
     for train_indices, validation_indices in k_fold.split(os.listdir(os.path.join('vessels', 'inputs'))):
         f1 = open('out1.txt','a')
         f2 = open('out2.txt','a')
+        train_indices = [1,2,3,4,5,6,8,9,13,14,16,17,19,21,22,23,24,25,26,30,31,32,35,36,37,38,39,40,43,44,47,48,50,51,52,53,54,55,61,62,63,64,66,68,69,71,72,74,75,77,79,80,82,8,85,86,87,89,90,91,92,93,94,95]
+        validation_indices = [0,7,10,11,12,15,18,20,27,28,29,33,34,41,42,45,46,49,56,57,58,59,60,65,67,70,73,76,78,81,84,88] 
+
         f1.write('Train Indices {} Validation Indices {} \n'.format(train_indices, validation_indices))
         f2.write('Train Indices {} Validation Indices {} \n'.format(train_indices, validation_indices))
         f1.close()
