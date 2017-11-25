@@ -116,8 +116,8 @@ def iou_coe(output, target, threshold=0.5, axis=None, smooth=1e-5):
 
 class Network:
     #IMAGE_HEIGHT = 565
-    #IMAGE_HEIGHT = 584
-    #IMAGE_WIDTH = 584
+    IMAGE_HEIGHT = IMAGE_HEIGHT
+    IMAGE_WIDTH = IMAGE_WIDTH
 
     IMAGE_CHANNELS = 1
 
