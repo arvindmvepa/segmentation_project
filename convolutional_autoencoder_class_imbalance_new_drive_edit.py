@@ -526,7 +526,7 @@ def train(train_indices, validation_indices, run_id):
 
                         n_examples = 5
 
-                        t_inputs, t_targets = dataset.test_inputs[:n_examples], dataset.test_targets[:n_examples]
+                        t_inputs, t_targets = dataset.test_inputs.tolist()[:n_examples], dataset.test_targets.tolist()[:n_examples]
                         test_segmentation = []
                         for i in range(n_examples):
                             test_i = np.multiply(t_inputs[i:(i+1)], 1.0 / 255)
