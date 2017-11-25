@@ -228,6 +228,7 @@ class Dataset:
 
         for file_index in file_indices:
             file = files_list[file_index]
+            print(file)
             input_image = os.path.join(folder, 'inputs', file)
             target1_image = os.path.join(folder, 'targets1', file)
             target2_image = os.path.join(folder, 'targets2', file)
