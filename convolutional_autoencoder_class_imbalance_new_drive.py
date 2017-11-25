@@ -229,7 +229,6 @@ class Dataset:
         for file_index in file_indices:
             file = files_list[file_index]
             num = int(file[0:2])
-            print(num)
             file = str(num) + "_manual1.gif"
             input_image = os.path.join(folder, 'inputs', file)
             target1_image = os.path.join(folder, 'targets1', file)
@@ -389,6 +388,7 @@ def train(train_indices, validation_indices, run_id):
     dataset.test_inputs = test_inputs
     dataset.test_targets = test_targets
 
+    print(train_inputs)
     # test_inputs, test_targets = test_inputs[:100], test_targets[:100]
     test_inputs = np.reshape(test_inputs, (-1, 564, 585, 1))
     test_targets = np.reshape(test_targets, (-1, 564, 585, 1))
