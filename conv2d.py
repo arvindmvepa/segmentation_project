@@ -93,7 +93,8 @@ class Conv2d(Layer):
         Conv2d.layer_index += 1
         output.set_shape([None, 565, 584, 1])
 
-        output = lrelu(tf.add(tf.contrib.layers.batch_norm(output), b))
+        #output = lrelu(tf.add(tf.contrib.layers.batch_norm(output), b))
+        output = lrelu(tf.contrib.layers.batch_norm(output))
         # print('convd2_transposed: output_shape: {}'.format(utils.get_incoming_shape(output)))
 
         return output
