@@ -400,8 +400,9 @@ def train(train_indices, validation_indices, run_id):
     print(test_targets.shape)
 
     # test_inputs, test_targets = test_inputs[:100], test_targets[:100]
-    test_inputs = np.reshape(test_inputs, (-1, 564, 585, 3))
-    test_targets = np.reshape(test_targets, (-1, 564, 585, 1))
+
+    #test_inputs = np.reshape(test_inputs, (-1, 564, 585, 3))
+    #test_targets = np.reshape(test_targets, (-1, 564, 585, 1))
     test_inputs = np.multiply(test_inputs, 1.0 / 255)
 
     #config = tf.ConfigProto(device_count = {'GPU': 0,'GPU': 1})
