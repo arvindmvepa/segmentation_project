@@ -245,9 +245,12 @@ class Dataset:
 
                 # load grayscale
                 # test_image = np.multiply(test_image, 1.0 / 255)
+                print(target1_image)
 
                 target1_image = np.array(skio.imread(target1_image))
                 target1_image = cv2.threshold(target1_image, 127, 1, cv2.THRESH_BINARY)[1]
+
+                print(target1_image)
                 
                 targets.append(target1_image)
 
