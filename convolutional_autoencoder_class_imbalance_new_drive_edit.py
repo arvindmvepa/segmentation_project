@@ -34,6 +34,8 @@ from sklearn.metrics import confusion_matrix
 IMAGE_HEIGHT = 584
 IMAGE_WIDTH = 584
 
+n_examples = 5
+
 #np.set_printoptions(threshold=np.nan)
 
 """
@@ -320,7 +322,7 @@ class Dataset:
 
 
 def draw_results(test_inputs, test_targets, test_segmentation, test_accuracy, network, batch_num):
-    n_examples_to_plot = 12
+    n_examples_to_plot = n_examples
     fig, axs = plt.subplots(4, n_examples_to_plot, figsize=(n_examples_to_plot * 3, 10))
     fig.suptitle("Accuracy: {}, {}".format(test_accuracy, network.description), fontsize=20)
     for example_i in range(n_examples_to_plot):
@@ -524,7 +526,7 @@ def train(train_indices, validation_indices, run_id):
                         print('Step {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, specificity {}'.format(batch_num, test_accuracy, dice_coe_val.eval(), hard_dice_coe_val.eval(), iou_coe_val.eval(), recall, precision, fbeta_score, auc, specificity))
                         #print('Step {}, test accuracy1: {}'.format(batch_num, test_accuracy1))
 
-                        n_examples = 5
+                        #n_examples = 5
                         print(dataset.test_inputs.shape)
                         print(len( dataset.test_inputs.tolist()))
                         print(dataset.test_targets.shape)
