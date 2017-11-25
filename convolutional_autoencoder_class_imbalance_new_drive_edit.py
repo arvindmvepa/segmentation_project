@@ -466,7 +466,7 @@ def train(train_indices, validation_indices, run_id):
                     cost, _ = sess.run([network.cost, network.train_op], feed_dict={network.inputs: batch_inputs, network.targets: batch_targets, network.is_training: True})
                     end = time.time()
                     print('{}/{}, epoch: {}, cost: {}, batch time: {}, positive_weight: {}'.format(batch_num, n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost, end - start, pos_weight))
-                    if batch_num % 10 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
+                    if batch_num % 1 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
                         test_accuracy = 0.0
                         test_accuracy1 = 0.0
 
@@ -525,7 +525,11 @@ def train(train_indices, validation_indices, run_id):
                         #print('Step {}, test accuracy1: {}'.format(batch_num, test_accuracy1))
 
                         n_examples = 5
-
+                        print(dataset.test_inputs.shape)
+                        print(len( dataset.test_inputs.tolist()))
+                        print(dataset.test_targets.shape)
+                        print(len(dataset.test_targets.tolist()))
+                        
                         t_inputs, t_targets = dataset.test_inputs.tolist()[:n_examples], dataset.test_targets.tolist()[:n_examples]
                         test_segmentation = []
                         for i in range(n_examples):
