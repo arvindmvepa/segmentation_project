@@ -524,7 +524,7 @@ def train(train_indices, validation_indices, run_id):
                         print('Step {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, specificity {}'.format(batch_num, test_accuracy, dice_coe_val.eval(), hard_dice_coe_val.eval(), iou_coe_val.eval(), recall, precision, fbeta_score, auc, specificity))
                         #print('Step {}, test accuracy1: {}'.format(batch_num, test_accuracy1))
 
-                        n_examples = 12
+                        n_examples = 5
 
                         t_inputs, t_targets = dataset.test_inputs[:n_examples], dataset.test_targets[:n_examples]
                         test_segmentation = []
