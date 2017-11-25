@@ -31,7 +31,7 @@ from sklearn.metrics import roc_auc_score
 from sklearn.metrics import confusion_matrix
 
 #IMAGE_HEIGHT = 565
-IMAGE_HEIGHT = 584
+IMAGE_HEIGHT = 565
 IMAGE_WIDTH = 584
 
 #np.set_printoptions(threshold=np.nan)
@@ -116,8 +116,9 @@ def iou_coe(output, target, threshold=0.5, axis=None, smooth=1e-5):
 
 class Network:
     #IMAGE_HEIGHT = 565
-    IMAGE_HEIGHT = 584
-    IMAGE_WIDTH = 584
+    #IMAGE_HEIGHT = 584
+    #IMAGE_WIDTH = 584
+
     IMAGE_CHANNELS = 1
 
     def __init__(self, net_id, weight=1, layers = None, per_image_standardization=True, batch_norm=True, skip_connections=True):
@@ -243,7 +244,7 @@ class Dataset:
 
             test_image = cv2.imread(input_image, 1)
             test_image = test_image[:,:,1]
-            test_image = cv2.resize(test_image, (IMAGE_HEIGHT,IMAGE_WIDTH))
+            #test_image = cv2.resize(test_image, (IMAGE_HEIGHT,IMAGE_WIDTH))
             inputs.append(test_image)
 
             #print(np.array(skio.imread(target_image)).shape)
@@ -256,7 +257,7 @@ class Dataset:
 
                 target1_image = np.array(skio.imread(target1_image))
                 target1_image = cv2.threshold(target1_image, 127, 1, cv2.THRESH_BINARY)[1]
-                target1_image = cv2.resize(target1_image, (IMAGE_HEIGHT,IMAGE_WIDTH))
+                #target1_image = cv2.resize(target1_image, (IMAGE_HEIGHT,IMAGE_WIDTH))
                 
                 print(target1_image)
                 
@@ -412,7 +413,7 @@ def train(train_indices, validation_indices, run_id):
     #config = tf.ConfigProto(device_count = {'GPU': 0,'GPU': 1})
 
     count = 0
-    with tf.device('/gpu:1'):
+    with tf.device('/gpu:0'):
         #with tf.device('/cpu:0'):
         network = Network(net_id = count, weight=pos_weight)
     count +=1
@@ -426,7 +427,7 @@ def train(train_indices, validation_indices, run_id):
     saver = tf.train.Saver()
 
     with tf.Session(config=config) as sess:
-        with tf.device('/gpu:0'):
+        with tf.device('/gpu:1'):
             print(sess.run(tf.global_variables_initializer()))
             
             summary_writer = tf.summary.FileWriter('{}/{}-{}'.format('logs', network.description, timestamp), graph=tf.get_default_graph())
