@@ -175,9 +175,14 @@ class Network:
         #Conv2d.reverse_global_variables()
 
         # DECODER
+        len_layers = len(layers)
+        i = 1
         for layer in layers:
-            net = layer.create_layer_reversed(net, prev_layer=self.layers[layer.name])
-
+            if i < len_layers:
+                net = layer.create_layer_reversed(net, prev_layer=self.layers[layer.name])
+            else:
+                net = layer.create_last_layer_reversed(net, prev_layer=self.layers[layer.name])
+            i+=1
         self.segmentation_result = tf.sigmoid(net)
 
         # segmentation_as_classes = tf.reshape(self.y, [50 * self.IMAGE_HEIGHT * self.IMAGE_WIDTH, 1])
