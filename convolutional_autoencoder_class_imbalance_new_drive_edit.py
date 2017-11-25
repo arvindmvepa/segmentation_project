@@ -30,7 +30,8 @@ from sklearn.metrics import precision_recall_fscore_support
 from sklearn.metrics import roc_auc_score
 from sklearn.metrics import confusion_matrix
 
-IMAGE_HEIGHT = 565
+#IMAGE_HEIGHT = 565
+IMAGE_HEIGHT = 584
 IMAGE_WIDTH = 584
 
 #np.set_printoptions(threshold=np.nan)
@@ -114,7 +115,8 @@ def iou_coe(output, target, threshold=0.5, axis=None, smooth=1e-5):
 
 
 class Network:
-    IMAGE_HEIGHT = 565
+    #IMAGE_HEIGHT = 565
+    IMAGE_HEIGHT = 584
     IMAGE_WIDTH = 584
     IMAGE_CHANNELS = 1
 
@@ -239,6 +241,7 @@ class Dataset:
 
             test_image = cv2.imread(input_image, 1)
             test_image = test_image[:,:,1]
+            test_image = cv2.resize(test_image, (IMAGE_HEIGHT,IMAGE_WIDTH))
             inputs.append(test_image)
 
             #print(np.array(skio.imread(target_image)).shape)
