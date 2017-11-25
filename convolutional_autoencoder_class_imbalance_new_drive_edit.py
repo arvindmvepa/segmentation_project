@@ -270,7 +270,7 @@ class Dataset:
                 print(target2_image)
                 print("here")
                 
-        return inputs, targets
+        return np.asarray(inputs), np.asarray(targets)
 
 
     def train_valid_test_split(self, X, ratio=None):
