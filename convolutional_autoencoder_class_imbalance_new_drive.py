@@ -227,10 +227,10 @@ class Dataset:
         targets = []
 
         for file_index in file_indices:
-            file = files_list[file_index]
-            num = int(file[0:2])
+            orig_file = files_list[file_index]
+            num = int(orig_file[0:2])
             file = str(num) + "_manual1.gif"
-            input_image = os.path.join(folder, 'inputs', file)
+            input_image = os.path.join(folder, 'inputs', orig_file)
             target1_image = os.path.join(folder, 'targets1', file)
             target2_image = os.path.join(folder, 'targets2', file)
 
