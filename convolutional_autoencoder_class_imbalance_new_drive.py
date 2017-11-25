@@ -384,10 +384,10 @@ def train(train_indices, validation_indices, run_id):
     test_inputs, test_targets = dataset.file_paths_to_images(folder, validation_indices, os.listdir(os.path.join(folder, 'inputs')), True)
     pos_weight = find_positive_weight(train_targets)
 
-    dataset.train_inputs = train_inputs
-    dataset.train_targets = train_targets
-    dataset.test_inputs = test_inputs
-    dataset.test_targets = test_targets
+    dataset.train_inputs = np.asarray(train_inputs)
+    dataset.train_targets = np.asarray(train_targets)
+    dataset.test_inputs = np.asarray(test_inputs)
+    dataset.test_targets = np.asarray(test_targets)
 
     print(train_inputs.shape)
     print(train_targets.shape)
