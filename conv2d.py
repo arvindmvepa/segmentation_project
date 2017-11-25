@@ -70,6 +70,35 @@ class Conv2d(Layer):
 
         return output
 
+    def create_last_layer_reversed(self, input, prev_layer=None):
+        net_id = self.net_id
+        print(net_id)
+        # print('convd2_transposed: input_shape: {}'.format(utils.get_incoming_shape(input)))
+        # W = self.encoder[layer_index]
+        with tf.variable_scope('conv', reuse=False):
+            W = tf.get_variable('W{}_{}_'.format(self.name[-3:], net_id),
+                                shape=(self.kernel_size, self.kernel_size, self.input_shape[3], self.output_channels))
+            b = tf.Variable(tf.zeros([W.get_shape().as_list()[2]]))
+        # if self.strides==[1, 1, 1, 1]:
+        #     print('Now')
+        #     output = lrelu(tf.add(
+        #         tf.nn.conv2d(input, W,strides=self.strides, padding='SAME'), b))
+        # else:
+        #     print('1Now1')
+        output = tf.nn.conv2d_transpose(
+            input, W,
+            tf.stack([tf.shape(input)[0], self.input_shape[1], self.input_shape[2], 1]),
+            strides=[1,1,1,1], padding='SAME')
+
+        Conv2d.layer_index += 1
+        output.set_shape([None, self.input_shape[1], self.input_shape[2], 1])
+
+        output = lrelu(tf.add(tf.contrib.layers.batch_norm(output), b))
+        # print('convd2_transposed: output_shape: {}'.format(utils.get_incoming_shape(output)))
+
+        return output
+
+
     def create_deconv_layer(self, input):
         # print('convd2_transposed: input_shape: {}'.format(utils.get_incoming_shape(input)))
         # W = self.encoder[layer_index]
