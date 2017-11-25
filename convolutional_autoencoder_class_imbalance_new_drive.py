@@ -228,7 +228,9 @@ class Dataset:
 
         for file_index in file_indices:
             file = files_list[file_index]
-            print(file)
+            num = int(file[0:2])
+            print(num)
+            file = str(num) + "_manual1"
             input_image = os.path.join(folder, 'inputs', file)
             target1_image = os.path.join(folder, 'targets1', file)
             target2_image = os.path.join(folder, 'targets2', file)
@@ -237,6 +239,8 @@ class Dataset:
             inputs.append(test_image)
 
             #print(np.array(skio.imread(target_image)).shape)
+
+            
 
             if os.path.exists(target1_image):
 
