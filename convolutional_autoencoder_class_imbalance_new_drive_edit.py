@@ -213,7 +213,7 @@ class Network:
 
 
 class Dataset:
-    def __init__(self, batch_size, folder='vessels', include_hair=True):
+    def __init__(self, batch_size, folder='drive', include_hair=True):
         self.folder = folder
         self.batch_size = batch_size
         self.include_hair = include_hair
@@ -350,7 +350,7 @@ def train(train_indices, validation_indices, run_id):
     BATCH_SIZE = 1
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
 
-    dataset = Dataset(folder='vessels', include_hair=True,
+    dataset = Dataset(folder='drive', include_hair=True,
                       batch_size=BATCH_SIZE)
 
     #inputs, targets = dataset.next_batch()
@@ -563,7 +563,7 @@ if __name__ == '__main__':
     f2.close()
 
     count = 0
-    for train_indices, validation_indices in k_fold.split(os.listdir(os.path.join('vessels', 'inputs'))):
+    for train_indices, validation_indices in k_fold.split(os.listdir(os.path.join('drive', 'inputs'))):
         f1 = open('out1.txt','a')
         f2 = open('out2.txt','a')
         f1.write('Train Indices {} Validation Indices {} \n'.format(train_indices, validation_indices))
