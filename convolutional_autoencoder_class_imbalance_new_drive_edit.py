@@ -443,14 +443,14 @@ def train(train_indices, validation_indices, run_id):
             acc = 0.0
             batch_num = 0
             for epoch_i in range(n_epochs):
-                if batch_num > 100:
+                if batch_num > 40:
                     epoch_i = 0
                     dataset.reset_batch_pointer()
                     break
                 dataset.reset_batch_pointer()
                 for batch_i in range(dataset.num_batches_in_epoch()):
                     batch_num = epoch_i * dataset.num_batches_in_epoch() + batch_i + 1
-                    if batch_num > 100:
+                    if batch_num > 40:
                         break
 
                     augmentation_seq_deterministic = augmentation_seq.to_deterministic()
@@ -468,7 +468,7 @@ def train(train_indices, validation_indices, run_id):
                     cost, _ = sess.run([network.cost, network.train_op], feed_dict={network.inputs: batch_inputs, network.targets: batch_targets, network.is_training: True})
                     end = time.time()
                     print('{}/{}, epoch: {}, cost: {}, batch time: {}, positive_weight: {}'.format(batch_num, n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost, end - start, pos_weight))
-                    if batch_num % 1 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
+                    if batch_num % 10 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
                         test_accuracy = 0.0
                         test_accuracy1 = 0.0
 
