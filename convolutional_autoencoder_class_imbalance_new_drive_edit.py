@@ -397,6 +397,10 @@ def train(train_indices, validation_indices, run_id):
     dataset.test_inputs = test_inputs
     dataset.test_targets = test_targets
 
+    print(train_inputs.shape)
+    print(train_targets.shape)
+    print(test_inputs.shape)
+    print(test_targets.shape)
     # test_inputs, test_targets = test_inputs[:100], test_targets[:100]
     test_inputs = np.reshape(test_inputs, (-1, IMAGE_HEIGHT, IMAGE_WIDTH, 1))
     test_targets = np.reshape(test_targets, (-1, IMAGE_HEIGHT, IMAGE_WIDTH, 1))
