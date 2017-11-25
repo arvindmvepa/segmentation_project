@@ -88,7 +88,7 @@ class Conv2d(Layer):
         output = tf.nn.conv2d_transpose(
             input, W,
             tf.stack([tf.shape(input)[0], 565, 584, 1]),
-            strides=[1,1,1,1], padding='SAME')
+            strides=[1,1,1,1], padding='VALID')
 
         Conv2d.layer_index += 1
         output.set_shape([None, 565, 584, 1])
