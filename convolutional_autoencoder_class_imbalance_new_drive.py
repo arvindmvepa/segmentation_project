@@ -239,7 +239,7 @@ class Dataset:
             target2_image = os.path.join(folder, 'targets2', file)
 
             test_image = cv2.imread(input_image, 1)
-            test_image = [:,:,1]
+            test_image = test_image[:,:,1]
             inputs.append(test_image)
 
             #print(np.array(skio.imread(target_image)).shape)
