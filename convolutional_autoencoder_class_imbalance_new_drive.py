@@ -393,7 +393,7 @@ def train(train_indices, validation_indices, run_id):
 
     print(train_inputs)
     # test_inputs, test_targets = test_inputs[:100], test_targets[:100]
-    test_inputs = np.reshape(test_inputs, (-1, 564, 585, 1))
+    test_inputs = np.reshape(test_inputs, (-1, 564, 585, 3))
     test_targets = np.reshape(test_targets, (-1, 564, 585, 1))
     test_inputs = np.multiply(test_inputs, 1.0 / 255)
 
@@ -442,7 +442,7 @@ def train(train_indices, validation_indices, run_id):
 
                     start = time.time()
                     batch_inputs, batch_targets = dataset.next_batch()
-                    batch_inputs = np.reshape(batch_inputs, (dataset.batch_size, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1))
+                    batch_inputs = np.reshape(batch_inputs, (dataset.batch_size, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, network.IMAGE_CHANNELS))
                     batch_targets = np.reshape(batch_targets, (dataset.batch_size, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1))
 
                     batch_inputs = augmentation_seq_deterministic.augment_images(batch_inputs)
@@ -503,9 +503,7 @@ def train(train_indices, validation_indices, run_id):
                         tn, fp, fn, tp = confusion_matrix(target_flat, prediction_flat).ravel()
                         specificity = tn / (tn+fp)
                         sess.run(tf.local_variables_initializer())
-
-
-
+                        
                         test_accuracy = test_accuracy/len(test_inputs)
                         #test_accuracy1 = test_accuracy1/len(test_inputs)
                         print('Step {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, specificity {}'.format(batch_num, test_accuracy, dice_coe_val.eval(), hard_dice_coe_val.eval(), iou_coe_val.eval(), recall, precision, fbeta_score, auc, specificity))
@@ -517,7 +515,7 @@ def train(train_indices, validation_indices, run_id):
                         test_segmentation = []
                         for i in range(n_examples):
                             test_i = np.multiply(t_inputs[i:(i+1)], 1.0 / 255)
-                            segmentation = sess.run(network.segmentation_result, feed_dict={network.inputs: np.reshape(test_i, [1, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1])})
+                            segmentation = sess.run(network.segmentation_result, feed_dict={network.inputs: np.reshape(test_i, [1, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, network.IMAGE_CHANNELS])})
                             test_segmentation.append(segmentation[0])                            
 
                         test_plot_buf = draw_results(t_inputs[:n_examples], np.multiply(t_targets[:n_examples],1.0/255), test_segmentation, test_accuracy, network, batch_num)
