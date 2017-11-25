@@ -87,11 +87,11 @@ class Conv2d(Layer):
         #     print('1Now1')
         output = tf.nn.conv2d_transpose(
             input, W,
-            tf.stack([tf.shape(input)[0], self.input_shape[1], self.input_shape[2], 1]),
+            tf.stack([tf.shape(input)[0], self.input_shape[1], self.input_shape[2], self.input_shape[3]]),
             strides=[1,1,1,1], padding='SAME')
 
         Conv2d.layer_index += 1
-        output.set_shape([None, self.input_shape[1], self.input_shape[2], 1])
+        output.set_shape([None, self.input_shape[1], self.input_shape[2], self.input_shape[3]])
 
         output = lrelu(tf.add(tf.contrib.layers.batch_norm(output), b))
         # print('convd2_transposed: output_shape: {}'.format(utils.get_incoming_shape(output)))
