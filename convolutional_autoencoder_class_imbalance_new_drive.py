@@ -230,7 +230,7 @@ class Dataset:
             file = files_list[file_index]
             num = int(file[0:2])
             print(num)
-            file = str(num) + "_manual1"
+            file = str(num) + "_manual1.gif"
             input_image = os.path.join(folder, 'inputs', file)
             target1_image = os.path.join(folder, 'targets1', file)
             target2_image = os.path.join(folder, 'targets2', file)
