@@ -31,7 +31,7 @@ from sklearn.metrics import roc_auc_score
 from sklearn.metrics import confusion_matrix
 
 #IMAGE_HEIGHT = 565
-IMAGE_HEIGHT = 565
+IMAGE_HEIGHT = 584
 IMAGE_WIDTH = 584
 
 #np.set_printoptions(threshold=np.nan)
@@ -244,7 +244,7 @@ class Dataset:
 
             test_image = cv2.imread(input_image, 1)
             test_image = test_image[:,:,1]
-            #test_image = cv2.resize(test_image, (IMAGE_HEIGHT,IMAGE_WIDTH))
+            test_image = cv2.resize(test_image, (IMAGE_HEIGHT,IMAGE_WIDTH))
             inputs.append(test_image)
 
             #print(np.array(skio.imread(target_image)).shape)
@@ -257,7 +257,7 @@ class Dataset:
 
                 target1_image = np.array(skio.imread(target1_image))
                 target1_image = cv2.threshold(target1_image, 127, 1, cv2.THRESH_BINARY)[1]
-                #target1_image = cv2.resize(target1_image, (IMAGE_HEIGHT,IMAGE_WIDTH))
+                target1_image = cv2.resize(target1_image, (IMAGE_HEIGHT,IMAGE_WIDTH))
                 
                 print(target1_image)
                 
