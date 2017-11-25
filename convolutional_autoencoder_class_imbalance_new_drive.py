@@ -113,8 +113,7 @@ def iou_coe(output, target, threshold=0.5, axis=None, smooth=1e-5):
 class Network:
     IMAGE_HEIGHT = 565
     IMAGE_WIDTH = 584
-    IMAGE_CHANNELS = 3
-
+    IMAGE_CHANNELS = 1
     def __init__(self, net_id, weight=1, layers = None, per_image_standardization=True, batch_norm=True, skip_connections=True):
         # Define network - ENCODER (decoder will be symmetric).
 
@@ -175,14 +174,14 @@ class Network:
         #Conv2d.reverse_global_variables()
 
         # DECODER
-        len_layers = len(layers)
-        i = 1
+        #len_layers = len(layers)
+        #i = 1
         for layer in layers:
-            if i < len_layers:
-                net = layer.create_layer_reversed(net, prev_layer=self.layers[layer.name])
-            else:
-                net = layer.create_last_layer_reversed(net, prev_layer=self.layers[layer.name])
-            i+=1
+            #if i < len_layers:
+            net = layer.create_layer_reversed(net, prev_layer=self.layers[layer.name])
+            #else:
+            #net = layer.create_last_layer_reversed(net, prev_layer=self.layers[layer.name])
+            #i+=1
         self.segmentation_result = tf.sigmoid(net)
 
         # segmentation_as_classes = tf.reshape(self.y, [50 * self.IMAGE_HEIGHT * self.IMAGE_WIDTH, 1])
@@ -240,6 +239,7 @@ class Dataset:
             target2_image = os.path.join(folder, 'targets2', file)
 
             test_image = cv2.imread(input_image, 1)
+            test_image = [:,:,1]
             inputs.append(test_image)
 
             #print(np.array(skio.imread(target_image)).shape)
