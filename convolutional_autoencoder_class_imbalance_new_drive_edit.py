@@ -132,7 +132,7 @@ class Network:
             #layers.append(Conv2d(kernel_size=3, strides=[1, 1, 1, 1], output_channels=64, name='conv_1_2', net_id = net_id))
             layers.append(MaxPool2d(kernel_size=2, name='max_1', skip_connection=True and skip_connections))
 
-            layers.append(Conv2d(kernel_size=3, output_channels=128, name='conv_2_1', net_id = net_id))
+            layers.append(Conv2d(kernel_size=2, output_channels=128, name='conv_2_1', net_id = net_id))
             #layers.append(Conv2d(kernel_size=3, strides=[1, 1, 1, 1], output_channels=128, name='conv_2_2'))
 
             layers.append(MaxPool2d(kernel_size=2, name='max_2', skip_connection=True and skip_connections))
