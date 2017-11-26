@@ -144,20 +144,20 @@ class Network:
 
             layers.append(MaxPool2d(kernel_size=2, name='max_3', skip_connection=True and skip_connections))
 
-            #layers.append(Conv2d(kernel_size=3,  output_channels=512, name='conv_4_1', net_id = net_id))
-            #layers.append(Conv2d(kernel_size=3, output_channels=512, name='conv_4_2', net_id = net_id))
+            layers.append(Conv2d(kernel_size=3,  output_channels=512, name='conv_4_1', net_id = net_id))
+            layers.append(Conv2d(kernel_size=3, output_channels=512, name='conv_4_2', net_id = net_id))
 
             #layers.append(Conv2d(kernel_size=3, strides=[1, 1, 1, 1], output_channels=512, name='conv_4_3'))
 
-            #layers.append(MaxPool2d(kernel_size=2, name='max_4', skip_connection=True and skip_connections))
+            layers.append(MaxPool2d(kernel_size=2, name='max_4', skip_connection=True and skip_connections))
 
-            #layers.append(Conv2d(kernel_size=3, output_channels=512, name='conv_5_1', net_id = net_id))
-            #layers.append(Conv2d(kernel_size=3, output_channels=512, name='conv_5_2', net_id = net_id))
+            layers.append(Conv2d(kernel_size=3, output_channels=512, name='conv_5_1', net_id = net_id))
+            layers.append(Conv2d(kernel_size=3, output_channels=512, name='conv_5_2', net_id = net_id))
             #layers.append(Conv2d(kernel_size=3, strides=[1, 1, 1, 1], output_channels=512, name='conv_5_3'))
 
-            #layers.append(MaxPool2d(kernel_size=2, name='max_5', skip_connection=True and skip_connections))
+            layers.append(MaxPool2d(kernel_size=2, name='max_5', skip_connection=True and skip_connections))
 
-            layers.append(Conv2d(kernel_size=7, output_channels=4096, name='conv_6_1', net_id = net_id))
+            layers.append(Conv2d(kernel_size=2, output_channels=4096, name='conv_6_1', net_id = net_id))
             layers.append(Conv2d(kernel_size=1, output_channels=4096, name='conv_6_2', net_id = net_id))
             #layers.append(Conv2d(kernel_size=1, strides=[1, 1, 1, 1], output_channels=1000, name='conv_6_3'))
             self.inputs = tf.placeholder(tf.float32, [None, self.IMAGE_HEIGHT, self.IMAGE_WIDTH, self.IMAGE_CHANNELS],
