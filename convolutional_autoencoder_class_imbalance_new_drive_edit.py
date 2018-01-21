@@ -420,7 +420,7 @@ def train(train_indices, validation_indices, run_id):
     #config = tf.ConfigProto(device_count = {'GPU': 0,'GPU': 1})
 
     count = 0
-    with tf.device('/gpu:1'):
+    with tf.device('/gpu:0'):
         #with tf.device('/cpu:0'):
         network = Network(net_id = count, weight=pos_weight)
     count +=1
@@ -434,7 +434,7 @@ def train(train_indices, validation_indices, run_id):
     saver = tf.train.Saver()
 
     with tf.Session(config=config) as sess:
-        with tf.device('/gpu:1'):
+        with tf.device('/gpu:0'):
             print(sess.run(tf.global_variables_initializer()))
             
             summary_writer = tf.summary.FileWriter('{}/{}-{}'.format('logs', network.description, timestamp), graph=tf.get_default_graph())
