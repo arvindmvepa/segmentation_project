@@ -420,12 +420,12 @@ def train(train_indices, validation_indices, run_id):
     #config = tf.ConfigProto(device_count = {'GPU': 0,'GPU': 1})
 
     count = 0
-    with tf.device('/gpu:0'):
+    with tf.device('/gpu:1'):
         #with tf.device('/cpu:0'):
         network = Network(net_id = count, weight=pos_weight)
     count +=1
 
-    # create directory for saving models
+    # create directory for saving model
     os.makedirs(os.path.join('save', network.description+str(count), timestamp))
 
     config = tf.ConfigProto(allow_soft_placement=True, log_device_placement=True)
@@ -434,7 +434,7 @@ def train(train_indices, validation_indices, run_id):
     saver = tf.train.Saver()
 
     with tf.Session(config=config) as sess:
-        with tf.device('/gpu:0'):
+        with tf.device('/gpu:1'):
             print(sess.run(tf.global_variables_initializer()))
             
             summary_writer = tf.summary.FileWriter('{}/{}-{}'.format('logs', network.description, timestamp), graph=tf.get_default_graph())
