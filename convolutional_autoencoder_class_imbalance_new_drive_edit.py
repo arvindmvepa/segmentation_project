@@ -33,8 +33,8 @@ from sklearn.metrics import confusion_matrix
 IMAGE_HEIGHT = 565
 #IMAGE_HEIGHT = 584
 IMAGE_WIDTH = 584
-INPUT_IMAGE_HEIGHT = 600
-INPUT_IMAGE_WIDTH = 600
+INPUT_IMAGE_HEIGHT = 565
+INPUT_IMAGE_WIDTH = 584
 
 n_examples = 5
 
@@ -190,10 +190,7 @@ class Network:
         # DECODER
         last_layer = layers[len(layers)-1]
         for layer in layers:
-            if layer != last_layer:
-                net = layer.create_layer_reversed(net, prev_layer=self.layers[layer.name])
-            else:
-                net = layer.create_last_layer_reversed(net, prev_layer=self.layers[layer.name])
+            net = layer.create_layer_reversed(net, prev_layer=self.layers[layer.name])
 
         self.segmentation_result = tf.sigmoid(net)
 
