@@ -143,7 +143,6 @@ class Network:
             layers.append(Conv2d(kernel_size=3, output_channels=256, name='conv_3_1', net_id = net_id))
             layers.append(Conv2d(kernel_size=3, dilation = 2,  output_channels=256, name='conv_3_2', net_id = net_id))
 
-
             #layers.append(Conv2d(kernel_size=3, strides=[1, 1, 1, 1], output_channels=256, name='conv_3_3'))
 
             layers.append(MaxPool2d(kernel_size=2, name='max_3', skip_connection=True and skip_connections))
@@ -189,8 +188,12 @@ class Network:
         #Conv2d.reverse_global_variables()
 
         # DECODER
+        last_layer = layers[len(layers)-1]
         for layer in layers:
-            net = layer.create_layer_reversed(net, prev_layer=self.layers[layer.name])
+            if layer != last_layer:
+                net = layer.create_layer_reversed(net, prev_layer=self.layers[layer.name])
+            else:
+                net = layer.create_last_layer_reversed(net, prev_layer=self.layers[layer.name])
 
         self.segmentation_result = tf.sigmoid(net)
 
