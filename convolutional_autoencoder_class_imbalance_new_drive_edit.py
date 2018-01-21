@@ -165,7 +165,7 @@ class Network:
             layers.append(Conv2d(kernel_size=7, output_channels=4096, name='conv_6_1', net_id = net_id))
             layers.append(Conv2d(kernel_size=1, output_channels=4096, name='conv_6_2', net_id = net_id))
             #layers.append(Conv2d(kernel_size=1, strides=[1, 1, 1, 1], output_channels=1000, name='conv_6_3'))
-            self.inputs = tf.placeholder(tf.float32, [None, INPUT_IMAGE_HEIGHT, INPUT_IMAGE_WIDTH, self.IMAGE_CHANNELS],
+            self.inputs = tf.placeholder(tf.float32, [None, 600, 600, self.IMAGE_CHANNELS],
                                      name='inputs')
         self.targets = tf.placeholder(tf.float32, [None, self.IMAGE_HEIGHT, self.IMAGE_WIDTH, 1], name='targets')
         self.is_training = tf.placeholder_with_default(False, [], name='is_training')
@@ -253,7 +253,7 @@ class Dataset:
             test_image = cv2.imread(input_image, 1)
             test_image = test_image[:,:,1]
             #need circular padding
-            test_image = cv2.resize(test_image, (IMAGE_HEIGHT,IMAGE_WIDTH))
+            test_image = cv2.resize(test_image, (600,600))
             inputs.append(test_image)
 
             #print(np.array(skio.imread(target_image)).shape)
