@@ -415,7 +415,7 @@ def train(train_indices, validation_indices, run_id):
     print(test_inputs.shape)
     print(test_targets.shape)
     # test_inputs, test_targets = test_inputs[:100], test_targets[:100]
-    test_inputs = np.reshape(test_inputs, (len(test_inputs), IMAGE_HEIGHT, IMAGE_WIDTH, 1))
+    test_inputs = np.reshape(test_inputs, (len(test_inputs), 600, 600, 1))
     test_targets = np.reshape(test_targets, (len(test_targets), IMAGE_HEIGHT, IMAGE_WIDTH, 1))
     test_inputs = np.multiply(test_inputs, 1.0 / 255)
 
@@ -469,7 +469,7 @@ def train(train_indices, validation_indices, run_id):
 
                     start = time.time()
                     batch_inputs, batch_targets = dataset.next_batch()
-                    batch_inputs = np.reshape(batch_inputs, (dataset.batch_size, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1))
+                    batch_inputs = np.reshape(batch_inputs, (dataset.batch_size, 600, 600, 1))
                     batch_targets = np.reshape(batch_targets, (dataset.batch_size, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1))
 
                     batch_inputs = augmentation_seq_deterministic.augment_images(batch_inputs)
@@ -551,7 +551,7 @@ def train(train_indices, validation_indices, run_id):
                         test_segmentation = []
                         for i in range(n_examples):
                             test_i = np.multiply(t_inputs[i:(i+1)], 1.0 / 255)
-                            segmentation = sess.run(network.segmentation_result, feed_dict={network.inputs: np.reshape(test_i, [1, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1])})
+                            segmentation = sess.run(network.segmentation_result, feed_dict={network.inputs: np.reshape(test_i, [1, 600, 600, 1])})
                             test_segmentation.append(segmentation[0])                            
 
                         test_plot_buf = draw_results(t_inputs[:n_examples], np.multiply(t_targets[:n_examples],1.0/255), test_segmentation, test_accuracy, network, batch_num)
