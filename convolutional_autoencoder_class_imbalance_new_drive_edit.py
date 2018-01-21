@@ -30,9 +30,11 @@ from sklearn.metrics import precision_recall_fscore_support
 from sklearn.metrics import roc_auc_score
 from sklearn.metrics import confusion_matrix
 
-#IMAGE_HEIGHT = 565
-IMAGE_HEIGHT = 584
+IMAGE_HEIGHT = 565
+#IMAGE_HEIGHT = 584
 IMAGE_WIDTH = 584
+INPUT_IMAGE_HEIGHT = 600
+INPUT_IMAGE_WIDTH = 600
 
 n_examples = 5
 
@@ -120,6 +122,8 @@ class Network:
     #IMAGE_HEIGHT = 565
     IMAGE_HEIGHT = IMAGE_HEIGHT
     IMAGE_WIDTH = IMAGE_WIDTH
+    INPUT_IMAGE_HEIGHT = 600
+    INPUT_IMAGE_WIDTH = 600
 
     IMAGE_CHANNELS = 1
 
@@ -160,7 +164,7 @@ class Network:
             layers.append(Conv2d(kernel_size=7, output_channels=4096, name='conv_6_1', net_id = net_id))
             layers.append(Conv2d(kernel_size=1, output_channels=4096, name='conv_6_2', net_id = net_id))
             #layers.append(Conv2d(kernel_size=1, strides=[1, 1, 1, 1], output_channels=1000, name='conv_6_3'))
-            self.inputs = tf.placeholder(tf.float32, [None, self.IMAGE_HEIGHT, self.IMAGE_WIDTH, self.IMAGE_CHANNELS],
+            self.inputs = tf.placeholder(tf.float32, [None, self.INPUT_IMAGE_HEIGHT, self.INPUT_IMAGE_WIDTH, self.IMAGE_CHANNELS],
                                      name='inputs')
         self.targets = tf.placeholder(tf.float32, [None, self.IMAGE_HEIGHT, self.IMAGE_WIDTH, 1], name='targets')
         self.is_training = tf.placeholder_with_default(False, [], name='is_training')
@@ -411,6 +415,7 @@ def train(train_indices, validation_indices, run_id):
     test_inputs = np.reshape(test_inputs, (len(test_inputs), IMAGE_HEIGHT, IMAGE_WIDTH, 1))
     test_targets = np.reshape(test_targets, (len(test_targets), IMAGE_HEIGHT, IMAGE_WIDTH, 1))
     test_inputs = np.multiply(test_inputs, 1.0 / 255)
+    test_inputs=resize_image_with_crop_or_pad(test_inputs,INPUT_IMAGE_HEIGHT,INPUT_IMAGE_WIDTH)
 
     #config = tf.ConfigProto(device_count = {'GPU': 0,'GPU': 1})
 
@@ -462,6 +467,8 @@ def train(train_indices, validation_indices, run_id):
 
                     batch_inputs = augmentation_seq_deterministic.augment_images(batch_inputs)
                     batch_inputs = np.multiply(batch_inputs, 1.0 / 255)
+
+                    batch_inputs=resize_image_with_crop_or_pad(batch_inputs,INPUT_IMAGE_HEIGHT,INPUT_IMAGE_WIDTH)
 
                     batch_targets = augmentation_seq_deterministic.augment_images(batch_targets, hooks=hooks_binmasks)
                     #with tf.device('/gpu:0'):
