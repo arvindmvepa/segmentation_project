@@ -33,8 +33,8 @@ from sklearn.metrics import confusion_matrix
 IMAGE_HEIGHT = 565
 #IMAGE_HEIGHT = 584
 IMAGE_WIDTH = 584
-INPUT_IMAGE_HEIGHT = 565
-INPUT_IMAGE_WIDTH = 584
+INPUT_IMAGE_HEIGHT = 600
+INPUT_IMAGE_WIDTH = 600
 
 n_examples = 5
 
@@ -122,8 +122,8 @@ class Network:
     #IMAGE_HEIGHT = 565
     IMAGE_HEIGHT = IMAGE_HEIGHT
     IMAGE_WIDTH = IMAGE_WIDTH
-    INPUT_IMAGE_HEIGHT = 600
-    INPUT_IMAGE_WIDTH = 600
+    #INPUT_IMAGE_HEIGHT = 600
+    #INPUT_IMAGE_WIDTH = 600
 
     IMAGE_CHANNELS = 1
 
@@ -192,6 +192,7 @@ class Network:
         for layer in layers:
             net = layer.create_layer_reversed(net, prev_layer=self.layers[layer.name])
 
+        net = tf.image.resize_image_with_crop_or_pad(net,IMAGE_HEIGHT,IMAGE_WIDTH)
         self.segmentation_result = tf.sigmoid(net)
 
         # segmentation_as_classes = tf.reshape(self.y, [50 * self.IMAGE_HEIGHT * self.IMAGE_WIDTH, 1])
@@ -201,7 +202,6 @@ class Network:
         print('segmentation_result.shape: {}, targets.shape: {}'.format(self.segmentation_result.get_shape(),
                                                                         self.targets.get_shape()))
 
-        # MSE loss - change to log loss
         
         self.cost = tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(self.targets, net, pos_weight=weight))
         #= tf.sqrt(tf.reduce_mean(tf.square(self.segmentation_result - self.targets)))
