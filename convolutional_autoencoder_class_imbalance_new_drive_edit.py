@@ -122,8 +122,8 @@ class Network:
     #IMAGE_HEIGHT = 565
     IMAGE_HEIGHT = IMAGE_HEIGHT
     IMAGE_WIDTH = IMAGE_WIDTH
-    #INPUT_IMAGE_HEIGHT = 600
-    #INPUT_IMAGE_WIDTH = 600
+    INPUT_IMAGE_HEIGHT = 600
+    INPUT_IMAGE_WIDTH = 600
 
     IMAGE_CHANNELS = 1
 
@@ -192,7 +192,7 @@ class Network:
         for layer in layers:
             net = layer.create_layer_reversed(net, prev_layer=self.layers[layer.name])
 
-        net = tf.image.resize_image_with_crop_or_pad(net,IMAGE_HEIGHT,IMAGE_WIDTH)
+        net = tf.image.resize_image_with_crop_or_pad(net,self.IMAGE_HEIGHT,self.IMAGE_WIDTH)
         self.segmentation_result = tf.sigmoid(net)
 
         # segmentation_as_classes = tf.reshape(self.y, [50 * self.IMAGE_HEIGHT * self.IMAGE_WIDTH, 1])
