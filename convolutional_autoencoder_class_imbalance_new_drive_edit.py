@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 from tensorflow.python.framework import ops
-from tensorflow.python.ops import gen_nn_ops, image_ops_impl
+from tensorflow.python.ops import gen_nn_ops
 
 from imgaug import augmenters as iaa
 from imgaug import imgaug
@@ -415,7 +415,7 @@ def train(train_indices, validation_indices, run_id):
     test_inputs = np.reshape(test_inputs, (len(test_inputs), IMAGE_HEIGHT, IMAGE_WIDTH, 1))
     test_targets = np.reshape(test_targets, (len(test_targets), IMAGE_HEIGHT, IMAGE_WIDTH, 1))
     test_inputs = np.multiply(test_inputs, 1.0 / 255)
-    test_inputs=resize_image_with_crop_or_pad(test_inputs,INPUT_IMAGE_HEIGHT,INPUT_IMAGE_WIDTH)
+    test_inputs=tf.image.resize_image_with_crop_or_pad(test_inputs,INPUT_IMAGE_HEIGHT,INPUT_IMAGE_WIDTH)
 
     #config = tf.ConfigProto(device_count = {'GPU': 0,'GPU': 1})
 
@@ -468,7 +468,7 @@ def train(train_indices, validation_indices, run_id):
                     batch_inputs = augmentation_seq_deterministic.augment_images(batch_inputs)
                     batch_inputs = np.multiply(batch_inputs, 1.0 / 255)
 
-                    batch_inputs=resize_image_with_crop_or_pad(batch_inputs,INPUT_IMAGE_HEIGHT,INPUT_IMAGE_WIDTH)
+                    batch_inputs=tf.image.resize_image_with_crop_or_pad(batch_inputs,INPUT_IMAGE_HEIGHT,INPUT_IMAGE_WIDTH)
 
                     batch_targets = augmentation_seq_deterministic.augment_images(batch_targets, hooks=hooks_binmasks)
                     #with tf.device('/gpu:0'):
