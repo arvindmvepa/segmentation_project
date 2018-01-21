@@ -250,7 +250,8 @@ class Dataset:
 
             test_image = cv2.imread(input_image, 1)
             test_image = test_image[:,:,1]
-            test_image = cv2.resize(test_image, (INPUT_IMAGE_HEIGHT,INPUT_IMAGE_WIDTH))
+            #need circular padding
+            test_image = cv2.resize(test_image, (IMAGE_HEIGHT,IMAGE_WIDTH))
             inputs.append(test_image)
 
             #print(np.array(skio.imread(target_image)).shape)
