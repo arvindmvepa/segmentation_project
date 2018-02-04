@@ -197,7 +197,7 @@ class Network:
         for layer in layers:
             net = layer.create_layer_reversed(net, prev_layer=self.layers[layer.name])
 
-        #net = tf.image.resize_image_with_crop_or_pad(net,IMAGE_HEIGHT,IMAGE_WIDTH)
+        net = tf.image.resize_image_with_crop_or_pad(net,IMAGE_WIDTH,IMAGE_HEIGHT)
         self.segmentation_result = tf.sigmoid(net)
 
         # segmentation_as_classes = tf.reshape(self.y, [50 * self.IMAGE_HEIGHT * self.IMAGE_WIDTH, 1])
@@ -209,7 +209,10 @@ class Network:
 
         
         self.cost = tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(self.targets, net, pos_weight=weight))
+        print('cost.shape: {}'.format(self.cost.get_shape()))
         #= tf.sqrt(tf.reduce_mean(tf.square(self.segmentation_result - self.targets)))
+
+        #override the methods called by minimize to debug the error
         self.train_op = tf.train.AdamOptimizer().minimize(self.cost)
         with tf.name_scope('accuracy'):
             #seg_result = self.segmentation_result.eval()
