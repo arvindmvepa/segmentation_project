@@ -253,18 +253,16 @@ class Dataset:
             target1_image = os.path.join(folder, 'targets1', file)
             target2_image = os.path.join(folder, 'targets2', file)
 
-            input_image = cv2.imread(input_image, 1)
-            input_image = input_image[:,:,1]
+            test_image = cv2.imread(input_image, 1)
+            test_image = test_image[:,:,1]
             #need circular padding
-            #top_pad = int((Mod_HEIGHT-IMAGE_HEIGHT)/2)
-            top_pad = 9
-            #bot_pad = (Mod_HEIGHT-IMAGE_HEIGHT) - top_pad
-            bot_pad = 10
-            left_pad = int((Mod_WIDTH-IMAGE_WIDTH)/2)
-            right_pad = (Mod_WIDTH-IMAGE_WIDTH) - top_pad
-            input_image = cv2.copyMakeBorder(input_image, top_pad, bot_pad, left_pad, right_pad, cv2.BORDER_CONSTANT, 0)
+            left_pad = int((Mod_HEIGHT-IMAGE_HEIGHT)/2)
+            right_pad = (Mod_HEIGHT-IMAGE_HEIGHT) - left_pad
+            top_pad = int((Mod_WIDTH-IMAGE_WIDTH)/2)
+            bot_pad = (Mod_WIDTH-IMAGE_WIDTH) - top_pad
+            test_image = cv2.copyMakeBorder(test_image, left_pad, right_pad, top_pad, bot_pad, cv2.BORDER_CONSTANT, 0)
             #test_image = cv2.resize(test_image, (600,600))
-            inputs.append(input_image)
+            inputs.append(test_image)
 
             #print(np.array(skio.imread(target_image)).shape)
 
