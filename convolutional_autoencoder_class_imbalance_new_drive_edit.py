@@ -168,7 +168,7 @@ class Network:
             layers.append(Conv2d(kernel_size=7, output_channels=4096, name='conv_6_1', net_id = net_id))
             layers.append(Conv2d(kernel_size=1, output_channels=4096, name='conv_6_2', net_id = net_id))
             #layers.append(Conv2d(kernel_size=1, strides=[1, 1, 1, 1], output_channels=1000, name='conv_6_3'))
-            self.inputs = tf.placeholder(tf.float32, [None, Mod_HEIGHT, Mod_WEIGHT, self.IMAGE_CHANNELS],
+            self.inputs = tf.placeholder(tf.float32, [None, Mod_HEIGHT, Mod_WIDTH, self.IMAGE_CHANNELS],
                                      name='inputs')
         self.targets = tf.placeholder(tf.float32, [None, self.IMAGE_HEIGHT, self.IMAGE_WIDTH, 1], name='targets')
         self.is_training = tf.placeholder_with_default(False, [], name='is_training')
@@ -478,7 +478,7 @@ def train(train_indices, validation_indices, run_id):
 
                     start = time.time()
                     batch_inputs, batch_targets = dataset.next_batch()
-                    batch_inputs = np.reshape(batch_inputs, (dataset.batch_size, 600, 600, 1))
+                    batch_inputs = np.reshape(batch_inputs, (dataset.batch_size, Mod_HEIGHT, Mod_WIDTH, 1))
                     batch_targets = np.reshape(batch_targets, (dataset.batch_size, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1))
 
                     batch_inputs = augmentation_seq_deterministic.augment_images(batch_inputs)
@@ -560,7 +560,7 @@ def train(train_indices, validation_indices, run_id):
                         test_segmentation = []
                         for i in range(n_examples):
                             test_i = np.multiply(t_inputs[i:(i+1)], 1.0 / 255)
-                            segmentation = sess.run(network.segmentation_result, feed_dict={network.inputs: np.reshape(test_i, [1, 600, 600, 1])})
+                            segmentation = sess.run(network.segmentation_result, feed_dict={network.inputs: np.reshape(test_i, [1, Mod_HEIGHT, Mod_WIDTH, 1])})
                             test_segmentation.append(segmentation[0])                            
 
                         test_plot_buf = draw_results(t_inputs[:n_examples], np.multiply(t_targets[:n_examples],1.0/255), test_segmentation, test_accuracy, network, batch_num)
