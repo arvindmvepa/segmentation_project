@@ -38,6 +38,9 @@ IMAGE_WIDTH = 584
 INPUT_IMAGE_HEIGHT = IMAGE_HEIGHT
 INPUT_IMAGE_WIDTH = IMAGE_WIDTH
 
+Mod_HEIGHT = 565
+Mod_WIDTH = 584
+
 n_examples = 5
 
 #np.set_printoptions(threshold=np.nan)
@@ -165,7 +168,7 @@ class Network:
             layers.append(Conv2d(kernel_size=7, output_channels=4096, name='conv_6_1', net_id = net_id))
             layers.append(Conv2d(kernel_size=1, output_channels=4096, name='conv_6_2', net_id = net_id))
             #layers.append(Conv2d(kernel_size=1, strides=[1, 1, 1, 1], output_channels=1000, name='conv_6_3'))
-            self.inputs = tf.placeholder(tf.float32, [None, 600, 600, self.IMAGE_CHANNELS],
+            self.inputs = tf.placeholder(tf.float32, [None, Mod_HEIGHT, Mod_WEIGHT, self.IMAGE_CHANNELS],
                                      name='inputs')
         self.targets = tf.placeholder(tf.float32, [None, self.IMAGE_HEIGHT, self.IMAGE_WIDTH, 1], name='targets')
         self.is_training = tf.placeholder_with_default(False, [], name='is_training')
@@ -253,7 +256,11 @@ class Dataset:
             test_image = cv2.imread(input_image, 1)
             test_image = test_image[:,:,1]
             #need circular padding
-            test_image = cv2.copyMakeBorder(test_image, 8, 8, 17, 18, cv2.BORDER_CONSTANT, 0)
+            left_pad = int((Mod_HEIGHT-IMAGE_HEIGHT)/2)
+            right_pad = (Mod_HEIGHT-IMAGE_HEIGHT) - left_pad
+            top_pad = int((Mod_WIDTH-IMAGE_WIDTH)/2)
+            bot_pad = (Mod_WIDTH-IMAGE_WIDTH) - top_pad
+            test_image = cv2.copyMakeBorder(test_image, left_pad, right_pad, top_pad, bot_pad, cv2.BORDER_CONSTANT, 0)
             #test_image = cv2.resize(test_image, (600,600))
             inputs.append(test_image)
 
@@ -404,7 +411,8 @@ def train(train_indices, validation_indices, run_id):
 
     train_inputs, train_targets = dataset.file_paths_to_images(folder, train_indices, os.listdir(os.path.join(folder, 'inputs')))
     test_inputs, test_targets = dataset.file_paths_to_images(folder, validation_indices, os.listdir(os.path.join(folder, 'inputs')), True)
-    pos_weight = find_positive_weight(train_targets)
+    #pos_weight = find_positive_weight(train_targets)
+    pos_weight = 7.5
 
     dataset.train_inputs = train_inputs
     dataset.train_targets = train_targets
@@ -416,7 +424,7 @@ def train(train_indices, validation_indices, run_id):
     print(test_inputs.shape)
     print(test_targets.shape)
     # test_inputs, test_targets = test_inputs[:100], test_targets[:100]
-    test_inputs = np.reshape(test_inputs, (len(test_inputs), 600, 600, 1))
+    test_inputs = np.reshape(test_inputs, (len(test_inputs), Mod_HEIGHT, Mod_WIDTH, 1))
     test_targets = np.reshape(test_targets, (len(test_targets), IMAGE_HEIGHT, IMAGE_WIDTH, 1))
     test_inputs = np.multiply(test_inputs, 1.0 / 255)
 
@@ -430,8 +438,7 @@ def train(train_indices, validation_indices, run_id):
     count = 0
     with tf.device('/gpu:1'):
         #with tf.device('/cpu:0'):
-        #network = Network(net_id = count, weight=pos_weight)
-        network = Network(net_id = count, weight=7.5)
+        network = Network(net_id = count, weight=pos_weight)
     count +=1
 
     # create directory for saving model
