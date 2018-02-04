@@ -38,8 +38,8 @@ IMAGE_WIDTH = 584
 INPUT_IMAGE_HEIGHT = IMAGE_HEIGHT
 INPUT_IMAGE_WIDTH = IMAGE_WIDTH
 
-Mod_HEIGHT = 584
-Mod_WIDTH = 584
+#Mod_HEIGHT = 584
+#Mod_WIDTH = 584
 
 n_examples = 5
 
@@ -168,9 +168,9 @@ class Network:
             layers.append(Conv2d(kernel_size=7, output_channels=4096, name='conv_6_1', net_id = net_id))
             layers.append(Conv2d(kernel_size=1, output_channels=4096, name='conv_6_2', net_id = net_id))
             #layers.append(Conv2d(kernel_size=1, strides=[1, 1, 1, 1], output_channels=1000, name='conv_6_3'))
-            self.inputs = tf.placeholder(tf.float32, [None, Mod_HEIGHT, Mod_WIDTH, self.IMAGE_CHANNELS],
+            self.inputs = tf.placeholder(tf.float32, [None, self.IMAGE_WIDTH, self.IMAGE_HEIGHT, self.IMAGE_CHANNELS],
                                      name='inputs')
-        self.targets = tf.placeholder(tf.float32, [None, self.IMAGE_HEIGHT, self.IMAGE_WIDTH, 1], name='targets')
+        self.targets = tf.placeholder(tf.float32, [None, self.IMAGE_WIDTH, self.IMAGE_HEIGHT, 1], name='targets')
         self.is_training = tf.placeholder_with_default(False, [], name='is_training')
         self.description = ""
 
@@ -197,7 +197,7 @@ class Network:
         for layer in layers:
             net = layer.create_layer_reversed(net, prev_layer=self.layers[layer.name])
 
-        net = tf.image.resize_image_with_crop_or_pad(net,IMAGE_HEIGHT,IMAGE_WIDTH)
+        #net = tf.image.resize_image_with_crop_or_pad(net,IMAGE_HEIGHT,IMAGE_WIDTH)
         self.segmentation_result = tf.sigmoid(net)
 
         # segmentation_as_classes = tf.reshape(self.y, [50 * self.IMAGE_HEIGHT * self.IMAGE_WIDTH, 1])
@@ -256,15 +256,15 @@ class Dataset:
             test_image = cv2.imread(input_image, 1)
             test_image = test_image[:,:,1]
             #need circular padding
-            top_pad = int((Mod_HEIGHT-IMAGE_HEIGHT)/2)
-            bot_pad = (Mod_HEIGHT-IMAGE_HEIGHT) - top_pad
-            left_pad = int((Mod_WIDTH-IMAGE_WIDTH)/2)
-            right_pad = (Mod_WIDTH-IMAGE_WIDTH) - left_pad
-            print("before:")
-            print(test_image.shape)
-            test_image = cv2.copyMakeBorder(test_image, left_pad, right_pad, top_pad, bot_pad, cv2.BORDER_CONSTANT, 0)
-            print("after:")
-            print(test_image.shape)
+            #top_pad = int((Mod_HEIGHT-IMAGE_HEIGHT)/2)
+            #bot_pad = (Mod_HEIGHT-IMAGE_HEIGHT) - top_pad
+            #left_pad = int((Mod_WIDTH-IMAGE_WIDTH)/2)
+            #right_pad = (Mod_WIDTH-IMAGE_WIDTH) - left_pad
+            #print("before:")
+            #print(test_image.shape)
+            #test_image = cv2.copyMakeBorder(test_image, left_pad, right_pad, top_pad, bot_pad, cv2.BORDER_CONSTANT, 0)
+            #print("after:")
+            #print(test_image.shape)
             #test_image = cv2.resize(test_image, (600,600))
             inputs.append(test_image)
 
@@ -278,7 +278,7 @@ class Dataset:
 
                 target1_image = np.array(skio.imread(target1_image))
                 target1_image = cv2.threshold(target1_image, 127, 1, cv2.THRESH_BINARY)[1]
-                target1_image = cv2.resize(target1_image, (IMAGE_HEIGHT,IMAGE_WIDTH))
+                target1_image = cv2.resize(target1_image, (IMAGE_WIDTH,IMAGE_HEIGHT))
                 
                 print(target1_image)
                 
@@ -349,13 +349,13 @@ def draw_results(test_inputs, test_targets, test_segmentation, test_accuracy, ne
         #print(np.sum(test_targets[example_i].astype(np.float32)))
         axs[1][example_i].imshow(test_targets[example_i].astype(np.float32), cmap='gray')
         axs[2][example_i].imshow(
-            np.reshape(test_segmentation[example_i], [network.IMAGE_HEIGHT, network.IMAGE_WIDTH]),
+            np.reshape(test_segmentation[example_i], [network.IMAGE_WIDTH, network.IMAGE_HEIGHT]),
             cmap='gray')
         
         test_image_thresholded = np.array(
             [0 if x < 0.5 else 255 for x in test_segmentation[example_i].flatten()])
         axs[3][example_i].imshow(
-            np.reshape(test_image_thresholded, [network.IMAGE_HEIGHT, network.IMAGE_WIDTH]),
+            np.reshape(test_image_thresholded, [network.IMAGE_WIDTH, network.IMAGE_HEIGHT]),
             cmap='gray')
 
         #cv2.imwrite('{}figure_input{}.jpg'.format(batch_num, example_i), test_inputs[example_i]*255)
@@ -428,8 +428,9 @@ def train(train_indices, validation_indices, run_id):
     print(test_inputs.shape)
     print(test_targets.shape)
     # test_inputs, test_targets = test_inputs[:100], test_targets[:100]
-    test_inputs = np.reshape(test_inputs, (len(test_inputs), Mod_HEIGHT, Mod_WIDTH, 1))
-    test_targets = np.reshape(test_targets, (len(test_targets), IMAGE_HEIGHT, IMAGE_WIDTH, 1))
+    #test_inputs = np.reshape(test_inputs, (len(test_inputs), Mod_HEIGHT, Mod_WIDTH, 1))
+    test_inputs = np.reshape(test_inputs, (len(test_inputs), IMAGE_WIDTH, IMAGE_HEIGHT, 1))
+    test_targets = np.reshape(test_targets, (len(test_targets), IMAGE_WIDTH, IMAGE_HEIGHT, 1))
     test_inputs = np.multiply(test_inputs, 1.0 / 255)
 
     #test_inputs = np.pad(test_inputs, ((8,8),(18,17)), 'constant', constant_values=0)
@@ -482,8 +483,8 @@ def train(train_indices, validation_indices, run_id):
 
                     start = time.time()
                     batch_inputs, batch_targets = dataset.next_batch()
-                    batch_inputs = np.reshape(batch_inputs, (dataset.batch_size, Mod_HEIGHT, Mod_WIDTH, 1))
-                    batch_targets = np.reshape(batch_targets, (dataset.batch_size, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1))
+                    batch_inputs = np.reshape(batch_inputs, (dataset.batch_size, network.IMAGE_WIDTH, network.IMAGE_HEIGHT, 1))
+                    batch_targets = np.reshape(batch_targets, (dataset.batch_size, network.IMAGE_WIDTH, network.IMAGE_HEIGHT, 1))
 
                     batch_inputs = augmentation_seq_deterministic.augment_images(batch_inputs)
                     batch_inputs = np.multiply(batch_inputs, 1.0 / 255)
@@ -500,8 +501,8 @@ def train(train_indices, validation_indices, run_id):
                         test_accuracy = 0.0
                         test_accuracy1 = 0.0
 
-                        target_array = np.zeros((len(test_inputs), IMAGE_HEIGHT, IMAGE_WIDTH))
-                        prediction_array = np.zeros((len(test_inputs), IMAGE_HEIGHT, IMAGE_WIDTH))
+                        target_array = np.zeros((len(test_inputs), IMAGE_WIDTH, IMAGE_HEIGHT))
+                        prediction_array = np.zeros((len(test_inputs), IMAGE_WIDTH, IMAGE_HEIGHT))
                         
                         for i in range(len(test_inputs)):
                             inputs, results, targets, _, acc = sess.run([network.inputs, network.segmentation_result, network.targets, network.summaries, network.accuracy], feed_dict={network.inputs: test_inputs[i:(i+1)], network.targets: test_targets[i:(i+1)], network.is_training: False})
@@ -513,7 +514,7 @@ def train(train_indices, validation_indices, run_id):
                             target_array[i]=targets
                             prediction_array[i]=results
 
-                            new_results = np.zeros((2,IMAGE_HEIGHT,IMAGE_WIDTH))
+                            new_results = np.zeros((2,IMAGE_WIDTH,IMAGE_HEIGHT))
                             new_results[0] = results
                             new_results[1] = 1-results
                         
@@ -564,7 +565,7 @@ def train(train_indices, validation_indices, run_id):
                         test_segmentation = []
                         for i in range(n_examples):
                             test_i = np.multiply(t_inputs[i:(i+1)], 1.0 / 255)
-                            segmentation = sess.run(network.segmentation_result, feed_dict={network.inputs: np.reshape(test_i, [1, Mod_HEIGHT, Mod_WIDTH, 1])})
+                            segmentation = sess.run(network.segmentation_result, feed_dict={network.inputs: np.reshape(test_i, [1, IMAGE_WIDTH, IMAGE_HEIGHT, 1])})
                             test_segmentation.append(segmentation[0])                            
 
                         test_plot_buf = draw_results(t_inputs[:n_examples], np.multiply(t_targets[:n_examples],1.0/255), test_segmentation, test_accuracy, network, batch_num)
