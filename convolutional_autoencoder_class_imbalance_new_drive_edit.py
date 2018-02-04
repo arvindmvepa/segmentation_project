@@ -38,8 +38,8 @@ IMAGE_WIDTH = 584
 INPUT_IMAGE_HEIGHT = IMAGE_HEIGHT
 INPUT_IMAGE_WIDTH = IMAGE_WIDTH
 
-#Mod_HEIGHT = 584
-#Mod_WIDTH = 584
+Mod_HEIGHT = 584
+Mod_WIDTH = 584
 
 n_examples = 5
 
@@ -168,8 +168,8 @@ class Network:
             layers.append(Conv2d(kernel_size=7, output_channels=4096, name='conv_6_1', net_id = net_id))
             layers.append(Conv2d(kernel_size=1, output_channels=4096, name='conv_6_2', net_id = net_id))
             #layers.append(Conv2d(kernel_size=1, strides=[1, 1, 1, 1], output_channels=1000, name='conv_6_3'))
-            self.inputs = tf.placeholder(tf.float32, [None, self.IMAGE_WIDTH, self.IMAGE_HEIGHT, self.IMAGE_CHANNELS],
-                                     name='inputs')
+            #self.inputs = tf.placeholder(tf.float32, [None, self.IMAGE_WIDTH, self.IMAGE_HEIGHT, self.IMAGE_CHANNELS],name='inputs')
+            self.inputs = tf.placeholder(tf.float32, [None, Mod_WIDTH, Mod_HEIGHT, self.IMAGE_CHANNELS],name='inputs')
         self.targets = tf.placeholder(tf.float32, [None, self.IMAGE_WIDTH, self.IMAGE_HEIGHT, 1], name='targets')
         self.is_training = tf.placeholder_with_default(False, [], name='is_training')
         self.description = ""
@@ -213,6 +213,7 @@ class Network:
         #= tf.sqrt(tf.reduce_mean(tf.square(self.segmentation_result - self.targets)))
 
         #override the methods called by minimize to debug the error
+        #debug first layer to figure out what's going on
         self.train_op = tf.train.AdamOptimizer().minimize(self.cost)
         with tf.name_scope('accuracy'):
             #seg_result = self.segmentation_result.eval()
@@ -259,15 +260,15 @@ class Dataset:
             test_image = cv2.imread(input_image, 1)
             test_image = test_image[:,:,1]
             #need circular padding
-            #top_pad = int((Mod_HEIGHT-IMAGE_HEIGHT)/2)
-            #bot_pad = (Mod_HEIGHT-IMAGE_HEIGHT) - top_pad
-            #left_pad = int((Mod_WIDTH-IMAGE_WIDTH)/2)
-            #right_pad = (Mod_WIDTH-IMAGE_WIDTH) - left_pad
-            #print("before:")
-            #print(test_image.shape)
-            #test_image = cv2.copyMakeBorder(test_image, left_pad, right_pad, top_pad, bot_pad, cv2.BORDER_CONSTANT, 0)
-            #print("after:")
-            #print(test_image.shape)
+            top_pad = int((Mod_HEIGHT-IMAGE_HEIGHT)/2)
+            bot_pad = (Mod_HEIGHT-IMAGE_HEIGHT) - top_pad
+            left_pad = int((Mod_WIDTH-IMAGE_WIDTH)/2)
+            right_pad = (Mod_WIDTH-IMAGE_WIDTH) - left_pad
+            print("before:")
+            print(test_image.shape)
+            test_image = cv2.copyMakeBorder(test_image, top_pad, bot_pad, left_pad, right_pad, cv2.BORDER_CONSTANT, 0)
+            print("after:")
+            print(test_image.shape)
             #test_image = cv2.resize(test_image, (600,600))
             inputs.append(test_image)
 
@@ -432,7 +433,7 @@ def train(train_indices, validation_indices, run_id):
     print(test_targets.shape)
     # test_inputs, test_targets = test_inputs[:100], test_targets[:100]
     #test_inputs = np.reshape(test_inputs, (len(test_inputs), Mod_HEIGHT, Mod_WIDTH, 1))
-    test_inputs = np.reshape(test_inputs, (len(test_inputs), IMAGE_WIDTH, IMAGE_HEIGHT, 1))
+    test_inputs = np.reshape(test_inputs, (len(test_inputs), Mod_WIDTH, Mod_HEIGHT, 1))
     test_targets = np.reshape(test_targets, (len(test_targets), IMAGE_WIDTH, IMAGE_HEIGHT, 1))
     test_inputs = np.multiply(test_inputs, 1.0 / 255)
 
@@ -486,7 +487,7 @@ def train(train_indices, validation_indices, run_id):
 
                     start = time.time()
                     batch_inputs, batch_targets = dataset.next_batch()
-                    batch_inputs = np.reshape(batch_inputs, (dataset.batch_size, network.IMAGE_WIDTH, network.IMAGE_HEIGHT, 1))
+                    batch_inputs = np.reshape(batch_inputs, (dataset.batch_size, Mod_WIDTH, Mod_HEIGHT, 1))
                     batch_targets = np.reshape(batch_targets, (dataset.batch_size, network.IMAGE_WIDTH, network.IMAGE_HEIGHT, 1))
 
                     batch_inputs = augmentation_seq_deterministic.augment_images(batch_inputs)
@@ -511,6 +512,7 @@ def train(train_indices, validation_indices, run_id):
                             inputs, results, targets, _, acc = sess.run([network.inputs, network.segmentation_result, network.targets, network.summaries, network.accuracy], feed_dict={network.inputs: test_inputs[i:(i+1)], network.targets: test_targets[i:(i+1)], network.is_training: False})
 
                             results = results[0,:,:,0]
+                            inputs = inputs[0,:,:,0]
                             inputs = inputs[0,:,:,0]
                             targets = targets[0,:,:,0]
 
