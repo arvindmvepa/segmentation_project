@@ -266,7 +266,7 @@ class Dataset:
             right_pad = (Mod_WIDTH-IMAGE_WIDTH) - left_pad
             print("before:")
             print(test_image.shape)
-            test_image = cv2.copyMakeBorder(test_image, top_pad, bot_pad, left_pad, right_pad, cv2.BORDER_CONSTANT, 0)
+            test_image = cv2.copyMakeBorder(test_image, left_pad, right_pad, top_pad, bot_pad, cv2.BORDER_CONSTANT, 0)
             print("after:")
             print(test_image.shape)
             #test_image = cv2.resize(test_image, (600,600))
