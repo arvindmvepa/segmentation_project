@@ -278,7 +278,7 @@ class Dataset:
 
                 target1_image = np.array(skio.imread(target1_image))
                 target1_image = cv2.threshold(target1_image, 127, 1, cv2.THRESH_BINARY)[1]
-                target1_image = cv2.resize(target1_image, (IMAGE_WIDTH,IMAGE_HEIGHT))
+                #target1_image = cv2.resize(target1_image, (IMAGE_WIDTH,IMAGE_HEIGHT))
                 
                 print(target1_image)
                 
