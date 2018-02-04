@@ -209,7 +209,7 @@ class Network:
 
         
         self.cost = tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(self.targets, net, pos_weight=weight))
-        print('net.shape: {}'.format(self.net.get_shape()))
+        print('net.shape: {}'.format(net.get_shape()))
         #= tf.sqrt(tf.reduce_mean(tf.square(self.segmentation_result - self.targets)))
 
         #override the methods called by minimize to debug the error
