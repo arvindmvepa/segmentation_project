@@ -253,7 +253,8 @@ class Dataset:
             test_image = cv2.imread(input_image, 1)
             test_image = test_image[:,:,1]
             #need circular padding
-            test_image = cv2.resize(test_image, (600,600))
+            test_image = cv2.copyMakeBorder(test_image, 8, 8, 17, 18, cv2.BORDER_CONSTANT, 0)
+            #test_image = cv2.resize(test_image, (600,600))
             inputs.append(test_image)
 
             #print(np.array(skio.imread(target_image)).shape)
@@ -429,7 +430,8 @@ def train(train_indices, validation_indices, run_id):
     count = 0
     with tf.device('/gpu:1'):
         #with tf.device('/cpu:0'):
-        network = Network(net_id = count, weight=pos_weight)
+        #network = Network(net_id = count, weight=pos_weight)
+        network = Network(net_id = count, weight=7.5)
     count +=1
 
     # create directory for saving model
