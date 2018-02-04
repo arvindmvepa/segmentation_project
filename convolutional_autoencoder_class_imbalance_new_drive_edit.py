@@ -38,7 +38,7 @@ IMAGE_WIDTH = 584
 INPUT_IMAGE_HEIGHT = IMAGE_HEIGHT
 INPUT_IMAGE_WIDTH = IMAGE_WIDTH
 
-Mod_HEIGHT = 565
+Mod_HEIGHT = 584
 Mod_WIDTH = 584
 
 n_examples = 5
@@ -256,11 +256,11 @@ class Dataset:
             test_image = cv2.imread(input_image, 1)
             test_image = test_image[:,:,1]
             #need circular padding
-            left_pad = int((Mod_HEIGHT-IMAGE_HEIGHT)/2)
-            right_pad = (Mod_HEIGHT-IMAGE_HEIGHT) - left_pad
-            top_pad = int((Mod_WIDTH-IMAGE_WIDTH)/2)
-            bot_pad = (Mod_WIDTH-IMAGE_WIDTH) - top_pad
-            test_image = cv2.copyMakeBorder(test_image, left_pad, right_pad, top_pad, bot_pad, cv2.BORDER_CONSTANT, 0)
+            top_pad = int((Mod_HEIGHT-IMAGE_HEIGHT)/2)
+            bot_pad = (Mod_HEIGHT-IMAGE_HEIGHT) - top_pad
+            left_pad = int((Mod_WIDTH-IMAGE_WIDTH)/2)
+            right_pad = (Mod_WIDTH-IMAGE_WIDTH) - left_pad
+            test_image = cv2.copyMakeBorder(test_image, top_pad, bot_pad, left_pad, right_pad, cv2.BORDER_CONSTANT, 0)
             #test_image = cv2.resize(test_image, (600,600))
             inputs.append(test_image)
 
