@@ -450,7 +450,7 @@ def train(train_indices, validation_indices, run_id):
 
                     batch_targets = augmentation_seq_deterministic.augment_images(batch_targets, hooks=hooks_binmasks)
                     # with tf.device('/gpu:0'):
-                    if batch_num > 10:
+                    if batch_num > 10000:
                         pos_weight = 1
                     cost, _ = sess.run([network.cost, network.train_op],
                                        feed_dict={network.inputs: batch_inputs, network.targets: batch_targets,
@@ -462,9 +462,9 @@ def train(train_indices, validation_indices, run_id):
                                                                                                    epoch_i, cost,
                                                                                                    end - start,
                                                                                                    pos_weight))
-                    if batch_num % 1000 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
+                    if batch_num % 10 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
                         test_accuracy = 0.0
-                        test_accuracy1 = 0.0
+                        #test_accuracy1 = 0.0
 
                         target_array = np.zeros((len(test_inputs), 1024, 1024))
                         prediction_array = np.zeros((len(test_inputs), 1024, 1024))
@@ -522,8 +522,8 @@ def train(train_indices, validation_indices, run_id):
                         test_accuracy = test_accuracy / len(test_inputs)
                         # test_accuracy1 = test_accuracy1/len(test_inputs)
                         print(
-                        'Step {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, specificity {}'.format(
-                            batch_num, test_accuracy, dice_coe_val.eval(), hard_dice_coe_val.eval(), iou_coe_val.eval(),
+                        'Step {}, cost: {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, specificity {}'.format(
+                            batch_num, cost, test_accuracy, dice_coe_val.eval(), hard_dice_coe_val.eval(), iou_coe_val.eval(),
                             recall, precision, fbeta_score, auc, specificity))
                         # print('Step {}, test accuracy1: {}'.format(batch_num, test_accuracy1))
 
@@ -547,10 +547,10 @@ def train(train_indices, validation_indices, run_id):
                         image_summary = sess.run(image_summary_op)
                         summary_writer.add_summary(image_summary)
                         f1 = open('out1.txt', 'a')
-                        f2 = open('out2.txt', 'a')
+                        #f2 = open('out2.txt', 'a')
 
                         test_accuracies.append((test_accuracy, batch_num))
-                        test_accuracies1.append((test_accuracy1, batch_num))
+                        #test_accuracies1.append((test_accuracy1, batch_num))
                         print("Accuracies in time: ", [test_accuracies[x][0] for x in range(len(test_accuracies))])
                         print(test_accuracies)
                         max_acc = max(test_accuracies)
@@ -558,24 +558,24 @@ def train(train_indices, validation_indices, run_id):
                         print("Total time: {}".format(time.time() - global_start))
                         # f1.write("batch num: " + str(batch_num) + " " +str(test_accuracy) + " max: " + str(max_acc[0]) +" "+str(max_acc[1])+ "\n")
                         f1.write(
-                            'Step {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, specificity {}, max acc {} {} \n'.format(
-                                batch_num, test_accuracy, dice_coe_val.eval(), hard_dice_coe_val.eval(),
+                            'Step {}, cost: {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, specificity {}, max acc {} {} \n'.format(
+                                batch_num, cost, test_accuracy, dice_coe_val.eval(), hard_dice_coe_val.eval(),
                                 iou_coe_val.eval(), recall, precision, fbeta_score, auc, specificity, max_acc[0],
                                 max_acc[1]))
 
-                        print("Accuracies1 in time: ", [test_accuracies1[x][0] for x in range(len(test_accuracies1))])
-                        print(str(test_accuracies1))
-                        max_acc = max(test_accuracies1)
-                        print("Best accuracy1: {} in batch {}".format(max_acc[0], max_acc[1]))
-                        print("Total time: {}".format(time.time() - global_start))
+                        #print("Accuracies1 in time: ", [test_accuracies1[x][0] for x in range(len(test_accuracies1))])
+                        #print(str(test_accuracies1))
+                        #max_acc = max(test_accuracies1)
+                        #print("Best accuracy1: {} in batch {}".format(max_acc[0], max_acc[1]))
+                        #print("Total time: {}".format(time.time() - global_start))
                         # f2.write("batch num: " + str(batch_num) + " " +str(test_accuracy1) + " max: " + str(max_acc[0]) +" "+str(max_acc[1]) +"\n")
-                        f2.write(
-                            'Step {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, specificity {}, max acc {} {} \n'.format(
-                                batch_num, test_accuracy1, dice_coe_val.eval(), hard_dice_coe_val.eval(),
-                                iou_coe_val.eval(), recall, precision, fbeta_score, auc, specificity, max_acc[0],
-                                max_acc[1]))
+                        #f2.write(
+                            #'Step {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, specificity {}, max acc {} {} \n'.format(
+                                #batch_num, test_accuracy1, dice_coe_val.eval(), hard_dice_coe_val.eval(),
+                                #iou_coe_val.eval(), recall, precision, fbeta_score, auc, specificity, max_acc[0],
+                                #max_acc[1]))
                         f1.close()
-                        f2.close()
+                        #f2.close()
 
 
 if __name__ == '__main__':
