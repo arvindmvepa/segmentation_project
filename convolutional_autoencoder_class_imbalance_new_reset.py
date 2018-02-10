@@ -452,7 +452,8 @@ def train(train_indices, validation_indices, run_id):
                     # with tf.device('/gpu:0'):
                     cost, _ = sess.run([network.cost, network.train_op],
                                        feed_dict={network.inputs: batch_inputs, network.targets: batch_targets,
-                                                  network.is_training: True})
+                                                  network.is_training: True,
+                                                  network.ce_weight: pos_weight})
                     end = time.time()
                     print('{}/{}, epoch: {}, cost: {}, batch time: {}, positive_weight: {}'.format(batch_num,
                                                                                                    n_epochs * dataset.num_batches_in_epoch(),
@@ -471,8 +472,7 @@ def train(train_indices, validation_indices, run_id):
                                 [network.inputs, network.segmentation_result, network.targets, network.summaries,
                                  network.accuracy], feed_dict={network.inputs: test_inputs[i:(i + 1)],
                                                                network.targets: test_targets[i:(i + 1)],
-                                                               network.is_training: False,
-                                                               network.ce_weight: pos_weight})
+                                                               network.is_training: False})
 
                             results = results[0, :, :, 0]
                             inputs = inputs[0, :, :, 0]
