@@ -527,25 +527,28 @@ def train(train_indices, validation_indices, run_id):
                             recall, precision, fbeta_score, auc, specificity))
                         # print('Step {}, test accuracy1: {}'.format(batch_num, test_accuracy1))
 
-                        n_examples = 12
-
-                        t_inputs, t_targets = dataset.test_inputs[:n_examples], dataset.test_targets[:n_examples]
-                        test_segmentation = []
-                        for i in range(n_examples):
-                            test_i = np.multiply(t_inputs[i:(i + 1)], 1.0 / 255)
-                            segmentation = sess.run(network.segmentation_result, feed_dict={
-                                network.inputs: np.reshape(test_i, [1, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1])})
-                            test_segmentation.append(segmentation[0])
-
-                        test_plot_buf = draw_results(t_inputs[:n_examples],
-                                                     np.multiply(t_targets[:n_examples], 1.0 / 255), test_segmentation,
-                                                     test_accuracy, network, batch_num)
-
-                        image = tf.image.decode_png(test_plot_buf.getvalue(), channels=4)
-                        image = tf.expand_dims(image, 0)
-                        image_summary_op = tf.summary.image("plot", image)
-                        image_summary = sess.run(image_summary_op)
-                        summary_writer.add_summary(image_summary)
+                        """
+                        if batch_num % 1000 == 0:
+                            n_examples = 12
+    
+                            t_inputs, t_targets = dataset.test_inputs[:n_examples], dataset.test_targets[:n_examples]
+                            test_segmentation = []
+                            for i in range(n_examples):
+                                test_i = np.multiply(t_inputs[i:(i + 1)], 1.0 / 255)
+                                segmentation = sess.run(network.segmentation_result, feed_dict={
+                                    network.inputs: np.reshape(test_i, [1, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1])})
+                                test_segmentation.append(segmentation[0])
+    
+                            test_plot_buf = draw_results(t_inputs[:n_examples],
+                                                         np.multiply(t_targets[:n_examples], 1.0 / 255), test_segmentation,
+                                                         test_accuracy, network, batch_num)
+    
+                            image = tf.image.decode_png(test_plot_buf.getvalue(), channels=4)
+                            image = tf.expand_dims(image, 0)
+                            image_summary_op = tf.summary.image("plot", image)
+                            image_summary = sess.run(image_summary_op)
+                            summary_writer.add_summary(image_summary)
+                        """
                         f1 = open('out1.txt', 'a')
                         #f2 = open('out2.txt', 'a')
 
