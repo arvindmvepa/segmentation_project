@@ -462,7 +462,7 @@ def train(train_indices, validation_indices, run_id):
                                                                                                    epoch_i, cost,
                                                                                                    end - start,
                                                                                                    pos_weight))
-                    if batch_num % 10 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
+                    if batch_num % 500 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
                         test_accuracy = 0.0
                         #test_accuracy1 = 0.0
 
@@ -527,7 +527,6 @@ def train(train_indices, validation_indices, run_id):
                             recall, precision, fbeta_score, auc, specificity))
                         # print('Step {}, test accuracy1: {}'.format(batch_num, test_accuracy1))
 
-                        """
                         if batch_num % 1000 == 0:
                             n_examples = 12
     
@@ -538,7 +537,7 @@ def train(train_indices, validation_indices, run_id):
                                 segmentation = sess.run(network.segmentation_result, feed_dict={
                                     network.inputs: np.reshape(test_i, [1, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1])})
                                 test_segmentation.append(segmentation[0])
-    
+
                             test_plot_buf = draw_results(t_inputs[:n_examples],
                                                          np.multiply(t_targets[:n_examples], 1.0 / 255), test_segmentation,
                                                          test_accuracy, network, batch_num)
@@ -548,7 +547,6 @@ def train(train_indices, validation_indices, run_id):
                             image_summary_op = tf.summary.image("plot", image)
                             image_summary = sess.run(image_summary_op)
                             summary_writer.add_summary(image_summary)
-                        """
                         f1 = open('out1.txt', 'a')
                         #f2 = open('out2.txt', 'a')
 
