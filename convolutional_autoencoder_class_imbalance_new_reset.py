@@ -382,8 +382,8 @@ def train(train_indices, validation_indices, run_id):
                                                                os.listdir(os.path.join(folder, 'inputs')))
     test_inputs, test_targets = dataset.file_paths_to_images(folder, validation_indices,
                                                              os.listdir(os.path.join(folder, 'inputs')), True)
-    pos_weight = find_positive_weight(train_targets)
-
+    #pos_weight = find_positive_weight(train_targets)
+    pos_weight = 9
     dataset.train_inputs = train_inputs
     dataset.train_targets = train_targets
     dataset.test_inputs = test_inputs
@@ -426,14 +426,14 @@ def train(train_indices, validation_indices, run_id):
             acc = 0.0
             batch_num = 0
             for epoch_i in range(n_epochs):
-                if batch_num > 7000:
+                if batch_num > 15000:
                     epoch_i = 0
                     dataset.reset_batch_pointer()
                     break
                 dataset.reset_batch_pointer()
                 for batch_i in range(dataset.num_batches_in_epoch()):
                     batch_num = epoch_i * dataset.num_batches_in_epoch() + batch_i + 1
-                    if batch_num > 7000:
+                    if batch_num > 15000:
                         break
 
                     augmentation_seq_deterministic = augmentation_seq.to_deterministic()
@@ -450,6 +450,8 @@ def train(train_indices, validation_indices, run_id):
 
                     batch_targets = augmentation_seq_deterministic.augment_images(batch_targets, hooks=hooks_binmasks)
                     # with tf.device('/gpu:0'):
+                    if batch_num > 10:
+                        pos_weight = 1
                     cost, _ = sess.run([network.cost, network.train_op],
                                        feed_dict={network.inputs: batch_inputs, network.targets: batch_targets,
                                                   network.is_training: True,
