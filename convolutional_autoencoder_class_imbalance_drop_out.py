@@ -173,7 +173,7 @@ class Network:
             if i == (num_layers-2):
                 net = layer.create_layer(net)
                 net = tf.nn.dropout(net, prob)
-                self.layers[layer.name]
+                self.layers[layer.name] = net
                 self.description += "{}".format(layer.get_description())
             else:
                 self.layers[layer.name] = net = layer.create_layer(net)
