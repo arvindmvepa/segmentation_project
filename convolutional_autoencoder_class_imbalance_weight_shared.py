@@ -176,7 +176,7 @@ class Network:
 
         # DECODER
         for layer in layers:
-            net = layer.create_layer_reversed(net, prev_layer=self.layers[layer.name], reuse_flag=True)
+            net = layer.create_layer_reversed(net, prev_layer=self.layers[layer.name], reuse=True)
 
         self.segmentation_result = tf.sigmoid(net)
 
