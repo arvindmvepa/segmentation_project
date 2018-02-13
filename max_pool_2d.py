@@ -12,7 +12,7 @@ class MaxPool2d(Layer):
     def create_layer(self, input):
         return utils.max_pool_2d(input, self.kernel_size)
 
-    def create_layer_reversed(self, input, prev_layer=None, *args):
+    def create_layer_reversed(self, input, prev_layer=None, **kwargs):
         if self.skip_connection:
             input = tf.add(input, prev_layer)
 
