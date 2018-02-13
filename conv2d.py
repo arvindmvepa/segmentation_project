@@ -43,11 +43,11 @@ class Conv2d(Layer):
 
         return output
 
-    def create_layer_reversed(self, input, prev_layer=None, reuse=False):
+    def create_layer_reversed(self, input, prev_layer=None, reuse_flag=False):
         net_id = self.net_id
         print(net_id)
 
-        with tf.variable_scope('conv', reuse=reuse):
+        with tf.variable_scope('conv', reuse=reuse_flag):
             W = tf.get_variable('W{}'.format(self.name[-3:]))
             b = tf.Variable(tf.zeros([W.get_shape().as_list()[2]]))
 
