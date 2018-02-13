@@ -43,7 +43,7 @@ class Conv2d(Layer):
 
         return output
 
-    def create_layer_reversed(self, input, flag=False, prev_layer=None):
+    def create_layer_reversed(self, input, flag, prev_layer=None):
         net_id = self.net_id
         print(net_id)
         print("hi, I printed the correct layer")
