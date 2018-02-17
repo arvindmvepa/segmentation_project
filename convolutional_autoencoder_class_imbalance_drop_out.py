@@ -170,14 +170,14 @@ class Network:
         num_layers = len(layers)
         for i in range(num_layers):
             layer = layers[i]
-            if i == (num_layers-2):
-                net = layer.create_layer(net)
-                net = tf.nn.dropout(net, prob)
-                self.layers[layer.name] = net
-                self.description += "{}".format(layer.get_description())
-            else:
-                self.layers[layer.name] = net = layer.create_layer(net)
-                self.description += "{}".format(layer.get_description())
+            #if i == (num_layers-2):
+            #    net = layer.create_layer(net)
+            #    net = tf.nn.dropout(net, prob)
+            #    self.layers[layer.name] = net
+            #    self.description += "{}".format(layer.get_description())
+            #else:
+            self.layers[layer.name] = net = layer.create_layer(net)
+            self.description += "{}".format(layer.get_description())
         print("Current input shape: ", net.get_shape())
 
         layers.reverse()
@@ -186,11 +186,11 @@ class Network:
         # DECODER
         for i in range(num_layers):
             layer = layers[i]
-            if i == 2:
-                net = layer.create_layer_reversed(net, prev_layer=self.layers[layer.name])
-                net = tf.nn.dropout(net, prob)
-            else:
-                net = layer.create_layer_reversed(net, prev_layer=self.layers[layer.name])
+            #if i == 2:
+            #    net = layer.create_layer_reversed(net, prev_layer=self.layers[layer.name])
+            #    net = tf.nn.dropout(net, prob)
+            #else:
+            net = layer.create_layer_reversed(net, prev_layer=self.layers[layer.name])
 
         self.segmentation_result = tf.sigmoid(net)
 
