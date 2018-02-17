@@ -154,9 +154,11 @@ class Network:
         self.targets = tf.placeholder(tf.float32, [None, self.IMAGE_HEIGHT, self.IMAGE_WIDTH, 1], name='targets')
         self.is_training = tf.placeholder_with_default(False, [], name='is_training')
         self.ce_weight = tf.placeholder(tf.float32, [], name="ce_weight")
+        self.prob = tf.placeholder_with_default(1.0, shape=[])
         self.description = ""
 
         self.layers = {}
+        prob = self.prob
 
         if per_image_standardization:
             list_of_images_norm = tf.map_fn(tf.image.per_image_standardization, self.inputs)
@@ -453,7 +455,8 @@ def train(train_indices, validation_indices, run_id):
                     cost, _ = sess.run([network.cost, network.train_op],
                                        feed_dict={network.inputs: batch_inputs, network.targets: batch_targets,
                                                   network.is_training: True,
-                                                  network.ce_weight: pos_weight})
+                                                  network.ce_weight: pos_weight,
+                                                  network.prob: .5})
                     end = time.time()
                     print('{}/{}, epoch: {}, cost: {}, batch time: {}, positive_weight: {}'.format(batch_num,
                                                                                                    n_epochs * dataset.num_batches_in_epoch(),
