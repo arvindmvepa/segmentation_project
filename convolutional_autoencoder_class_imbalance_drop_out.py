@@ -590,25 +590,25 @@ class Network:
                             f1.close()
                             # f2.close()
 
-    if __name__ == '__main__':
-        x = random.randint(1, 100)
-        k_fold = KFold(n_splits=3, shuffle=True, random_state=x)
+if __name__ == '__main__':
+    x = random.randint(1, 100)
+    k_fold = KFold(n_splits=3, shuffle=True, random_state=x)
 
-        f1 = open('out1.txt', 'w')
-        f2 = open('out2.txt', 'w')
+    f1 = open('out1.txt', 'w')
+    f2 = open('out2.txt', 'w')
 
+    f1.close()
+    f2.close()
+
+    count = 0
+    for train_indices, validation_indices in k_fold.split(os.listdir(os.path.join('vessels', 'inputs'))):
+        f1 = open('out1.txt', 'a')
+        f2 = open('out2.txt', 'a')
+        f1.write('Train Indices {} Validation Indices {} \n'.format(train_indices, validation_indices))
+        f2.write('Train Indices {} Validation Indices {} \n'.format(train_indices, validation_indices))
         f1.close()
         f2.close()
-
-        count = 0
-        for train_indices, validation_indices in k_fold.split(os.listdir(os.path.join('vessels', 'inputs'))):
-            f1 = open('out1.txt', 'a')
-            f2 = open('out2.txt', 'a')
-            f1.write('Train Indices {} Validation Indices {} \n'.format(train_indices, validation_indices))
-            f2.write('Train Indices {} Validation Indices {} \n'.format(train_indices, validation_indices))
-            f1.close()
-            f2.close()
-            p = multiprocessing.Process(target=train, args=(train_indices, validation_indices, count))
-            p.start()
-            p.join()
-            count += 1
+        p = multiprocessing.Process(target=train, args=(train_indices, validation_indices, count))
+        p.start()
+        p.join()
+        count += 1
