@@ -172,7 +172,6 @@ class Network:
             if i == (len(layers)-2):
                 net = layer.create_layer(net)
                 net = tf.nn.dropout(net, prob)
-                print("hi1")
                 self.layers[layer.name] = net
                 self.description += "{}".format(layer.get_description())
             else:
@@ -190,7 +189,6 @@ class Network:
             net = layer.create_layer_reversed(net, prev_layer=self.layers[layer.name])
             if i == 1:
                 net = tf.nn.dropout(net, prob)
-                print("hi2")
 
         self.segmentation_result = tf.sigmoid(net)
 
