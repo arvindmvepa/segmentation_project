@@ -381,8 +381,9 @@ def train(train_indices, validation_indices, run_id):
                                                                os.listdir(os.path.join(folder, 'inputs')))
     test_inputs, test_targets = dataset.file_paths_to_images(folder, validation_indices,
                                                              os.listdir(os.path.join(folder, 'inputs')), True)
-    pos_weight = find_positive_weight(train_targets)
-
+    #pos_weight = find_positive_weight(train_targets)
+    pos_weight = 9
+    
     dataset.train_inputs = train_inputs
     dataset.train_targets = train_targets
     dataset.test_inputs = test_inputs
