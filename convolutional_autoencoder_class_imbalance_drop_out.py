@@ -186,7 +186,7 @@ class Network:
         # DECODER
         for i in range(num_layers):
             layer = layers[i]
-            if i == (num_layers-2):
+            if i == 2:
                 net = layer.create_layer_reversed(net, prev_layer=self.layers[layer.name])
                 net = tf.nn.dropout(net, prob)
             else:
