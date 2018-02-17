@@ -45,7 +45,7 @@ class Conv2d(Layer):
     def create_layer_reversed(self, input, prev_layer=None, reuse=False):
 
         with tf.variable_scope('conv', reuse=reuse):
-            W = tf.get_variable('W{}_{}_'.format(self.name[-3:]),
+            W = tf.get_variable('W{}_'.format(self.name[-3:]),
                                 shape=(self.kernel_size, self.kernel_size, self.input_shape[3], self.output_channels))
             b = tf.Variable(tf.zeros([W.get_shape().as_list()[2]]))
 
