@@ -113,7 +113,7 @@ class Network:
     IMAGE_WIDTH = 1024
     IMAGE_CHANNELS = 1
 
-    def __init__(self, net_id, weight=1, layers=None, per_image_standardization=True, batch_norm=True,
+    def __init__(self, net_id, layers=None, per_image_standardization=True, batch_norm=True,
                  skip_connections=True):
         # Define network - ENCODER (decoder will be symmetric).
 
@@ -153,6 +153,7 @@ class Network:
                                          name='inputs')
         self.targets = tf.placeholder(tf.float32, [None, self.IMAGE_HEIGHT, self.IMAGE_WIDTH, 1], name='targets')
         self.is_training = tf.placeholder_with_default(False, [], name='is_training')
+        self.ce_weight = tf.placeholder(tf.float32, [], name="ce_weight")
         self.description = ""
 
         self.layers = {}
@@ -188,7 +189,8 @@ class Network:
 
         # MSE loss - change to log loss
 
-        self.cost = tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(self.targets, net, pos_weight=weight))
+        self.cost = tf.reduce_mean(
+            tf.nn.weighted_cross_entropy_with_logits(self.targets, net, pos_weight=self.ce_weight))
         # = tf.sqrt(tf.reduce_mean(tf.square(self.segmentation_result - self.targets)))
         self.train_op = tf.train.AdamOptimizer().minimize(self.cost)
         with tf.name_scope('accuracy'):
@@ -336,7 +338,6 @@ def draw_results(test_inputs, test_targets, test_segmentation, test_accuracy, ne
 
     plt.savefig('{}/figure{}.jpg'.format(IMAGE_PLOT_DIR, batch_num))
     return buf
-
 
 def train(train_indices, validation_indices, run_id):
     BATCH_SIZE = 1
