@@ -107,12 +107,13 @@ def iou_coe(output, target, threshold=0.5, axis=None, smooth=1e-5):
     iou = tf.reduce_mean(batch_iou)
     return iou  # , pre, truth, inse, union
 
+
 class Network:
     IMAGE_HEIGHT = 1024
     IMAGE_WIDTH = 1024
     IMAGE_CHANNELS = 1
 
-    def __init__(self, net_id, layers=None, per_image_standardization=True, batch_norm=True,
+    def __init__(self, net_id, weight=1, layers=None, per_image_standardization=True, batch_norm=True,
                  skip_connections=True):
         # Define network - ENCODER (decoder will be symmetric).
 
@@ -152,7 +153,6 @@ class Network:
                                          name='inputs')
         self.targets = tf.placeholder(tf.float32, [None, self.IMAGE_HEIGHT, self.IMAGE_WIDTH, 1], name='targets')
         self.is_training = tf.placeholder_with_default(False, [], name='is_training')
-        self.ce_weight = tf.placeholder(tf.float32, [], name="ce_weight")
         self.description = ""
 
         self.layers = {}
@@ -173,21 +173,9 @@ class Network:
         layers.reverse()
         # Conv2d.reverse_global_variables()
 
-        for layer in layers:
-            net = layer.create_layer_reversed(net, prev_layer=self.layers[layer.name])
-
         # DECODER
         for layer in layers:
             net = layer.create_layer_reversed(net, prev_layer=self.layers[layer.name])
-        """
-        for i in range(num_layers):
-            layer = layers[i]
-            if i == (num_layers-2):
-                net = layer.create_layer_reversed(net, prev_layer=self.layers[layer.name])
-                net = tf.nn.dropout(net, prob)
-            else:
-            net = layer.create_layer_reversed(net, prev_layer=self.layers[layer.name])
-        """
 
         self.segmentation_result = tf.sigmoid(net)
 
@@ -200,8 +188,7 @@ class Network:
 
         # MSE loss - change to log loss
 
-        self.cost = tf.reduce_mean(
-            tf.nn.weighted_cross_entropy_with_logits(self.targets, net, pos_weight=self.ce_weight))
+        self.cost = tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(self.targets, net, pos_weight=weight))
         # = tf.sqrt(tf.reduce_mean(tf.square(self.segmentation_result - self.targets)))
         self.train_op = tf.train.AdamOptimizer().minimize(self.cost)
         with tf.name_scope('accuracy'):
@@ -219,6 +206,7 @@ class Network:
             tf.summary.scalar('accuracy', self.accuracy)
 
         self.summaries = tf.summary.merge_all()
+
 
 class Dataset:
     def __init__(self, batch_size, folder='vessels', include_hair=True):
@@ -314,6 +302,7 @@ class Dataset:
     def test_set(self):
         return np.array(self.test_inputs, dtype=np.uint8), np.array(self.test_targets, dtype=np.uint8)
 
+
 def draw_results(test_inputs, test_targets, test_segmentation, test_accuracy, network, batch_num):
     n_examples_to_plot = 12
     fig, axs = plt.subplots(4, n_examples_to_plot, figsize=(n_examples_to_plot * 3, 10))
@@ -347,6 +336,7 @@ def draw_results(test_inputs, test_targets, test_segmentation, test_accuracy, ne
 
     plt.savefig('{}/figure{}.jpg'.format(IMAGE_PLOT_DIR, batch_num))
     return buf
+
 
 def train(train_indices, validation_indices, run_id):
     BATCH_SIZE = 1
@@ -391,8 +381,8 @@ def train(train_indices, validation_indices, run_id):
                                                                os.listdir(os.path.join(folder, 'inputs')))
     test_inputs, test_targets = dataset.file_paths_to_images(folder, validation_indices,
                                                              os.listdir(os.path.join(folder, 'inputs')), True)
-    # pos_weight = find_positive_weight(train_targets)
-    pos_weight = 9
+    pos_weight = find_positive_weight(train_targets)
+
     dataset.train_inputs = train_inputs
     dataset.train_targets = train_targets
     dataset.test_inputs = test_inputs
@@ -408,7 +398,7 @@ def train(train_indices, validation_indices, run_id):
     count = 0
     with tf.device('/gpu:1'):
         # with tf.device('/cpu:0'):
-        network = Network(net_id=count)
+        network = Network(net_id=count, weight=pos_weight)
     count += 1
 
     # create directory for saving models
@@ -435,14 +425,14 @@ def train(train_indices, validation_indices, run_id):
             acc = 0.0
             batch_num = 0
             for epoch_i in range(n_epochs):
-                if batch_num > 10000:
+                if batch_num > 7000:
                     epoch_i = 0
                     dataset.reset_batch_pointer()
                     break
                 dataset.reset_batch_pointer()
                 for batch_i in range(dataset.num_batches_in_epoch()):
                     batch_num = epoch_i * dataset.num_batches_in_epoch() + batch_i + 1
-                    if batch_num > 10000:
+                    if batch_num > 7000:
                         break
 
                     augmentation_seq_deterministic = augmentation_seq.to_deterministic()
@@ -457,22 +447,20 @@ def train(train_indices, validation_indices, run_id):
                     batch_inputs = augmentation_seq_deterministic.augment_images(batch_inputs)
                     batch_inputs = np.multiply(batch_inputs, 1.0 / 255)
 
-                    batch_targets = augmentation_seq_deterministic.augment_images(batch_targets,
-                                                                                  hooks=hooks_binmasks)
+                    batch_targets = augmentation_seq_deterministic.augment_images(batch_targets, hooks=hooks_binmasks)
                     # with tf.device('/gpu:0'):
                     cost, _ = sess.run([network.cost, network.train_op],
                                        feed_dict={network.inputs: batch_inputs, network.targets: batch_targets,
-                                                  network.is_training: True,
-                                                  network.ce_weight: pos_weight})
+                                                  network.is_training: True})
                     end = time.time()
                     print('{}/{}, epoch: {}, cost: {}, batch time: {}, positive_weight: {}'.format(batch_num,
                                                                                                    n_epochs * dataset.num_batches_in_epoch(),
                                                                                                    epoch_i, cost,
                                                                                                    end - start,
                                                                                                    pos_weight))
-                    if batch_num % 500 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
+                    if batch_num % 1000 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
                         test_accuracy = 0.0
-                        # test_accuracy1 = 0.0
+                        test_accuracy1 = 0.0
 
                         target_array = np.zeros((len(test_inputs), 1024, 1024))
                         prediction_array = np.zeros((len(test_inputs), 1024, 1024))
@@ -530,40 +518,35 @@ def train(train_indices, validation_indices, run_id):
                         test_accuracy = test_accuracy / len(test_inputs)
                         # test_accuracy1 = test_accuracy1/len(test_inputs)
                         print(
-                            'Step {}, cost: {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, specificity {}'.format(
-                                batch_num, cost, test_accuracy, dice_coe_val.eval(), hard_dice_coe_val.eval(),
-                                iou_coe_val.eval(),
-                                recall, precision, fbeta_score, auc, specificity))
+                        'Step {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, specificity {}'.format(
+                            batch_num, test_accuracy, dice_coe_val.eval(), hard_dice_coe_val.eval(), iou_coe_val.eval(),
+                            recall, precision, fbeta_score, auc, specificity))
                         # print('Step {}, test accuracy1: {}'.format(batch_num, test_accuracy1))
 
-                        if batch_num % 1000 == 0:
-                            n_examples = 12
+                        n_examples = 12
 
-                            t_inputs, t_targets = dataset.test_inputs[:n_examples], dataset.test_targets[
-                                                                                    :n_examples]
-                            test_segmentation = []
-                            for i in range(n_examples):
-                                test_i = np.multiply(t_inputs[i:(i + 1)], 1.0 / 255)
-                                segmentation = sess.run(network.segmentation_result, feed_dict={
-                                    network.inputs: np.reshape(test_i,
-                                                               [1, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1])})
-                                test_segmentation.append(segmentation[0])
+                        t_inputs, t_targets = dataset.test_inputs[:n_examples], dataset.test_targets[:n_examples]
+                        test_segmentation = []
+                        for i in range(n_examples):
+                            test_i = np.multiply(t_inputs[i:(i + 1)], 1.0 / 255)
+                            segmentation = sess.run(network.segmentation_result, feed_dict={
+                                network.inputs: np.reshape(test_i, [1, network.IMAGE_HEIGHT, network.IMAGE_WIDTH, 1])})
+                            test_segmentation.append(segmentation[0])
 
-                            test_plot_buf = draw_results(t_inputs[:n_examples],
-                                                         np.multiply(t_targets[:n_examples], 1.0 / 255),
-                                                         test_segmentation,
-                                                         test_accuracy, network, batch_num)
+                        test_plot_buf = draw_results(t_inputs[:n_examples],
+                                                     np.multiply(t_targets[:n_examples], 1.0 / 255), test_segmentation,
+                                                     test_accuracy, network, batch_num)
 
-                            image = tf.image.decode_png(test_plot_buf.getvalue(), channels=4)
-                            image = tf.expand_dims(image, 0)
-                            image_summary_op = tf.summary.image("plot", image)
-                            image_summary = sess.run(image_summary_op)
-                            summary_writer.add_summary(image_summary)
+                        image = tf.image.decode_png(test_plot_buf.getvalue(), channels=4)
+                        image = tf.expand_dims(image, 0)
+                        image_summary_op = tf.summary.image("plot", image)
+                        image_summary = sess.run(image_summary_op)
+                        summary_writer.add_summary(image_summary)
                         f1 = open('out1.txt', 'a')
-                        # f2 = open('out2.txt', 'a')
+                        f2 = open('out2.txt', 'a')
 
                         test_accuracies.append((test_accuracy, batch_num))
-                        # test_accuracies1.append((test_accuracy1, batch_num))
+                        test_accuracies1.append((test_accuracy1, batch_num))
                         print("Accuracies in time: ", [test_accuracies[x][0] for x in range(len(test_accuracies))])
                         print(test_accuracies)
                         max_acc = max(test_accuracies)
@@ -571,24 +554,25 @@ def train(train_indices, validation_indices, run_id):
                         print("Total time: {}".format(time.time() - global_start))
                         # f1.write("batch num: " + str(batch_num) + " " +str(test_accuracy) + " max: " + str(max_acc[0]) +" "+str(max_acc[1])+ "\n")
                         f1.write(
-                            'Step {}, cost: {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, specificity {}, max acc {} {} \n'.format(
-                                batch_num, cost, test_accuracy, dice_coe_val.eval(), hard_dice_coe_val.eval(),
+                            'Step {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, specificity {}, max acc {} {} \n'.format(
+                                batch_num, test_accuracy, dice_coe_val.eval(), hard_dice_coe_val.eval(),
                                 iou_coe_val.eval(), recall, precision, fbeta_score, auc, specificity, max_acc[0],
                                 max_acc[1]))
 
-                        # print("Accuracies1 in time: ", [test_accuracies1[x][0] for x in range(len(test_accuracies1))])
-                        # print(str(test_accuracies1))
-                        # max_acc = max(test_accuracies1)
-                        # print("Best accuracy1: {} in batch {}".format(max_acc[0], max_acc[1]))
-                        # print("Total time: {}".format(time.time() - global_start))
+                        print("Accuracies1 in time: ", [test_accuracies1[x][0] for x in range(len(test_accuracies1))])
+                        print(str(test_accuracies1))
+                        max_acc = max(test_accuracies1)
+                        print("Best accuracy1: {} in batch {}".format(max_acc[0], max_acc[1]))
+                        print("Total time: {}".format(time.time() - global_start))
                         # f2.write("batch num: " + str(batch_num) + " " +str(test_accuracy1) + " max: " + str(max_acc[0]) +" "+str(max_acc[1]) +"\n")
-                        # f2.write(
-                        # 'Step {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, specificity {}, max acc {} {} \n'.format(
-                        # batch_num, test_accuracy1, dice_coe_val.eval(), hard_dice_coe_val.eval(),
-                        # iou_coe_val.eval(), recall, precision, fbeta_score, auc, specificity, max_acc[0],
-                        # max_acc[1]))
+                        f2.write(
+                            'Step {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, specificity {}, max acc {} {} \n'.format(
+                                batch_num, test_accuracy1, dice_coe_val.eval(), hard_dice_coe_val.eval(),
+                                iou_coe_val.eval(), recall, precision, fbeta_score, auc, specificity, max_acc[0],
+                                max_acc[1]))
                         f1.close()
-                        # f2.close()
+                        f2.close()
+
 
 if __name__ == '__main__':
     x = random.randint(1, 100)
