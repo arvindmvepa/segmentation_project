@@ -167,9 +167,16 @@ class Network:
             net = self.inputs
 
         # ENCODER
-        for layer in layers:
-            self.layers[layer.name] = net = layer.create_layer(net)
-            self.description += "{}".format(layer.get_description())
+        for i in range(len(layers)):
+            layer = layers[i]
+            if i == (len(layers)-2):
+                net = layer.create_layer(net)
+                net = tf.nn.dropout(net, prob)
+                self.layers[layer.name] = net
+                self.description += "{}".format(layer.get_description())
+            else:
+                self.layers[layer.name] = net = layer.create_layer(net)
+                self.description += "{}".format(layer.get_description())
 
         print("Current input shape: ", net.get_shape())
 
