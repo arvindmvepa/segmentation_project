@@ -47,8 +47,9 @@ class Conv2d(Layer):
         net_id = self.net_id
         print(net_id)
         #make sure to modify
-        with tf.variable_scope('conv', reuse=reuse):
-            W = tf.get_variable('W{}_'.format(self.name[-3:]))
+        with tf.variable_scope('conv', reuse=False):
+            W = tf.get_variable('W{}_'.format(self.name[-3:]),
+                                shape=(self.kernel_size, self.kernel_size, 1, self.output_channels))
             b = tf.Variable(tf.zeros([W.get_shape().as_list()[2]]))
 
         output = tf.nn.conv2d_transpose(
