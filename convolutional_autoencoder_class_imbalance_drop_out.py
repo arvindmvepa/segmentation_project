@@ -184,8 +184,11 @@ class Network:
         # Conv2d.reverse_global_variables()
 
         # DECODER
-        for layer in layers:
+        for i in range(len(layers)):
+            layer = layers[i]
             net = layer.create_layer_reversed(net, prev_layer=self.layers[layer.name])
+            if i == 1:
+                net = tf.nn.dropout(net, prob)
 
         self.segmentation_result = tf.sigmoid(net)
 
