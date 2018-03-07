@@ -248,7 +248,7 @@ class Network:
         #debug first layer to figure out what's going on
 
         t_shape = tf.shape(self.segmentation_result)
-        t_shape_list = t_shape.tolist()
+        t_shape_list = t_shape.eval().tolist()
         num_batches = t_shape_list[0]
         self.train_op = tf.train.AdamOptimizer().minimize(self.cost)
         with tf.name_scope('accuracy'):
