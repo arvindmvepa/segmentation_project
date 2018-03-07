@@ -84,7 +84,7 @@ def find_positive_weight(targets, masks):
         total_pos += np.count_nonzero(target)
         total_num_pixels += np.count_nonzero(mask)
     total_neg = total_num_pixels - total_pos
-    weight = total_pos/total_neg
+    weight = total_neg/total_pos
     return weight    
 
 def dice_coe(output, target, mask = None, num_batches = 1, loss_type='jaccard', axis=None, smooth=1e-5):
@@ -460,8 +460,8 @@ def train(train_indices, validation_indices, run_id):
     train_inputs, train_masks, train_targets = dataset.file_paths_to_images(folder, train_indices, os.listdir(os.path.join(folder, 'inputs')))
     test_inputs, test_masks, test_targets = dataset.file_paths_to_images(folder, validation_indices, os.listdir(os.path.join(folder, 'inputs')), True)
     ##DEBUG
-    #pos_weight = find_positive_weight(train_targets, train_masks)
-    pos_weight = 1
+    pos_weight = find_positive_weight(train_targets, train_masks)
+    #pos_weight = 1
 
     dataset.train_inputs = train_inputs
     dataset.train_masks = train_masks
