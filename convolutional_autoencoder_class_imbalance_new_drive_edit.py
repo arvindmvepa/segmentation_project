@@ -79,7 +79,7 @@ def find_positive_weight(targets, masks):
     return weight    
 
 def dice_coe(output, target, mask = None, loss_type='jaccard', axis=None, smooth=1e-5):
-    if not mask:
+    if mask != None:
         output = tf.multiply(output, mask)
         target = tf.multiply(target, mask)
     inse = tf.reduce_sum(output * target, axis=axis)
@@ -97,7 +97,7 @@ def dice_coe(output, target, mask = None, loss_type='jaccard', axis=None, smooth
     # dice = tf.clip_by_value(dice, 0, 1.0-epsilon) # if all empty, dice = 1
     ## new haodong
     dice = (2. * inse + smooth) / (l + r + smooth)
-    if not mask:
+    if mask != None:
         dice = mask_mean(dice, mask)
     else:
         dice = tf.reduce_mean(dice)
@@ -108,7 +108,7 @@ def dice_coe(output, target, mask = None, loss_type='jaccard', axis=None, smooth
 def dice_hard_coe(output, target, mask = None, threshold=0.5, axis=None, smooth=1e-5):
     output = tf.cast(output > threshold, dtype=tf.float32)
     target = tf.cast(target > threshold, dtype=tf.float32)
-    if not mask:
+    if mask != None:
         output = tf.multiply(output, mask)
         target = tf.multiply(target, mask)
     inse = tf.reduce_sum(tf.multiply(output, target), axis=axis)
@@ -121,7 +121,7 @@ def dice_hard_coe(output, target, mask = None, threshold=0.5, axis=None, smooth=
     ## new haodong
     hard_dice = (2. * inse + smooth) / (l + r + smooth)
     ##
-    if not mask:
+    if mask != None:
         hard_dice = mask_mean(hard_dice, mask)
     else:
         hard_dice = tf.reduce_mean(hard_dice)
@@ -133,7 +133,7 @@ def iou_coe(output, target, mask = None, threshold=0.5, axis=None, smooth=1e-5):
 
     pre = tf.cast(output > threshold, dtype=tf.float32)
     truth = tf.cast(target > threshold, dtype=tf.float32)
-    if not mask:
+    if mask != None:
         output = tf.multiply(output, mask)
         target = tf.multiply(target, mask)
     inse = tf.reduce_sum(tf.multiply(pre, truth), axis=axis) # AND
@@ -143,7 +143,7 @@ def iou_coe(output, target, mask = None, threshold=0.5, axis=None, smooth=1e-5):
     # batch_iou = inse / (union + epsilon)
     ## new haodong
     batch_iou = (inse + smooth) / (union + smooth)
-    if not mask:
+    if mask != None:
         iou = mask_mean(batch_iou, mask)
     else:
         iou = tf.reduce_mean(batch_iou)
