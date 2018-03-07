@@ -57,9 +57,9 @@ def _MaxPoolWithArgmaxGrad(op, grad, unused_argmax_grad):
                                      padding=op.get_attr("padding"),
                                      data_format='NHWC')
 """
-def mask_op_and_mask_mean(correct_pred, mask, width = IMAGE_WIDTH, height = IMAGE_HEIGHT):
+def mask_op_and_mask_mean(correct_pred, mask, num_batches = 1, width = IMAGE_WIDTH, height = IMAGE_HEIGHT):
     correct_pred = tf.multiply(correct_pred, mask)
-    return mask_mean(correct_pred, mask, width, height)
+    return mask_mean(correct_pred, mask, num_batches, width, height)
 
 def mask_mean(masked_pred, mask, num_batches = 1, width = IMAGE_WIDTH, height = IMAGE_HEIGHT):
     ones = tf.ones([num_batches, width, height, 1], tf.float32)
