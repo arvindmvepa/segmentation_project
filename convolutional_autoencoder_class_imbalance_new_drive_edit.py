@@ -249,8 +249,9 @@ class Network:
 
         self.train_op = tf.train.AdamOptimizer().minimize(self.cost)
         with tf.name_scope('accuracy'):
-            t_shape_list = (self.segmentation_result).get_shape().as_list()
-            num_batches = t_shape_list[0]
+            #t_shape_list = (self.segmentation_result).get_shape().as_list()
+            #num_batches = t_shape_list[0]
+            num_batches = 1
             argmax_probs = tf.round(self.segmentation_result)  # 0x1
             correct_pred = tf.cast(tf.equal(argmax_probs, self.targets), tf.float32)
             #correct_pred = tf.multiply(correct_pred, self.masks)
@@ -586,6 +587,7 @@ def train(train_indices, validation_indices, run_id):
                         #print('Step {}, test accuracy1: {}'.format(batch_num, test_accuracy1))
 
                         #n_examples = 5
+
                         print(dataset.test_inputs.shape)
                         print(len( dataset.test_inputs.tolist()))
                         print(dataset.test_targets.shape)
