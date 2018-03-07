@@ -62,7 +62,7 @@ def mask_op_and_mask_mean(correct_pred, mask, width = IMAGE_WIDTH, height = IMAG
     return mask_mean(correct_pred, mask, width, height)
 
 def mask_mean(masked_pred, mask, width = IMAGE_WIDTH, height = IMAGE_HEIGHT):
-    ones = tf.ones([1, width, height], tf.float32)
+    ones = tf.ones([1, width, height, 1], tf.float32)
     FOV_num_pixels = tf.cast(tf.equal(mask, ones), tf.float32)
     return tf.divide(masked_pred, FOV_num_pixels)
 
