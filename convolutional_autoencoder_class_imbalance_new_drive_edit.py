@@ -556,7 +556,7 @@ def train(train_indices, validation_indices, run_id):
                                                                                #feed_dict={network.inputs: test_inputs[i:(i+1)], network.masks: test_masks[i:(i+1)], network.targets: test_targets[i:(i+1)], network.is_training: False})
                             #inputs, masks, results, targets, _, acc = sess.run([network.inputs, network.masks, network.segmentation_result, network.targets, network.summaries, network.accuracy],
                                                                                #feed_dict={network.inputs: test_inputs[i:(i+1)], network.targets: test_targets[i:(i+1)], network.is_training: False})
-                            inputs, masks, results, targets, _ = sess.run([network.inputs, network.masks, network.segmentation_result, network.targets, network.summaries],
+                            inputs, masks, results, targets = sess.run([network.inputs, network.masks, network.segmentation_result, network.targets],
                                                                                feed_dict={network.inputs: test_inputs[i:(i+1)], network.masks: test_masks[i:(i+1)], network.targets: test_targets[i:(i+1)], network.is_training: False})
 
                             inputs = inputs[0,:,:,0]
