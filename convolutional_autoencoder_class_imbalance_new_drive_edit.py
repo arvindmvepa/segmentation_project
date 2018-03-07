@@ -459,8 +459,10 @@ def train(train_indices, validation_indices, run_id):
 
     print(train_inputs.shape)
     print(train_targets.shape)
+    print(train_masks.shape)
     print(test_inputs.shape)
     print(test_targets.shape)
+    print(test_masks.shape)
     # test_inputs, test_targets = test_inputs[:100], test_targets[:100]
     #test_inputs = np.reshape(test_inputs, (len(test_inputs), Mod_HEIGHT, Mod_WIDTH, 1))
     test_inputs = np.reshape(test_inputs, (len(test_inputs), Mod_WIDTH, Mod_HEIGHT, 1))
@@ -540,6 +542,9 @@ def train(train_indices, validation_indices, run_id):
                         prediction_array = np.zeros((len(test_inputs), IMAGE_WIDTH, IMAGE_HEIGHT))
                         
                         for i in range(len(test_inputs)):
+                            print(test_inputs.shape)
+                            print(test_targets.shape)
+                            print(test_masks.shape)
                             inputs, masks, results, targets, _, acc = sess.run([network.inputs, network.masks, network.segmentation_result, network.targets, network.summaries, network.accuracy], feed_dict={network.inputs: test_inputs[i:(i+1)], network.masks:  test_masks[i:(i+1)], network.targets: test_targets[i:(i+1)], network.is_training: False})
                             inputs = inputs[0,:,:,0]
                             masks = masks[0, :, :, 0]
