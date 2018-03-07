@@ -614,8 +614,9 @@ def train(train_indices, validation_indices, run_id):
                         test_segmentation = []
                         for i in range(n_examples):
                             test_i = np.multiply(t_inputs[i:(i+1)], 1.0 / 255)
+                            t_mask_i = t_masks[i:(i+1)]
                             segmentation = sess.run(network.segmentation_result, feed_dict={network.inputs: np.reshape(test_i, [1, Mod_WIDTH, Mod_HEIGHT, 1]),
-                                                                                            network.masks: np.reshape(t_masks, [1, IMAGE_WIDTH, IMAGE_HEIGHT, 1])})
+                                                                                            network.masks: np.reshape(t_mask_i, [1, IMAGE_WIDTH, IMAGE_HEIGHT, 1])})
                             test_segmentation.append(segmentation[0])                            
 
                         test_plot_buf = draw_results(t_inputs[:n_examples], np.multiply(t_targets[:n_examples],1.0/255), test_segmentation, test_accuracy, network, batch_num)
