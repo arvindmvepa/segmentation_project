@@ -78,7 +78,7 @@ def find_positive_weight(targets, masks):
     weight = total_pos/total_neg
     return weight    
 
-def dice_coe(output, target, mask = None, loss_type='jaccard', axis=None, smooth=1e-5):
+def dice_coe(output, target, mask = None, num_batches = 1, loss_type='jaccard', axis=None, smooth=1e-5):
     if mask != None:
         output = tf.multiply(output, mask)
         target = tf.multiply(target, mask)
@@ -98,14 +98,14 @@ def dice_coe(output, target, mask = None, loss_type='jaccard', axis=None, smooth
     ## new haodong
     dice = (2. * inse + smooth) / (l + r + smooth)
     if mask != None:
-        dice = mask_mean(dice, mask)
+        dice = mask_mean(dice, mask, num_batches)
     else:
         dice = tf.reduce_mean(dice)
     return dice
 
 
 
-def dice_hard_coe(output, target, mask = None, threshold=0.5, axis=None, smooth=1e-5):
+def dice_hard_coe(output, target, mask = None, num_batches = 1, threshold=0.5, axis=None, smooth=1e-5):
     output = tf.cast(output > threshold, dtype=tf.float32)
     target = tf.cast(target > threshold, dtype=tf.float32)
     if mask != None:
@@ -122,14 +122,14 @@ def dice_hard_coe(output, target, mask = None, threshold=0.5, axis=None, smooth=
     hard_dice = (2. * inse + smooth) / (l + r + smooth)
     ##
     if mask != None:
-        hard_dice = mask_mean(hard_dice, mask)
+        hard_dice = mask_mean(hard_dice, mask, num_batches)
     else:
         hard_dice = tf.reduce_mean(hard_dice)
     return hard_dice
 
 
 
-def iou_coe(output, target, mask = None, threshold=0.5, axis=None, smooth=1e-5):
+def iou_coe(output, target, mask = None, num_batches = 1, threshold=0.5, axis=None, smooth=1e-5):
 
     pre = tf.cast(output > threshold, dtype=tf.float32)
     truth = tf.cast(target > threshold, dtype=tf.float32)
@@ -144,7 +144,7 @@ def iou_coe(output, target, mask = None, threshold=0.5, axis=None, smooth=1e-5):
     ## new haodong
     batch_iou = (inse + smooth) / (union + smooth)
     if mask != None:
-        iou = mask_mean(batch_iou, mask)
+        iou = mask_mean(batch_iou, mask, num_batches)
     else:
         iou = tf.reduce_mean(batch_iou)
     iou = tf.reduce_mean(batch_iou)
@@ -574,9 +574,9 @@ def train(train_indices, validation_indices, run_id):
                         prediction_tensor = tf.convert_to_tensor(prediction_array, dtype=tf.float32)
                         target_tensor = tf.convert_to_tensor(target_array, dtype=tf.float32)
 
-                        dice_coe_val = dice_coe(prediction_tensor, target_tensor, mask_tensor)
-                        hard_dice_coe_val = dice_hard_coe(prediction_tensor, target_tensor, mask_tensor)
-                        iou_coe_val = iou_coe(prediction_tensor, target_tensor, mask_tensor)
+                        dice_coe_val = dice_coe(prediction_tensor, target_tensor, mask_tensor, len(test_inputs))
+                        hard_dice_coe_val = dice_hard_coe(prediction_tensor, target_tensor, mask_tensor, len(test_inputs))
+                        iou_coe_val = iou_coe(prediction_tensor, target_tensor, mask_tensor, len(test_inputs))
 
                         mask_flat = mask_array.flatten()
                         prediction_flat = prediction_array.flatten()
@@ -597,10 +597,10 @@ def train(train_indices, validation_indices, run_id):
 
                         #n_examples = 5
 
-                        print(dataset.test_inputs.shape)
-                        print(len( dataset.test_inputs.tolist()))
-                        print(dataset.test_targets.shape)
-                        print(len(dataset.test_targets.tolist()))
+                        #print(dataset.test_inputs.shape)
+                        #print(len( dataset.test_inputs.tolist()))
+                        #print(dataset.test_targets.shape)
+                        #print(len(dataset.test_targets.tolist()))
                         
                         t_inputs, t_masks, t_targets = dataset.test_inputs.tolist()[:n_examples], dataset.test_masks.tolist()[:n_examples], dataset.test_targets.tolist()[:n_examples]
                         test_segmentation = []
