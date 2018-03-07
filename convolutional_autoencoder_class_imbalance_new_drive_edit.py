@@ -287,7 +287,7 @@ class Dataset:
             target1_image = os.path.join(folder, 'targets1', file)
             target2_image = os.path.join(folder, 'targets2', file)
 
-            mask_loc = os.path.join(folder, 'masks', file)
+            mask_loc = os.path.join(folder, 'masks', mask_file)
 
             #add training image to dataset
             test_image = cv2.imread(input_image, 1)
