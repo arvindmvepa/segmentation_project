@@ -57,6 +57,15 @@ def _MaxPoolWithArgmaxGrad(op, grad, unused_argmax_grad):
                                      padding=op.get_attr("padding"),
                                      data_format='NHWC')
 """
+def mask_op_and_mask_mean_diff(correct_pred, mask, num_batches = 1, width = IMAGE_WIDTH, height = IMAGE_HEIGHT):
+    correct_pred = tf.multiply(correct_pred, mask)
+    return mask_mean(correct_pred, mask, num_batches, width, height)
+
+def mask_mean_diff(masked_pred, mask, num_batches = 1, width = IMAGE_WIDTH, height = IMAGE_HEIGHT):
+    ones = tf.ones([num_batches, width, height], tf.float32)
+    FOV_num_pixels = tf.cast(tf.equal(mask, ones), tf.float32)
+    return tf.divide(masked_pred, FOV_num_pixels)
+
 def mask_op_and_mask_mean(correct_pred, mask, num_batches = 1, width = IMAGE_WIDTH, height = IMAGE_HEIGHT):
     correct_pred = tf.multiply(correct_pred, mask)
     return mask_mean(correct_pred, mask, num_batches, width, height)
@@ -98,7 +107,7 @@ def dice_coe(output, target, mask = None, num_batches = 1, loss_type='jaccard', 
     ## new haodong
     dice = (2. * inse + smooth) / (l + r + smooth)
     if mask != None:
-        dice = mask_mean(dice, mask, num_batches)
+        dice = mask_mean_diff(dice, mask, num_batches)
     else:
         dice = tf.reduce_mean(dice)
     return dice
@@ -122,7 +131,7 @@ def dice_hard_coe(output, target, mask = None, num_batches = 1, threshold=0.5, a
     hard_dice = (2. * inse + smooth) / (l + r + smooth)
     ##
     if mask != None:
-        hard_dice = mask_mean(hard_dice, mask, num_batches)
+        hard_dice = mask_mean_diff(hard_dice, mask, num_batches)
     else:
         hard_dice = tf.reduce_mean(hard_dice)
     return hard_dice
@@ -144,10 +153,9 @@ def iou_coe(output, target, mask = None, num_batches = 1, threshold=0.5, axis=No
     ## new haodong
     batch_iou = (inse + smooth) / (union + smooth)
     if mask != None:
-        iou = mask_mean(batch_iou, mask, num_batches)
+        iou = mask_mean_diff(batch_iou, mask, num_batches)
     else:
         iou = tf.reduce_mean(batch_iou)
-    iou = tf.reduce_mean(batch_iou)
     return iou#, pre, truth, inse, union
 
 
@@ -650,5 +658,6 @@ if __name__ == '__main__':
         p.start()
         p.join()
         count += 1
+        #remove
         if count == 1:
             break
