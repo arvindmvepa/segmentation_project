@@ -61,8 +61,8 @@ def mask_op_and_mask_mean(correct_pred, mask, width = IMAGE_WIDTH, height = IMAG
     correct_pred = tf.multiply(correct_pred, mask)
     return mask_mean(correct_pred, mask, width, height)
 
-def mask_mean(masked_pred, mask, width = IMAGE_WIDTH, height = IMAGE_HEIGHT):
-    ones = tf.ones([1, width, height, 1], tf.float32)
+def mask_mean(masked_pred, mask, num_batches = 1, width = IMAGE_WIDTH, height = IMAGE_HEIGHT):
+    ones = tf.ones([num_batches, width, height, 1], tf.float32)
     FOV_num_pixels = tf.cast(tf.equal(mask, ones), tf.float32)
     return tf.divide(masked_pred, FOV_num_pixels)
 
@@ -246,6 +246,10 @@ class Network:
 
         #override the methods called by minimize to debug the error
         #debug first layer to figure out what's going on
+
+        t_shape = tf.shape(self.segmentation_result)
+        t_shape_list = t_shape.tolist()
+        num_batches = t_shape_list[0]
         self.train_op = tf.train.AdamOptimizer().minimize(self.cost)
         with tf.name_scope('accuracy'):
             argmax_probs = tf.round(self.segmentation_result)  # 0x1
@@ -253,7 +257,7 @@ class Network:
             #correct_pred = tf.multiply(correct_pred, self.masks)
             #FOV_num_pixels = tf.cast(tf.equal(self.masks, self.ones), tf.float32)
             #self.accuracy = tf.divide(correct_pred, FOV_num_pixels)
-            self.accuracy = mask_op_and_mask_mean(correct_pred, self.masks,IMAGE_WIDTH,IMAGE_HEIGHT)
+            self.accuracy = mask_op_and_mask_mean(correct_pred, self.masks, num_batches, IMAGE_WIDTH,IMAGE_HEIGHT)
             tf.summary.scalar('accuracy', self.accuracy)
 
         self.summaries = tf.summary.merge_all()
