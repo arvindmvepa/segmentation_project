@@ -247,10 +247,10 @@ class Network:
         #override the methods called by minimize to debug the error
         #debug first layer to figure out what's going on
 
-        t_shape_list = (self.segmentation_result).get_shape().as_list()
-        num_batches = t_shape_list[0]
         self.train_op = tf.train.AdamOptimizer().minimize(self.cost)
         with tf.name_scope('accuracy'):
+            t_shape_list = (self.segmentation_result).get_shape().as_list()
+            num_batches = t_shape_list[0]
             argmax_probs = tf.round(self.segmentation_result)  # 0x1
             correct_pred = tf.cast(tf.equal(argmax_probs, self.targets), tf.float32)
             #correct_pred = tf.multiply(correct_pred, self.masks)
