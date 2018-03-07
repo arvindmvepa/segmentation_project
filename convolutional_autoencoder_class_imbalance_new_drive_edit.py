@@ -266,8 +266,8 @@ class Dataset:
 
         #train_files, validation_files, test_files = self.train_valid_test_split(os.listdir(os.path.join(folder, 'inputs')))
 
-        self.train_inputs, self.train_masks, self.train_targets = ([],[])
-        self.test_inputs, self.train_masks, self.test_targets = ([],[])
+        self.train_inputs, self.train_masks, self.train_targets = ([],[],[])
+        self.test_inputs, self.train_masks, self.test_targets = ([],[], [])
 
         self.pointer = 0
 
