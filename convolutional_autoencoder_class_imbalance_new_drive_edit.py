@@ -549,6 +549,9 @@ def train(train_indices, validation_indices, run_id):
                             print(test_inputs.shape)
                             print(test_targets.shape)
                             print(test_masks.shape)
+                            print(test_inputs[i:(i+1)].shape)
+                            print(test_targets[i:(i+1)].shape)
+                            print(test_masks[i:(i+1)].shape)
                             #inputs, masks, results, targets, _, acc = sess.run([network.inputs, network.masks, network.segmentation_result, network.targets, network.summaries, network.accuracy],
                             # feed_dict={network.inputs: test_inputs[i:(i+1)], network.masks:  test_masks[i:(i+1)], network.targets: test_targets[i:(i+1)], network.is_training: False})
                             inputs, masks, results, targets, _, acc = sess.run([network.inputs, network.masks, network.segmentation_result, network.targets, network.summaries, network.accuracy],
