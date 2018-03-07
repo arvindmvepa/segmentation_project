@@ -464,8 +464,9 @@ def train(train_indices, validation_indices, run_id):
     # test_inputs, test_targets = test_inputs[:100], test_targets[:100]
     #test_inputs = np.reshape(test_inputs, (len(test_inputs), Mod_HEIGHT, Mod_WIDTH, 1))
     test_inputs = np.reshape(test_inputs, (len(test_inputs), Mod_WIDTH, Mod_HEIGHT, 1))
-    test_targets = np.reshape(test_targets, (len(test_targets), IMAGE_WIDTH, IMAGE_HEIGHT, 1))
     test_inputs = np.multiply(test_inputs, 1.0 / 255)
+    test_targets = np.reshape(test_targets, (len(test_targets), IMAGE_WIDTH, IMAGE_HEIGHT, 1))
+    test_masks = np.reshape(test_masks, (len(test_masks), IMAGE_WIDTH, IMAGE_HEIGHT, 1))
 
     #test_inputs = np.pad(test_inputs, ((8,8),(18,17)), 'constant', constant_values=0)
     #test_inputs=tf.image.resize_image_with_crop_or_pad(test_inputs,INPUT_IMAGE_HEIGHT,INPUT_IMAGE_WIDTH)
