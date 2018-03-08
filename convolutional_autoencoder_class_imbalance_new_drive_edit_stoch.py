@@ -275,10 +275,11 @@ class Network:
 
 
 class Dataset:
-    def __init__(self, batch_size, folder='drive', include_hair=True):
+    def __init__(self, batch_size, folder='drive', include_hair=True, sgd = False):
         self.folder = folder
         self.batch_size = batch_size
         self.include_hair = include_hair
+        self.sgd = sgd
 
         # train_files, validation_files, test_files = self.train_valid_test_split(os.listdir(os.path.join(folder, 'inputs')))
 
@@ -432,7 +433,7 @@ def train(train_indices, validation_indices, run_id):
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
 
     dataset = Dataset(folder='drive', include_hair=True,
-                      batch_size=BATCH_SIZE)
+                      batch_size=BATCH_SIZE, sgd = True)
 
     # inputs, targets = dataset.next_batch()
     # print(inputs.shape, targets.shape)
