@@ -376,6 +376,7 @@ class Dataset:
 
     def next_batch(self):
         inputs = []
+        masks = []
         targets = []
         # print(self.batch_size, self.pointer, self.train_inputs.shape, self.train_targets.shape)
         if self.sgd:
@@ -384,14 +385,16 @@ class Dataset:
         for i in range(self.batch_size):
             if self.sgd:
                 inputs.append(np.array(self.train_inputs[samples[i]]))
+                masks.append(np.array(self.train_masks[samples[i]]))
                 targets.append(np.array(self.train_targets[samples[i]]))
             else:
                 inputs.append(np.array(self.train_inputs[self.pointer + i]))
+                masks.append(np.array(self.train_masks[self.pointer + i]))
                 targets.append(np.array(self.train_targets[self.pointer + i]))
 
         self.pointer += self.batch_size
 
-        return np.array(inputs, dtype=np.uint8), np.array(targets, dtype=np.uint8)
+        return np.array(inputs, dtype=np.uint8), np.array(masks, dtype=np.uint8), np.array(targets, dtype=np.uint8)
 
     @property
     def test_set(self):
