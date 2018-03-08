@@ -476,8 +476,8 @@ def train(train_indices, validation_indices, run_id):
                                                                          os.listdir(os.path.join(folder, 'inputs')),
                                                                          True)
     ##DEBUG
-    #pos_weight = find_positive_weight(train_targets, train_masks)
-    pos_weight = 4
+    pos_weight = find_positive_weight(train_targets, train_masks)
+    #pos_weight = 4
 
     dataset.train_inputs = train_inputs
     dataset.train_masks = train_masks
@@ -571,7 +571,7 @@ def train(train_indices, validation_indices, run_id):
                                                                                                    epoch_i, cost,
                                                                                                    end - start,
                                                                                                    pos_weight))
-                    if batch_num % 500 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
+                    if batch_num % 200 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
                         test_accuracy = 0.0
 
                         mask_array = np.zeros((len(test_inputs), IMAGE_WIDTH, IMAGE_HEIGHT))
