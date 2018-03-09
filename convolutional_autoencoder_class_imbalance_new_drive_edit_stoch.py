@@ -476,8 +476,9 @@ def train(train_indices, validation_indices, run_id):
                                                                          os.listdir(os.path.join(folder, 'inputs')),
                                                                          True)
     ##DEBUG
-    pos_weight = find_positive_weight(train_targets, train_masks)
+    #pos_weight = find_positive_weight(train_targets, train_masks)
     #pos_weight = 4
+    pos_weight = 10
 
     dataset.train_inputs = train_inputs
     dataset.train_masks = train_masks
