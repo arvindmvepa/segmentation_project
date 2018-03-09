@@ -628,7 +628,7 @@ def train(train_indices, validation_indices, run_id):
                                                                                               average='binary',
                                                                                               sample_weight=mask_flat)
 
-                        tn, fp, fn, tp = confusion_matrix(target_flat, prediction_flat).ravel()
+                        tn, fp, fn, tp = confusion_matrix(target_flat, prediction_flat, sample_weight=mask_flat).ravel()
                         specificity = tn / (tn + fp)
                         sess.run(tf.local_variables_initializer())
 
