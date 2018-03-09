@@ -476,7 +476,8 @@ def train(train_indices, validation_indices, run_id):
                                                                          os.listdir(os.path.join(folder, 'inputs')),
                                                                          True)
     ##DEBUG
-    #pos_weight = find_positive_weight(train_targets, train_masks)
+    #pos_weight
+    class_balance = find_positive_weight(train_targets, train_masks)
     #pos_weight = 4
     pos_weight = 10
 
@@ -537,14 +538,14 @@ def train(train_indices, validation_indices, run_id):
             acc = 0.0
             batch_num = 0
             for epoch_i in range(n_epochs):
-                if batch_num > 20000:
+                if batch_num > 30000:
                     epoch_i = 0
                     dataset.reset_batch_pointer()
                     break
                 dataset.reset_batch_pointer()
                 for batch_i in range(dataset.num_batches_in_epoch()):
                     batch_num = epoch_i * dataset.num_batches_in_epoch() + batch_i + 1
-                    if batch_num > 20000:
+                    if batch_num > 30000:
                         break
 
                     augmentation_seq_deterministic = augmentation_seq.to_deterministic()
@@ -634,9 +635,9 @@ def train(train_indices, validation_indices, run_id):
 
                         # test_accuracy1 = test_accuracy1/len(test_inputs)
                         print(
-                        'Step {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, specificity {}'.format(
+                        'Step {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, specificity {}, class balance {}'.format(
                             batch_num, test_accuracy, dice_coe_val.eval(), hard_dice_coe_val.eval(), iou_coe_val.eval(),
-                            recall, precision, fbeta_score, auc, specificity))
+                            recall, precision, fbeta_score, auc, specificity, class_balance))
                         # print('Step {}, test accuracy1: {}'.format(batch_num, test_accuracy1))
 
                         # n_examples = 5
@@ -677,10 +678,10 @@ def train(train_indices, validation_indices, run_id):
                         print("Best accuracy: {} in batch {}".format(max_acc[0], max_acc[1]))
                         print("Total time: {}".format(time.time() - global_start))
                         f1.write(
-                            'Step {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, specificity {}, max acc {} {} \n'.format(
+                            'Step {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, specificity {}, class balance {}, max acc {} {} \n'.format(
                                 batch_num, test_accuracy, dice_coe_val.eval(), hard_dice_coe_val.eval(),
-                                iou_coe_val.eval(), recall, precision, fbeta_score, auc, specificity, max_acc[0],
-                                max_acc[1]))
+                                iou_coe_val.eval(), recall, precision, fbeta_score, auc, specificity, class_balance,
+                                max_acc[0],max_acc[1]))
                         f1.close()
 
 
