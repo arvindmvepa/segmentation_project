@@ -635,9 +635,9 @@ def train(train_indices, validation_indices, run_id):
 
                         # test_accuracy1 = test_accuracy1/len(test_inputs)
                         print(
-                        'Step {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, specificity {}, class balance {}'.format(
-                            batch_num, test_accuracy, dice_coe_val.eval(), hard_dice_coe_val.eval(), iou_coe_val.eval(),
-                            recall, precision, fbeta_score, auc, specificity, class_balance))
+                        'Step {}, test accuracy: {}, cost: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, specificity {}, class balance {}'.format(
+                            batch_num, test_accuracy, cost, dice_coe_val.eval(), hard_dice_coe_val.eval(),
+                            iou_coe_val.eval(), recall, precision, fbeta_score, auc, specificity, class_balance))
                         # print('Step {}, test accuracy1: {}'.format(batch_num, test_accuracy1))
 
                         # n_examples = 5
