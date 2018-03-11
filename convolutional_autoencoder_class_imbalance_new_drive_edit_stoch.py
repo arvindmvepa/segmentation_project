@@ -438,7 +438,7 @@ def train(train_indices, validation_indices, run_id):
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
 
     dataset = Dataset(folder='drive', include_hair=True,
-                      batch_size=BATCH_SIZE, sgd = True)
+                      batch_size=BATCH_SIZE, sgd = False)
 
     # inputs, targets = dataset.next_batch()
     # print(inputs.shape, targets.shape)
@@ -481,7 +481,7 @@ def train(train_indices, validation_indices, run_id):
     #pos_weight
     class_balance = find_positive_weight(train_targets, train_masks)
     #pos_weight = 4
-    pos_weight = 9
+    pos_weight = 8
 
     dataset.train_inputs = train_inputs
     dataset.train_masks = train_masks
@@ -535,7 +535,7 @@ def train(train_indices, validation_indices, run_id):
             test_accuracies = []
             test_accuracies1 = []
             # Fit all training data
-            n_epochs = 20000
+            n_epochs = 40000
             global_start = time.time()
             acc = 0.0
             batch_num = 0
