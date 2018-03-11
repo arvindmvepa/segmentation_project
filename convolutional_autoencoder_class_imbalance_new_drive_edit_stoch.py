@@ -251,6 +251,8 @@ class Network:
         print('segmentation_result.shape: {}, targets.shape: {}'.format(self.segmentation_result.get_shape(),
                                                                         self.targets.get_shape()))
 
+        self.cost_unweighted = tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(self.targets, net, pos_weight=1))
+
         self.cost = tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(self.targets, net, pos_weight=weight))
         print('net.shape: {}'.format(net.get_shape()))
         # = tf.sqrt(tf.reduce_mean(tf.square(self.segmentation_result - self.targets)))
@@ -479,7 +481,7 @@ def train(train_indices, validation_indices, run_id):
     #pos_weight
     class_balance = find_positive_weight(train_targets, train_masks)
     #pos_weight = 4
-    pos_weight = 9.5
+    pos_weight = 9
 
     dataset.train_inputs = train_inputs
     dataset.train_masks = train_masks
@@ -533,7 +535,7 @@ def train(train_indices, validation_indices, run_id):
             test_accuracies = []
             test_accuracies1 = []
             # Fit all training data
-            n_epochs = 5000
+            n_epochs = 20000
             global_start = time.time()
             acc = 0.0
             batch_num = 0
@@ -563,17 +565,19 @@ def train(train_indices, validation_indices, run_id):
                     batch_inputs = np.multiply(batch_inputs, 1.0 / 255)
 
                     batch_targets = augmentation_seq_deterministic.augment_images(batch_targets, hooks=hooks_binmasks)
-                    cost, _ = sess.run([network.cost, network.train_op],
+                    cost, cost_unweighted, _ = sess.run([network.cost, network.cost_unweighted, network.train_op],
                                        feed_dict={network.inputs: batch_inputs, network.masks: batch_masks,
                                                   network.targets: batch_targets, network.is_training: True})
                     end = time.time()
 
-                    print('{}/{}, epoch: {}, cost: {}, batch time: {}, positive_weight: {}'.format(batch_num,
-                                                                                                   n_epochs * dataset.num_batches_in_epoch(),
-                                                                                                   epoch_i, cost,
-                                                                                                   end - start,
-                                                                                                   pos_weight))
-                    if batch_num % 200 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
+                    print('{}/{}, epoch: {}, cost: {}, cost unweighted: {}, batch time: {}, positive_weight: {}'.format(batch_num,
+                                                                                                                        n_epochs * dataset.num_batches_in_epoch(),
+                                                                                                                        epoch_i,
+                                                                                                                        cost,
+                                                                                                                        cost_unweighted,
+                                                                                                                        end - start,
+                                                                                                                        pos_weight))
+                    if batch_num % 5 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
                         test_accuracy = 0.0
 
                         mask_array = np.zeros((len(test_inputs), IMAGE_WIDTH, IMAGE_HEIGHT))
@@ -635,8 +639,8 @@ def train(train_indices, validation_indices, run_id):
 
                         # test_accuracy1 = test_accuracy1/len(test_inputs)
                         print(
-                        'Step {}, test accuracy: {}, cost: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, specificity {}, class balance {}'.format(
-                            batch_num, test_accuracy, cost, dice_coe_val.eval(), hard_dice_coe_val.eval(),
+                        'Step {}, test accuracy: {}, cost: {}, cost_unweighted: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, specificity {}, class balance {}'.format(
+                            batch_num, test_accuracy, cost, cost_unweighted, dice_coe_val.eval(), hard_dice_coe_val.eval(),
                             iou_coe_val.eval(), recall, precision, fbeta_score, auc, specificity, class_balance))
                         # print('Step {}, test accuracy1: {}'.format(batch_num, test_accuracy1))
 
@@ -678,8 +682,8 @@ def train(train_indices, validation_indices, run_id):
                         print("Best accuracy: {} in batch {}".format(max_acc[0], max_acc[1]))
                         print("Total time: {}".format(time.time() - global_start))
                         f1.write(
-                            'Step {}, test accuracy: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, specificity {}, class balance {}, max acc {} {} \n'.format(
-                                batch_num, test_accuracy, dice_coe_val.eval(), hard_dice_coe_val.eval(),
+                            'Step {}, test accuracy: {}, cost: {}, cost_unweighted: {}. dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, specificity {}, class balance {}, max acc {} {} \n'.format(
+                                batch_num, test_accuracy, cost, cost_unweighted, dice_coe_val.eval(), hard_dice_coe_val.eval(),
                                 iou_coe_val.eval(), recall, precision, fbeta_score, auc, specificity, class_balance,
                                 max_acc[0],max_acc[1]))
                         f1.close()
