@@ -438,7 +438,7 @@ def train(train_indices, validation_indices, run_id):
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
 
     dataset = Dataset(folder='drive', include_hair=True,
-                      batch_size=BATCH_SIZE, sgd = False)
+                      batch_size=BATCH_SIZE, sgd = True)
 
     # inputs, targets = dataset.next_batch()
     # print(inputs.shape, targets.shape)
