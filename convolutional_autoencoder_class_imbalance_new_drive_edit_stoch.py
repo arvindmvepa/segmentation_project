@@ -26,9 +26,7 @@ from PIL import Image
 from skimage import io as skio
 from sklearn.model_selection import KFold, cross_val_score
 import random
-from sklearn.metrics import precision_recall_fscore_support
-from sklearn.metrics import roc_auc_score
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import precision_recall_fscore_support, cohen_kappa_score, roc_auc_score, confusion_matrix
 from PIL import Image
 
 IMAGE_HEIGHT = 565
@@ -631,16 +629,16 @@ def train(train_indices, validation_indices, run_id):
                                                                                               prediction_flat,
                                                                                               average='binary',
                                                                                               sample_weight=mask_flat)
-
+                        kappa = cohen_kappa_score(target_flat, prediction_flat, sample_weight=mask_flat)
                         tn, fp, fn, tp = confusion_matrix(target_flat, prediction_flat, sample_weight=mask_flat).ravel()
                         specificity = tn / (tn + fp)
                         sess.run(tf.local_variables_initializer())
 
                         # test_accuracy1 = test_accuracy1/len(test_inputs)
                         print(
-                        'Step {}, test accuracy: {}, cost: {}, cost_unweighted: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, specificity {}, class balance {}'.format(
+                        'Step {}, test accuracy: {}, cost: {}, cost_unweighted: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, kappa {}, specificity {}, class balance {}'.format(
                             batch_num, test_accuracy, cost, cost_unweighted, dice_coe_val.eval(), hard_dice_coe_val.eval(),
-                            iou_coe_val.eval(), recall, precision, fbeta_score, auc, specificity, class_balance))
+                            iou_coe_val.eval(), recall, precision, fbeta_score, auc, kappa, specificity, class_balance))
                         # print('Step {}, test accuracy1: {}'.format(batch_num, test_accuracy1))
 
                         # n_examples = 5
@@ -681,9 +679,9 @@ def train(train_indices, validation_indices, run_id):
                         print("Best accuracy: {} in batch {}".format(max_acc[0], max_acc[1]))
                         print("Total time: {}".format(time.time() - global_start))
                         f1.write(
-                            'Step {}, test accuracy: {}, cost: {}, cost_unweighted: {}. dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, specificity {}, class balance {}, max acc {} {} \n'.format(
+                            'Step {}, test accuracy: {}, cost: {}, cost_unweighted: {}. dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, kappa {}, specificity {}, class balance {}, max acc {} {} \n'.format(
                                 batch_num, test_accuracy, cost, cost_unweighted, dice_coe_val.eval(), hard_dice_coe_val.eval(),
-                                iou_coe_val.eval(), recall, precision, fbeta_score, auc, specificity, class_balance,
+                                iou_coe_val.eval(), recall, precision, fbeta_score, auc, kappa, specificity, class_balance,
                                 max_acc[0],max_acc[1]))
                         f1.close()
 
