@@ -478,7 +478,8 @@ def train(train_indices, validation_indices, run_id):
     ##DEBUG
     #pos_weight
     class_balance = find_positive_weight(train_targets, train_masks)
-    pos_weight = 8
+    z = 0.5398232539
+    pos_weight = (z*class_balance)/(1-z)
 
     dataset.train_inputs = train_inputs
     dataset.train_masks = train_masks
