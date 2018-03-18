@@ -40,7 +40,7 @@ INPUT_IMAGE_WIDTH = IMAGE_WIDTH
 Mod_HEIGHT = 584
 Mod_WIDTH = 584
 
-n_examples = 5
+n_examples = 1
 
 # np.set_printoptions(threshold=np.nan)
 
