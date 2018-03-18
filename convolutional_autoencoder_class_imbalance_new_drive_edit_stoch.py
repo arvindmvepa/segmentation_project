@@ -478,7 +478,7 @@ def train(train_indices, validation_indices, run_id):
     ##DEBUG
     #pos_weight
     class_balance = find_positive_weight(train_targets, train_masks)
-    z = 0.56
+    z = 0.54
     pos_weight = (z*class_balance)/(1-z)
 
     dataset.train_inputs = train_inputs
@@ -689,7 +689,7 @@ def train(train_indices, validation_indices, run_id):
 
 if __name__ == '__main__':
     x = random.randint(1, 100)
-    k_fold = KFold(n_splits=3, shuffle=True, random_state=x)
+    k_fold = KFold(n_splits=20, shuffle=True, random_state=x)
 
     f1 = open('out1.txt', 'w')
     f2 = open('out2.txt', 'w')
