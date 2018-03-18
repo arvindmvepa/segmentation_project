@@ -575,7 +575,7 @@ def train(train_indices, validation_indices, run_id):
                                                                                                                         cost_unweighted,
                                                                                                                         end - start,
                                                                                                                         pos_weight))
-                    if batch_num % 200 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
+                    if batch_num % 1 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
                         test_accuracy = 0.0
 
                         mask_array = np.zeros((len(test_inputs), IMAGE_WIDTH, IMAGE_HEIGHT))
@@ -708,4 +708,5 @@ if __name__ == '__main__':
         p = multiprocessing.Process(target=train, args=(train_indices, validation_indices, count))
         p.start()
         p.join()
+        break
         count += 1
