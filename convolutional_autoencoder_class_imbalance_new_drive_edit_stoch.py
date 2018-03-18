@@ -403,7 +403,7 @@ class Dataset:
 
 def draw_results(test_inputs, test_targets, test_segmentation, test_accuracy, network, batch_num):
     n_examples_to_plot = n_examples
-    fig, axs = plt.subplots(4, n_examples_to_plot, figsize=(n_examples_to_plot * 3, 10))
+    fig, axs = plt.subplots(4, n_examples_to_plot, figsize=(n_examples_to_plot * 3, 10), squeeze=False)
     fig.suptitle("Accuracy: {}, {}".format(test_accuracy, network.description), fontsize=20)
     for example_i in range(n_examples_to_plot):
         axs[0][example_i].imshow(test_inputs[example_i], cmap='gray')
