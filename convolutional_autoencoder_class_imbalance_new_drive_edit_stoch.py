@@ -538,14 +538,14 @@ def train(train_indices, validation_indices, run_id):
             acc = 0.0
             batch_num = 0
             for epoch_i in range(n_epochs):
-                if batch_num > 30000:
+                if batch_num > 20000:
                     epoch_i = 0
                     dataset.reset_batch_pointer()
                     break
                 dataset.reset_batch_pointer()
                 for batch_i in range(dataset.num_batches_in_epoch()):
                     batch_num = epoch_i * dataset.num_batches_in_epoch() + batch_i + 1
-                    if batch_num > 30000:
+                    if batch_num > 20000:
                         break
 
                     augmentation_seq_deterministic = augmentation_seq.to_deterministic()
@@ -708,5 +708,4 @@ if __name__ == '__main__':
         p = multiprocessing.Process(target=train, args=(train_indices, validation_indices, count))
         p.start()
         p.join()
-        break
         count += 1
