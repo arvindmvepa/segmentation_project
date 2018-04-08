@@ -615,10 +615,9 @@ def train(train_indices, validation_indices, run_id):
                         prediction_tensor = tf.convert_to_tensor(prediction_array, dtype=tf.float32)
                         target_tensor = tf.convert_to_tensor(target_array, dtype=tf.float32)
 
-                        dice_coe_val = dice_coe(prediction_tensor, target_tensor, mask_tensor, len(test_inputs))
-                        hard_dice_coe_val = dice_hard_coe(prediction_tensor, target_tensor, mask_tensor,
-                                                          len(test_inputs))
-                        iou_coe_val = iou_coe(prediction_tensor, target_tensor, mask_tensor, len(test_inputs))
+                        #dice_coe_val = dice_coe(prediction_tensor, target_tensor, mask_tensor, len(test_inputs))
+                        #hard_dice_coe_val = dice_hard_coe(prediction_tensor, target_tensor, mask_tensor,len(test_inputs))
+                        #iou_coe_val = iou_coe(prediction_tensor, target_tensor, mask_tensor, len(test_inputs))
 
                         mask_flat = mask_array.flatten()
                         prediction_flat = prediction_array.flatten()
@@ -658,13 +657,12 @@ def train(train_indices, validation_indices, run_id):
                         kappa = cohen_kappa_score(target_flat, prediction_flat, sample_weight=mask_flat)
                         tn, fp, fn, tp = confusion_matrix(target_flat, prediction_flat, sample_weight=mask_flat).ravel()
                         specificity = tn / (tn + fp)
-                        sess.run(tf.local_variables_initializer())
+                        #sess.run(tf.local_variables_initializer())
 
                         # test_accuracy1 = test_accuracy1/len(test_inputs)
                         print(
                         'Step {}, test accuracy: {}, cost: {}, cost_unweighted: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, kappa {}, specificity {}, class balance {}'.format(
-                            batch_num, test_accuracy, cost, cost_unweighted, dice_coe_val.eval(), hard_dice_coe_val.eval(),
-                            iou_coe_val.eval(), recall, precision, fbeta_score, auc, kappa, specificity, neg_pos_class_ratio))
+                            batch_num, test_accuracy, cost, cost_unweighted,recall, precision, fbeta_score, auc, kappa, specificity, neg_pos_class_ratio))
                         # print('Step {}, test accuracy1: {}'.format(batch_num, test_accuracy1))
 
                         # n_examples = 5
@@ -706,8 +704,7 @@ def train(train_indices, validation_indices, run_id):
                         print("Total time: {}".format(time.time() - global_start))
                         f1.write(
                             'Step {}, test accuracy: {}, cost: {}, cost_unweighted: {}. dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, kappa {}, specificity {}, class balance {}, max acc {} {} \n'.format(
-                                batch_num, test_accuracy, cost, cost_unweighted, dice_coe_val.eval(), hard_dice_coe_val.eval(),
-                                iou_coe_val.eval(), recall, precision, fbeta_score, auc, kappa, specificity, neg_pos_class_ratio,
+                                batch_num, test_accuracy, cost, cost_unweighted, recall, precision, fbeta_score, auc, kappa, specificity, neg_pos_class_ratio,
                                 max_acc[0],max_acc[1]))
                         f1.write(('Step {}, '+thresh_acc_strings).format(batch_num))
                         f1.close()
