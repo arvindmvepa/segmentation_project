@@ -479,7 +479,7 @@ def train(train_indices, validation_indices, run_id):
     #pos_weight
     neg_pos_class_ratio, _, _ = find_class_balance(train_targets, train_masks)
     _, test_neg_class_frac, test_pos_class_frac  = find_class_balance(test_targets, test_masks)
-    z = 0.57
+    z = 0.56
     pos_weight = (z*neg_pos_class_ratio)/(1-z)
 
     dataset.train_inputs = train_inputs
