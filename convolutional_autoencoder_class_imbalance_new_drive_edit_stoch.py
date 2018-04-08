@@ -633,7 +633,7 @@ def train(train_indices, validation_indices, run_id):
                         i = 0
 
                         for i in np.arange(0.0, 1.000001, 0.000001):
-                            index = round(len(thresholds) * i, 0)
+                            index = int(round(len(thresholds) * i, 0))
                             fpr, tpr, threshold = list_fprs_tprs_thresholds[index]
                             if index % 10000:
                                 print((index, threshold))
@@ -643,7 +643,7 @@ def train(train_indices, validation_indices, run_id):
                             i += 1
 
                         for i in np.arange(0, 1.05, .05):
-                            index = round(len(thresholds)*i,0)
+                            index = int(round(len(thresholds)*i,0))
                             fpr, tpr, threshold = list_fprs_tprs_thresholds[index]
                             thresh_acc = (1 - fpr) * test_neg_class_frac + tpr * test_pos_class_frac
                             thresh_acc_strings += "thresh: {}, thresh acc: {}, tpr: {}, spec: {}, ".format(threshold, thresh_acc, tpr, 1-fpr)
