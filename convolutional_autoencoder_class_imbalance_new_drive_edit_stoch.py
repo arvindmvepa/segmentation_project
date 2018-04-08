@@ -707,7 +707,7 @@ def train(train_indices, validation_indices, run_id):
                             'Step {}, test accuracy: {}, cost: {}, cost_unweighted: {}, recall {}, precision {}, fbeta_score {}, auc {}, kappa {}, specificity {}, class balance {}, max acc {} {} \n'.format(
                                 batch_num, test_accuracy, cost, cost_unweighted, recall, precision, fbeta_score, auc, kappa, specificity, neg_pos_class_ratio,
                                 max_acc[0],max_acc[1]))
-                        f1.write(('Step {}, '+thresh_acc_strings).format(batch_num))
+                        f1.write(('Step {}, '+thresh_acc_strings+'\n').format(batch_num))
                         f1.close()
 
 
