@@ -630,8 +630,9 @@ def train(train_indices, validation_indices, run_id):
                         list_fprs_tprs_thresholds = list(zip(fprs, tprs, thresholds))
                         #sampled_fprs_tprs_thresholds = random.sample(list_fprs_tprs_thresholds, 100000)
                         i = 0
-
-                        for i in np.arange(0.0, 1.000001, 0.000001):
+                        #interval = 0.000001
+                        interval = 0.001
+                        for i in np.arange(0.0, 1/interval + interval, interval):
                             index = int(round((len(thresholds)-1) * i, 0))
                             fpr, tpr, threshold = list_fprs_tprs_thresholds[index]
                             if index % 10000:
@@ -641,8 +642,8 @@ def train(train_indices, validation_indices, run_id):
                                 thresh_max_items = "max acc thresh: {}, max thresh acc: {}, max acc tpr: {}, max acc spec: {}, ".format(threshold, thresh_acc, tpr, 1-fpr)
                                 thresh_max = thresh_acc
                             i += 1
-
-                        for i in np.arange(0, 1.05, .05):
+                        interval = 0.05
+                        for i in np.arange(0, 1/interval + interval, interval):
                             index = int(round((len(thresholds) - 1) * i, 0))
                             fpr, tpr, threshold = list_fprs_tprs_thresholds[index]
                             thresh_acc = (1 - fpr) * test_neg_class_frac + tpr * test_pos_class_frac
@@ -662,7 +663,7 @@ def train(train_indices, validation_indices, run_id):
 
                         # test_accuracy1 = test_accuracy1/len(test_inputs)
                         print(
-                        'Step {}, test accuracy: {}, cost: {}, cost_unweighted: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, kappa {}, specificity {}, class balance {}'.format(
+                        'Step {}, test accuracy: {}, cost: {}, cost_unweighted: {} recall {}, precision {}, fbeta_score {}, auc {}, kappa {}, specificity {}, class balance {}'.format(
                             batch_num, test_accuracy, cost, cost_unweighted,recall, precision, fbeta_score, auc, kappa, specificity, neg_pos_class_ratio))
                         # print('Step {}, test accuracy1: {}'.format(batch_num, test_accuracy1))
 
@@ -704,7 +705,7 @@ def train(train_indices, validation_indices, run_id):
                         print("Best accuracy: {} in batch {}".format(max_acc[0], max_acc[1]))
                         print("Total time: {}".format(time.time() - global_start))
                         f1.write(
-                            'Step {}, test accuracy: {}, cost: {}, cost_unweighted: {}. dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, kappa {}, specificity {}, class balance {}, max acc {} {} \n'.format(
+                            'Step {}, test accuracy: {}, cost: {}, cost_unweighted: {}, recall {}, precision {}, fbeta_score {}, auc {}, kappa {}, specificity {}, class balance {}, max acc {} {} \n'.format(
                                 batch_num, test_accuracy, cost, cost_unweighted, recall, precision, fbeta_score, auc, kappa, specificity, neg_pos_class_ratio,
                                 max_acc[0],max_acc[1]))
                         f1.write(('Step {}, '+thresh_acc_strings).format(batch_num))
