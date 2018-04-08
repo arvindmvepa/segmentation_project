@@ -576,7 +576,7 @@ def train(train_indices, validation_indices, run_id):
                                                                                                                         cost_unweighted,
                                                                                                                         end - start,
                                                                                                                         pos_weight))
-                    if batch_num % 3 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
+                    if batch_num % 200 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
                         test_accuracy = 0.0
 
                         mask_array = np.zeros((len(test_inputs), IMAGE_WIDTH, IMAGE_HEIGHT))
@@ -631,12 +631,11 @@ def train(train_indices, validation_indices, run_id):
                         #sampled_fprs_tprs_thresholds = random.sample(list_fprs_tprs_thresholds, 100000)
                         i = 0
                         #interval = 0.000001
-                        interval = 0.001
+                        interval = 0.00001
+                        #interval = 0.001
                         for i in np.arange(0.0, 1.0 + interval, interval):
                             index = int(round((len(thresholds)-1) * i, 0))
                             fpr, tpr, threshold = list_fprs_tprs_thresholds[index]
-                            if index % 10000:
-                                print((index, threshold))
                             thresh_acc = (1-fpr)*test_neg_class_frac+tpr*test_pos_class_frac
                             if thresh_acc > thresh_max:
                                 thresh_max_items = "max acc thresh: {}, max thresh acc: {}, max acc tpr: {}, max acc spec: {}, ".format(threshold, thresh_acc, tpr, 1-fpr)
