@@ -628,16 +628,25 @@ def train(train_indices, validation_indices, run_id):
                         thresh_acc_strings = ""
                         thresh_max = 0.0
                         thresh_max_items = ""
-                        print(len(thresholds))
+                        zip_fprs_tprs_thresholds = zip(fprs, tprs, thresholds)
+                        #sampled_fprs_tprs_thresholds = random.sample(zip_fprs_tprs_thresholds, 100000)
                         i = 0
-                        for fpr,tpr, threshold in zip(fprs, tprs, thresholds):
-                            if i % 10:
-                                print((i, threshold))
+
+                        for i in range(0, 1.0, .000001):
+                            index = round(len(thresholds) * i, 0)
+                            fpr, tpr, threshold = zip_fprs_tprs_thresholds[index]
+                            if index % 10000:
+                                print((index, threshold))
                             thresh_acc = (1-fpr)*test_neg_class_frac+tpr*test_pos_class_frac
                             if thresh_acc > thresh_max:
                                 thresh_max_items = "max acc thresh: {}, max thresh acc: {}, max acc tpr: {}, max acc spec: {}, ".format(threshold, thresh_acc, tpr, 1-fpr)
-                            thresh_acc_strings += "thresh: {}, thresh acc: {}, tpr: {}, spec: {}, ".format(threshold, thresh_acc, tpr, 1-fpr)
-                            i +=1
+                            i += 1
+
+                        for i in range(0, 1.0, .05):
+                            index = round(len(thresholds)*i,0)
+                            fpr, tpr, threshold = zip_fprs_tprs_thresholds[index]
+                            thresh_acc_strings += "thresh: {}, thresh acc: {}, tpr: {}, spec: {}, ".format(thresholds[i], thresh_acc, tpr, 1-fpr)
+
                         thresh_acc_strings = thresh_max_items +thresh_acc_strings
                         prediction_flat = np.round(prediction_flat)
                         target_flat = np.round(target_flat)
