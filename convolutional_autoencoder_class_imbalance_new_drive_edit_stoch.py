@@ -539,7 +539,7 @@ def train(train_indices, validation_indices, run_id):
             acc = 0.0
             batch_num = 0
             for epoch_i in range(n_epochs):
-                if batch_num > 5:
+                if batch_num > 20000:
                     epoch_i = 0
                     dataset.reset_batch_pointer()
                     break
