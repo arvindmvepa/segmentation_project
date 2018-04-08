@@ -639,6 +639,7 @@ def train(train_indices, validation_indices, run_id):
                             thresh_acc = (1-fpr)*test_neg_class_frac+tpr*test_pos_class_frac
                             if thresh_acc > thresh_max:
                                 thresh_max_items = "max acc thresh: {}, max thresh acc: {}, max acc tpr: {}, max acc spec: {}, ".format(threshold, thresh_acc, tpr, 1-fpr)
+                                thresh_max = thresh_acc
                             i += 1
 
                         for i in np.arange(0, 1.05, .05):
