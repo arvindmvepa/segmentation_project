@@ -628,13 +628,13 @@ def train(train_indices, validation_indices, run_id):
                         thresh_acc_strings = ""
                         thresh_max = 0.0
                         thresh_max_items = ""
-                        zip_fprs_tprs_thresholds = zip(fprs, tprs, thresholds)
-                        #sampled_fprs_tprs_thresholds = random.sample(zip_fprs_tprs_thresholds, 100000)
+                        list_fprs_tprs_thresholds = list(zip(fprs, tprs, thresholds))
+                        #sampled_fprs_tprs_thresholds = random.sample(list_fprs_tprs_thresholds, 100000)
                         i = 0
 
                         for i in np.arange(0.0, 1.000001, 0.000001):
                             index = round(len(thresholds) * i, 0)
-                            fpr, tpr, threshold = zip_fprs_tprs_thresholds[index]
+                            fpr, tpr, threshold = list_fprs_tprs_thresholds[index]
                             if index % 10000:
                                 print((index, threshold))
                             thresh_acc = (1-fpr)*test_neg_class_frac+tpr*test_pos_class_frac
@@ -644,8 +644,9 @@ def train(train_indices, validation_indices, run_id):
 
                         for i in np.arange(0, 1.05, .05):
                             index = round(len(thresholds)*i,0)
-                            fpr, tpr, threshold = zip_fprs_tprs_thresholds[index]
-                            thresh_acc_strings += "thresh: {}, thresh acc: {}, tpr: {}, spec: {}, ".format(thresholds[i], thresh_acc, tpr, 1-fpr)
+                            fpr, tpr, threshold = list_fprs_tprs_thresholds[index]
+                            thresh_acc = (1 - fpr) * test_neg_class_frac + tpr * test_pos_class_frac
+                            thresh_acc_strings += "thresh: {}, thresh acc: {}, tpr: {}, spec: {}, ".format(threshold, thresh_acc, tpr, 1-fpr)
 
                         thresh_acc_strings = thresh_max_items +thresh_acc_strings
                         prediction_flat = np.round(prediction_flat)
