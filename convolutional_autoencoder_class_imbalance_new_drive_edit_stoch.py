@@ -26,7 +26,7 @@ from PIL import Image
 from skimage import io as skio
 from sklearn.model_selection import KFold, cross_val_score
 import random
-from sklearn.metrics import precision_recall_fscore_support, cohen_kappa_score, roc_auc_score, confusion_matrix
+from sklearn.metrics import precision_recall_fscore_support, cohen_kappa_score, roc_auc_score, confusion_matrix, roc_curve
 from PIL import Image
 
 IMAGE_HEIGHT = 565
@@ -40,7 +40,7 @@ INPUT_IMAGE_WIDTH = IMAGE_WIDTH
 Mod_HEIGHT = 584
 Mod_WIDTH = 584
 
-n_examples = 1
+n_examples = 4
 
 # np.set_printoptions(threshold=np.nan)
 
@@ -79,7 +79,7 @@ def mask_mean_diff(masked_pred, mask, num_batches=1, width=IMAGE_WIDTH, height=I
     return tf.divide(masked_pred, FOV_num_pixels)
 
 
-def find_positive_weight(targets, masks):
+def find_class_balance(targets, masks):
     total_pos = 0
     total_num_pixels = 0
     total_neg = 0
@@ -89,7 +89,7 @@ def find_positive_weight(targets, masks):
         total_num_pixels += np.count_nonzero(mask)
     total_neg = total_num_pixels - total_pos
     weight = total_neg / total_pos
-    return weight
+    return weight, float(total_neg)/float(total_num_pixels), float(total_pos)/float(total_num_pixels)
 
 
 def dice_coe(output, target, mask=None, num_batches=1, loss_type='jaccard', axis=None, smooth=1e-5):
@@ -477,9 +477,10 @@ def train(train_indices, validation_indices, run_id):
                                                                          True)
     ##DEBUG
     #pos_weight
-    class_balance = find_positive_weight(train_targets, train_masks)
-    z = 0.55
-    pos_weight = (z*class_balance)/(1-z)
+    neg_pos_class_ratio, _, _ = find_class_balance(train_targets, train_masks)
+    _, test_neg_class_frac, test_pos_class_frac  = find_class_balance(test_targets, test_masks)
+    z = 0.57
+    pos_weight = (z*neg_pos_class_ratio)/(1-z)
 
     dataset.train_inputs = train_inputs
     dataset.train_masks = train_masks
@@ -538,7 +539,7 @@ def train(train_indices, validation_indices, run_id):
             acc = 0.0
             batch_num = 0
             for epoch_i in range(n_epochs):
-                if batch_num > 20000:
+                if batch_num > 5:
                     epoch_i = 0
                     dataset.reset_batch_pointer()
                     break
@@ -575,7 +576,7 @@ def train(train_indices, validation_indices, run_id):
                                                                                                                         cost_unweighted,
                                                                                                                         end - start,
                                                                                                                         pos_weight))
-                    if batch_num % 200 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
+                    if batch_num % 3 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
                         test_accuracy = 0.0
 
                         mask_array = np.zeros((len(test_inputs), IMAGE_WIDTH, IMAGE_HEIGHT))
@@ -623,7 +624,16 @@ def train(train_indices, validation_indices, run_id):
                         prediction_flat = prediction_array.flatten()
                         target_flat = target_array.flatten()
                         auc = roc_auc_score(target_flat, prediction_flat, sample_weight=mask_flat)
-
+                        fprs, tprs, thresholds = roc_curve(target_flat, prediction_flat, sample_weight=mask_flat)
+                        thresh_acc_strings = ""
+                        thresh_max = 0.0
+                        thresh_max_items = ""
+                        for fpr,tpr, threshold in zip(fprs, tprs, thresholds):
+                            thresh_acc = (1-fpr)*test_neg_class_frac+tpr*test_pos_class_frac
+                            if thresh_acc > thresh_max:
+                                thresh_max_items = "max acc thresh: {}, max thresh acc: {}, max acc tpr: {}, max acc spec: {}, ".format(threshold, thresh_acc, tpr, 1-fpr)
+                            thresh_acc_strings += "thresh: {}, thresh acc: {}, tpr: {}, spec: {}, ".format(threshold, thresh_acc, tpr, 1-fpr)
+                        thresh_acc_strings = thresh_max_items +thresh_acc_strings
                         prediction_flat = np.round(prediction_flat)
                         target_flat = np.round(target_flat)
                         (precision, recall, fbeta_score, _) = precision_recall_fscore_support(target_flat,
@@ -639,7 +649,7 @@ def train(train_indices, validation_indices, run_id):
                         print(
                         'Step {}, test accuracy: {}, cost: {}, cost_unweighted: {}, dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, kappa {}, specificity {}, class balance {}'.format(
                             batch_num, test_accuracy, cost, cost_unweighted, dice_coe_val.eval(), hard_dice_coe_val.eval(),
-                            iou_coe_val.eval(), recall, precision, fbeta_score, auc, kappa, specificity, class_balance))
+                            iou_coe_val.eval(), recall, precision, fbeta_score, auc, kappa, specificity, neg_pos_class_ratio))
                         # print('Step {}, test accuracy1: {}'.format(batch_num, test_accuracy1))
 
                         # n_examples = 5
@@ -682,14 +692,15 @@ def train(train_indices, validation_indices, run_id):
                         f1.write(
                             'Step {}, test accuracy: {}, cost: {}, cost_unweighted: {}. dice_coe {}, hard_dice {}, iou_coe {}, recall {}, precision {}, fbeta_score {}, auc {}, kappa {}, specificity {}, class balance {}, max acc {} {} \n'.format(
                                 batch_num, test_accuracy, cost, cost_unweighted, dice_coe_val.eval(), hard_dice_coe_val.eval(),
-                                iou_coe_val.eval(), recall, precision, fbeta_score, auc, kappa, specificity, class_balance,
+                                iou_coe_val.eval(), recall, precision, fbeta_score, auc, kappa, specificity, neg_pos_class_ratio,
                                 max_acc[0],max_acc[1]))
+                        f1.write(('Step {}, '+thresh_acc_strings).format(batch_num))
                         f1.close()
 
 
 if __name__ == '__main__':
     x = random.randint(1, 100)
-    k_fold = KFold(n_splits=20, shuffle=True, random_state=x)
+    k_fold = KFold(n_splits=3, shuffle=True, random_state=x)
 
     f1 = open('out1.txt', 'w')
     f2 = open('out2.txt', 'w')
