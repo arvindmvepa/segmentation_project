@@ -632,7 +632,7 @@ def train(train_indices, validation_indices, run_id):
                         #sampled_fprs_tprs_thresholds = random.sample(zip_fprs_tprs_thresholds, 100000)
                         i = 0
 
-                        for i in range(0, 1.0, .000001):
+                        for i in np.arange(0.0, 1.000001, 0.000001):
                             index = round(len(thresholds) * i, 0)
                             fpr, tpr, threshold = zip_fprs_tprs_thresholds[index]
                             if index % 10000:
@@ -642,7 +642,7 @@ def train(train_indices, validation_indices, run_id):
                                 thresh_max_items = "max acc thresh: {}, max thresh acc: {}, max acc tpr: {}, max acc spec: {}, ".format(threshold, thresh_acc, tpr, 1-fpr)
                             i += 1
 
-                        for i in range(0, 1.0, .05):
+                        for i in np.arange(0, 1.05, .05):
                             index = round(len(thresholds)*i,0)
                             fpr, tpr, threshold = zip_fprs_tprs_thresholds[index]
                             thresh_acc_strings += "thresh: {}, thresh acc: {}, tpr: {}, spec: {}, ".format(thresholds[i], thresh_acc, tpr, 1-fpr)
