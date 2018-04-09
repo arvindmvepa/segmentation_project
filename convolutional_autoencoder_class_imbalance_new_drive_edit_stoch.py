@@ -26,7 +26,7 @@ from PIL import Image
 from skimage import io as skio
 from sklearn.model_selection import KFold, cross_val_score
 import random
-from sklearn.metrics import precision_recall_fscore_support, cohen_kappa_score, roc_auc_score, confusion_matrix, roc_curve, auc
+from sklearn.metrics import precision_recall_fscore_support, cohen_kappa_score, roc_auc_score, confusion_matrix, roc_curve, auc as auc_
 from PIL import Image
 
 IMAGE_HEIGHT = 565
@@ -636,7 +636,7 @@ def train(train_indices, validation_indices, run_id):
                         thresh_max_items = ""
                         list_fprs_tprs_thresholds = list(zip(fprs, tprs, thresholds))
 
-                        auc_10_fpr = auc(lower_fpr, lower_tpr)
+                        auc_10_fpr = auc_(lower_fpr, lower_tpr)
                         #sampled_fprs_tprs_thresholds = random.sample(list_fprs_tprs_thresholds, 100000)
                         i = 0
                         #interval = 0.000001
