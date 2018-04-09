@@ -627,7 +627,7 @@ def train(train_indices, validation_indices, run_id):
                         auc = roc_auc_score(target_flat, prediction_flat, sample_weight=mask_flat)
                         fprs, tprs, thresholds = roc_curve(target_flat, prediction_flat, sample_weight=mask_flat)
 
-                        np_fprs, np_tprs, np_thresholds = np.array(fprs), np.array(tprs), np.array(thresholds)
+                        np_fprs, np_tprs, np_thresholds = np.array(fprs).flatten(), np.array(tprs).flatten(), np.array(thresholds).flatten()
                         lower_fpr = np.where (np_fprs < .10)
                         lower_tpr = np_tprs[0:len(lower_fpr)]
                         #upper_thresholds = np_thresholds[0:len(lower_fpr)]
