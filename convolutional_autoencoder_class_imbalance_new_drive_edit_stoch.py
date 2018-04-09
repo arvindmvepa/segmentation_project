@@ -578,7 +578,7 @@ def train(train_indices, validation_indices, run_id):
                                                                                                                         cost_unweighted,
                                                                                                                         end - start,
                                                                                                                         pos_weight))
-                    if batch_num % 5 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
+                    if batch_num % 200 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
                         test_accuracy = 0.0
 
                         mask_array = np.zeros((len(test_inputs), IMAGE_WIDTH, IMAGE_HEIGHT))
@@ -709,8 +709,8 @@ def train(train_indices, validation_indices, run_id):
                         f1 = open('out1.txt', 'a')
 
                         test_accuracies.append((test_accuracy, batch_num))
-                        test_auc.append((test_accuracy, batch_num))
-                        test_auc_10_fpr.append((test_accuracy, batch_num))
+                        test_auc.append((auc, batch_num))
+                        test_auc_10_fpr.append((auc_10_fpr, batch_num))
                         max_thresh_accuracies.append((thresh_max, batch_num))
                         print("Accuracies in time: ", [test_accuracies[x][0] for x in range(len(test_accuracies))])
                         print(test_accuracies)
@@ -750,5 +750,3 @@ if __name__ == '__main__':
         p.start()
         p.join()
         count += 1
-        if count == 1:
-            break
