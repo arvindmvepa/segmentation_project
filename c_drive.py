@@ -40,7 +40,7 @@ INPUT_IMAGE_WIDTH = IMAGE_WIDTH
 Mod_HEIGHT = 584
 Mod_WIDTH = 584
 
-n_examples = 1
+n_examples = 4
 
 # np.set_printoptions(threshold=np.nan)
 
@@ -213,7 +213,7 @@ class Network:
         self.masks = tf.placeholder(tf.float32, [None, self.IMAGE_WIDTH, self.IMAGE_HEIGHT, 1], name='masks')
         self.targets = tf.placeholder(tf.float32, [None, self.IMAGE_WIDTH, self.IMAGE_HEIGHT, 1], name='targets')
         self.is_training = tf.placeholder_with_default(False, [], name='is_training')
-        self.layer_output = tf.placeholder(tf.float32, [None, self.IMAGE_WIDTH, self.IMAGE_HEIGHT, 1], name='targets')
+        self.layer_output = tf.placeholder(tf.float32, [None, self.IMAGE_WIDTH, self.IMAGE_HEIGHT, 1], name='layer_outputs')
 
         # has to change for multiple batches
         # self.ones = tf.ones([1, self.IMAGE_WIDTH, self.IMAGE_HEIGHT], tf.int32)
@@ -241,8 +241,8 @@ class Network:
             #also use this as a mask to show aspects of the original image that were highlighted
             #make sure to do this for all of the layers by random sampling, just to double check
             #would have to consider receptive field
-            self.layers[layer.name] = net = layer.create_layer(net)
-            self.description += "{}".format(layer.get_description())
+            #self.layers[layer.name] = net = layer.create_layer(net)
+            #self.description += "{}".format(layer.get_description())
 
         print("Current input shape: ", net.get_shape())
 
@@ -581,8 +581,7 @@ def train(train_indices, validation_indices, run_id):
                     batch_targets = augmentation_seq_deterministic.augment_images(batch_targets, hooks=hooks_binmasks)
                     cost, cost_unweighted, layer_output, _ = sess.run([network.cost, network.cost_unweighted, network.layer_output, network.train_op],
                                        feed_dict={network.inputs: batch_inputs, network.masks: batch_masks,
-                                                  network.targets: batch_targets, network.is_training: True,
-                                                  network.iter: batch_num})
+                                                  network.targets: batch_targets, network.is_training: True})
 
                     end = time.time()
 
@@ -593,10 +592,13 @@ def train(train_indices, validation_indices, run_id):
                                                                                                                         cost_unweighted,
                                                                                                                         end - start,
                                                                                                                         pos_weight))
-                    img = Image.fromarray(layer_output, "L")
-                    img.save(os.path.join(os.path.join('layer_outputs', network.description + str(count), timestamp), "layer_output_train"+str(batch_num)+".jpeg"))
+                    if batch_num % 200 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
+                        layer_output = np.reshape(layer_output, [64, Mod_WIDTH, Mod_HEIGHT])
+                        for z in range(64):
+                            img = Image.fromarray(layer_output[z], "L")
+                            img.save(
+                                os.path.join(os.path.join('layer_outputs', network.description + str(count), timestamp),"layer_output_train" + str(batch_num) + ".jpeg"))
 
-                    if batch_num % 2 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
                         test_accuracy = 0.0
 
                         mask_array = np.zeros((len(test_inputs), IMAGE_WIDTH, IMAGE_HEIGHT))
@@ -618,10 +620,11 @@ def train(train_indices, validation_indices, run_id):
                                 [network.inputs, network.masks, network.segmentation_result, network.targets,
                                  network.accuracy, network.layer_output],
                                 feed_dict={network.inputs: test_inputs[i:(i + 1)], network.masks: test_masks[i:(i + 1)],
-                                           network.targets: test_targets[i:(i + 1)], network.is_training: False,
-                                           network.iter: batch_num})
-                            img = Image.fromarray(layer_output, "L")
-                            img.save(os.path.join(os.path.join('layer_outputs', network.description + str(count), timestamp),"layer_output_test"+str(i) +"_" +str(batch_num) + ".jpeg"))
+                                           network.targets: test_targets[i:(i + 1)], network.is_training: False})
+                            test_layer_output = np.reshape(test_layer_output, [64, Mod_WIDTH, Mod_HEIGHT])
+                            for z in range(64):
+                                img = Image.fromarray(test_layer_output[z], "L")
+                                img.save(os.path.join(os.path.join('layer_outputs', network.description + str(count), timestamp),"layer_output_test"+str(i) +"_" +str(batch_num) + ".jpeg"))
 
                             inputs = inputs[0, :, :, 0]
                             masks = masks[0, :, :, 0]
