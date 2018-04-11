@@ -597,7 +597,7 @@ def train(train_indices, validation_indices, run_id):
                         for z in range(64):
                             img = Image.fromarray(layer_output[z], "L")
                             img.save(
-                                os.path.join(os.path.join('layer_outputs', network.description + str(count), timestamp),"layer_output_train" + str(batch_num) + ".jpeg"))
+                                os.path.join(os.path.join('layer_outputs', network.description + str(count), timestamp),"layer_output_train" + str(batch_num) +"channel_"+str(z)+ ".jpeg"))
 
                         test_accuracy = 0.0
 
@@ -624,7 +624,7 @@ def train(train_indices, validation_indices, run_id):
                             test_layer_output = np.reshape(test_layer_output, [64, Mod_WIDTH, Mod_HEIGHT])
                             for z in range(64):
                                 img = Image.fromarray(test_layer_output[z], "L")
-                                img.save(os.path.join(os.path.join('layer_outputs', network.description + str(count), timestamp),"layer_output_test"+str(i) +"_" +str(batch_num) + ".jpeg"))
+                                img.save(os.path.join(os.path.join('layer_outputs', network.description + str(count), timestamp),"layer_output_test"+str(i) +"_" +str(batch_num)+ "channel_"+str(z)+ ".jpeg"))
 
                             inputs = inputs[0, :, :, 0]
                             masks = masks[0, :, :, 0]
