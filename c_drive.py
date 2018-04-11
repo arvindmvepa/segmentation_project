@@ -14,8 +14,8 @@ import tensorflow as tf
 from tensorflow.python.framework import ops
 from tensorflow.python.ops import gen_nn_ops
 
-from imgaug import augmenters as iaa
-from imgaug import imgaug
+from imgaug_ import augmenters as iaa
+from imgaug_ import imgaug_1
 from libs.activations import lrelu
 from libs.utils import corrupt
 from conv2d import Conv2d
@@ -213,6 +213,7 @@ class Network:
         self.masks = tf.placeholder(tf.float32, [None, self.IMAGE_WIDTH, self.IMAGE_HEIGHT, 1], name='masks')
         self.targets = tf.placeholder(tf.float32, [None, self.IMAGE_WIDTH, self.IMAGE_HEIGHT, 1], name='targets')
         self.is_training = tf.placeholder_with_default(False, [], name='is_training')
+        self.layer_output = tf.placeholder(tf.float32, [None, self.IMAGE_WIDTH, self.IMAGE_HEIGHT, 1], name='targets')
 
         # has to change for multiple batches
         # self.ones = tf.ones([1, self.IMAGE_WIDTH, self.IMAGE_HEIGHT], tf.int32)
@@ -228,7 +229,18 @@ class Network:
             net = self.inputs
 
         # ENCODER
-        for layer in layers:
+        for i in range(len(layers)):
+            layer = layers[i]
+            self.layers[layer.name] = net = layer.create_layer(net)
+            self.description += "{}".format(layer.get_description())
+            if i == 0:
+                self.layer_output = net
+
+
+            #if layer == 1, then save output images
+            #also use this as a mask to show aspects of the original image that were highlighted
+            #make sure to do this for all of the layers by random sampling, just to double check
+            #would have to consider receptive field
             self.layers[layer.name] = net = layer.create_layer(net)
             self.description += "{}".format(layer.get_description())
 
@@ -465,7 +477,7 @@ def train(train_indices, validation_indices, run_id):
             # default value for all other augmenters
             return default
 
-    hooks_binmasks = imgaug.HooksImages(activator=activator_binmasks)
+    hooks_binmasks = imgaug_1.HooksImages(activator=activator_binmasks)
 
     k_fold = KFold(n_splits=4)
     folder = dataset.folder
@@ -517,6 +529,7 @@ def train(train_indices, validation_indices, run_id):
 
     # create directory for saving model
     os.makedirs(os.path.join('save', network.description + str(count), timestamp))
+    os.makedirs(os.path.join('layer_outputs', network.description + str(count), timestamp))
 
     config = tf.ConfigProto(allow_soft_placement=True, log_device_placement=True)
     config.gpu_options.allow_growth = True
@@ -566,9 +579,11 @@ def train(train_indices, validation_indices, run_id):
                     batch_inputs = np.multiply(batch_inputs, 1.0 / 255)
 
                     batch_targets = augmentation_seq_deterministic.augment_images(batch_targets, hooks=hooks_binmasks)
-                    cost, cost_unweighted, _ = sess.run([network.cost, network.cost_unweighted, network.train_op],
+                    cost, cost_unweighted, layer_output, _ = sess.run([network.cost, network.cost_unweighted, network.layer_output, network.train_op],
                                        feed_dict={network.inputs: batch_inputs, network.masks: batch_masks,
-                                                  network.targets: batch_targets, network.is_training: True})
+                                                  network.targets: batch_targets, network.is_training: True,
+                                                  network.iter: batch_num})
+
                     end = time.time()
 
                     print('{}/{}, epoch: {}, cost: {}, cost unweighted: {}, batch time: {}, positive_weight: {}'.format(batch_num,
@@ -578,7 +593,10 @@ def train(train_indices, validation_indices, run_id):
                                                                                                                         cost_unweighted,
                                                                                                                         end - start,
                                                                                                                         pos_weight))
-                    if batch_num % 200 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
+                    img = Image.fromarray(layer_output, "L")
+                    img.save(os.path.join(os.path.join('layer_outputs', network.description + str(count), timestamp), "layer_output_train"+str(batch_num)+".jpeg"))
+
+                    if batch_num % 2 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
                         test_accuracy = 0.0
 
                         mask_array = np.zeros((len(test_inputs), IMAGE_WIDTH, IMAGE_HEIGHT))
@@ -596,11 +614,14 @@ def train(train_indices, validation_indices, run_id):
                             # feed_dict={network.inputs: test_inputs[i:(i+1)], network.masks: test_masks[i:(i+1)], network.targets: test_targets[i:(i+1)], network.is_training: False})
                             # inputs, masks, results, targets, _, acc = sess.run([network.inputs, network.masks, network.segmentation_result, network.targets, network.summaries, network.accuracy],
                             # feed_dict={network.inputs: test_inputs[i:(i+1)], network.targets: test_targets[i:(i+1)], network.is_training: False})
-                            inputs, masks, results, targets, acc = sess.run(
+                            inputs, masks, results, targets, acc, test_layer_output = sess.run(
                                 [network.inputs, network.masks, network.segmentation_result, network.targets,
-                                 network.accuracy],
+                                 network.accuracy, network.layer_output],
                                 feed_dict={network.inputs: test_inputs[i:(i + 1)], network.masks: test_masks[i:(i + 1)],
-                                           network.targets: test_targets[i:(i + 1)], network.is_training: False})
+                                           network.targets: test_targets[i:(i + 1)], network.is_training: False,
+                                           network.iter: batch_num})
+                            img = Image.fromarray(layer_output, "L")
+                            img.save(os.path.join(os.path.join('layer_outputs', network.description + str(count), timestamp),"layer_output_test"+str(i) +"_" +str(batch_num) + ".jpeg"))
 
                             inputs = inputs[0, :, :, 0]
                             masks = masks[0, :, :, 0]
@@ -730,7 +751,7 @@ def train(train_indices, validation_indices, run_id):
 
 if __name__ == '__main__':
     x = random.randint(1, 100)
-    k_fold = KFold(n_splits=20, shuffle=True, random_state=x)
+    k_fold = KFold(n_splits=3, shuffle=True, random_state=x)
 
     f1 = open('out1.txt', 'w')
     f2 = open('out2.txt', 'w')

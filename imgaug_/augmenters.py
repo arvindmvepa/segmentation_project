@@ -1203,7 +1203,7 @@ class Affine(Augmenter):
         elif isinstance(order, StochasticParameter):
             self.order = order
         else:
-            raise Exception("Expected order to be imgaug.ALL, int or StochasticParameter, got %s." % (type(order),))
+            raise Exception("Expected order to be imgaug_.ALL, int or StochasticParameter, got %s." % (type(order),))
 
         if cval == ia.ALL:
             self.cval = Uniform(0, 1.0)
@@ -1218,7 +1218,7 @@ class Affine(Augmenter):
         elif isinstance(cval, StochasticParameter):
             self.cval = cval
         else:
-            raise Exception("Expected cval to be imgaug.ALL, int, float or StochasticParameter, got %s." % (type(cval),))
+            raise Exception("Expected cval to be imgaug_.ALL, int, float or StochasticParameter, got %s." % (type(cval),))
 
         # constant, edge, symmetric, reflect, wrap
         if mode == ia.ALL:
@@ -1231,7 +1231,7 @@ class Affine(Augmenter):
         elif isinstance(mode, StochasticParameter):
             self.mode = mode
         else:
-            raise Exception("Expected mode to be imgaug.ALL, a string, a list of strings or StochasticParameter, got %s." % (type(mode),))
+            raise Exception("Expected mode to be imgaug_.ALL, a string, a list of strings or StochasticParameter, got %s." % (type(mode),))
 
         # scale
         # float | (float, float) | [float, float] | StochasticParameter
