@@ -21,7 +21,7 @@ class Conv2d(Layer):
         Conv2d.layer_index = 0
 
     def create_layer(self, input):
-        print(self.net_id)
+        #print(self.net_id)
         net_id = self.net_id
         # print('convd2: input_shape: {}'.format(utils.get_incoming_shape(input)))
         self.input_shape = utils.get_incoming_shape(input)
@@ -44,7 +44,7 @@ class Conv2d(Layer):
 
     def create_layer_reversed(self, input, prev_layer=None, reuse=False):
         net_id = self.net_id
-        print(net_id)
+        #print(self.input_shape)
 
         with tf.variable_scope('conv', reuse=reuse):
             W = tf.get_variable('W{}_{}_'.format(self.name[-3:], net_id),

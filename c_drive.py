@@ -28,6 +28,7 @@ from sklearn.model_selection import KFold, cross_val_score
 import random
 from sklearn.metrics import precision_recall_fscore_support, cohen_kappa_score, roc_auc_score, confusion_matrix, roc_curve, auc as auc_
 from PIL import Image
+from random import randint
 
 IMAGE_HEIGHT = 565
 # IMAGE_HEIGHT = 584
@@ -175,6 +176,7 @@ class Network:
         # Define network - ENCODER (decoder will be symmetric).
 
         if layers == None:
+
             layers = []
             layers.append(Conv2d(kernel_size=3, output_channels=64, name='conv_1_1', net_id=net_id))
             # layers.append(Conv2d(kernel_size=3, strides=[1, 1, 1, 1], output_channels=64, name='conv_1_2', net_id = net_id))
@@ -208,12 +210,31 @@ class Network:
             layers.append(Conv2d(kernel_size=1, output_channels=4096, name='conv_6_2', net_id=net_id))
             # layers.append(Conv2d(kernel_size=1, strides=[1, 1, 1, 1], output_channels=1000, name='conv_6_3'))
             # self.inputs = tf.placeholder(tf.float32, [None, self.IMAGE_WIDTH, self.IMAGE_HEIGHT, self.IMAGE_CHANNELS],name='inputs')
-            self.inputs = tf.placeholder(tf.float32, [None, Mod_WIDTH, Mod_HEIGHT, self.IMAGE_CHANNELS], name='inputs')
 
+        self.inputs = tf.placeholder(tf.float32, [None, Mod_WIDTH, Mod_HEIGHT, self.IMAGE_CHANNELS], name='inputs')
         self.masks = tf.placeholder(tf.float32, [None, self.IMAGE_WIDTH, self.IMAGE_HEIGHT, 1], name='masks')
         self.targets = tf.placeholder(tf.float32, [None, self.IMAGE_WIDTH, self.IMAGE_HEIGHT, 1], name='targets')
         self.is_training = tf.placeholder_with_default(False, [], name='is_training')
-        self.layer_output = tf.placeholder(tf.float32, [None, self.IMAGE_WIDTH, self.IMAGE_HEIGHT, 1], name='layer_outputs')
+
+        self.layer_output1 = tf.placeholder(tf.float32, [None, None, None, 1], name='layer_outputs')
+        self.layer_output2 = tf.placeholder(tf.float32, [None, None, None, 1], name='layer_outputs')
+        self.layer_output3 = tf.placeholder(tf.float32, [None, None, None, 1], name='layer_outputs')
+        self.layer_output4 = tf.placeholder(tf.float32, [None, None, None, 1], name='layer_outputs')
+        self.layer_output5 = tf.placeholder(tf.float32, [None, None, None, 1], name='layer_outputs')
+        self.layer_output6 = tf.placeholder(tf.float32, [None, None, None, 1], name='layer_outputs')
+        self.layer_output7 = tf.placeholder(tf.float32, [None, None, None, 1], name='layer_outputs')
+        self.layer_output8 = tf.placeholder(tf.float32, [None, None, None, 1], name='layer_outputs')
+        self.layer_output9 = tf.placeholder(tf.float32, [None, None, None, 1], name='layer_outputs')
+
+        self.layer_output10 = tf.placeholder(tf.float32, [None, None, None, 1], name='layer_outputs')
+        self.layer_output11 = tf.placeholder(tf.float32, [None, None, None, 1], name='layer_outputs')
+        self.layer_output12 = tf.placeholder(tf.float32, [None, None, None, 1], name='layer_outputs')
+        self.layer_output13 = tf.placeholder(tf.float32, [None, None, None, 1], name='layer_outputs')
+        self.layer_output14 = tf.placeholder(tf.float32, [None, None, None, 1], name='layer_outputs')
+        self.layer_output15 = tf.placeholder(tf.float32, [None, None, None, 1], name='layer_outputs')
+        self.layer_output16 = tf.placeholder(tf.float32, [None, None, None, 1], name='layer_outputs')
+        self.layer_output17 = tf.placeholder(tf.float32, [None, None, None, 1], name='layer_outputs')
+        self.layer_output18 = tf.placeholder(tf.float32, [None, None, None, 1], name='layer_outputs')
 
         # has to change for multiple batches
         # self.ones = tf.ones([1, self.IMAGE_WIDTH, self.IMAGE_HEIGHT], tf.int32)
@@ -222,6 +243,7 @@ class Network:
 
         self.layers = {}
 
+        ### can easily define image_preprocessing techniques here !!!!!!
         if per_image_standardization:
             list_of_images_norm = tf.map_fn(tf.image.per_image_standardization, self.inputs)
             net = tf.stack(list_of_images_norm)
@@ -234,24 +256,52 @@ class Network:
             self.layers[layer.name] = net = layer.create_layer(net)
             self.description += "{}".format(layer.get_description())
             if i == 0:
-                self.layer_output = net
+                self.layer_output1 = net
+            elif i == 1:
+                self.layer_output2 = net
+            elif i == 2:
+                self.layer_output3 = net
+            elif i == 3:
+                self.layer_output4 = net
+            elif i == 4:
+                self.layer_output5 = net
+            elif i == 5:
+                self.layer_output6 = net
+            elif i == 6:
+                self.layer_output7 = net
+            elif i == 7:
+                self.layer_output8 = net
+            elif i == 8:
+                self.layer_output9 = net
 
-
-            #if layer == 1, then save output images
-            #also use this as a mask to show aspects of the original image that were highlighted
-            #make sure to do this for all of the layers by random sampling, just to double check
-            #would have to consider receptive field
-            #self.layers[layer.name] = net = layer.create_layer(net)
-            #self.description += "{}".format(layer.get_description())
-
+        print("Number of layers: ", len(layers))
         print("Current input shape: ", net.get_shape())
 
         layers.reverse()
 
         # DECODER
-        last_layer = layers[len(layers) - 1]
-        for layer in layers:
+        for i in range(len(layers)):
+            layer = layers[i]
             net = layer.create_layer_reversed(net, prev_layer=self.layers[layer.name])
+            if i == 0:
+                self.layer_output10 = net
+            elif i == 1:
+                self.layer_output11 = net
+            elif i == 2:
+                self.layer_output12 = net
+            elif i == 3:
+                self.layer_output13 = net
+            elif i == 4:
+                self.layer_output14= net
+            elif i == 5:
+                self.layer_output15 = net
+            elif i == 6:
+                self.layer_output16 = net
+            elif i == 7:
+                self.layer_output17 = net
+            elif i == 8:
+                self.layer_output18 = net
+
         net = tf.image.resize_image_with_crop_or_pad(net, IMAGE_WIDTH, IMAGE_HEIGHT)
         net = tf.multiply(net, self.masks)
         self.segmentation_result = tf.sigmoid(net)
@@ -529,7 +579,88 @@ def train(train_indices, validation_indices, run_id):
 
     # create directory for saving model
     os.makedirs(os.path.join('save', network.description + str(count), timestamp))
-    os.makedirs(os.path.join('layer_outputs', network.description + str(count), timestamp))
+    layer_output_path = os.path.join('layer_outputs', network.description + str(count), timestamp)
+    os.makedirs(layer_output_path)
+    layer_output_path_train = os.path.join(layer_output_path, "train")
+    os.makedirs(layer_output_path_train)
+    layer_output_path_test = os.path.join(layer_output_path, "test")
+    os.makedirs(layer_output_path_test)
+
+    layer1_output_path_train = os.path.join(layer_output_path_train, "1")
+    os.makedirs(layer1_output_path_train)
+    layer2_output_path_train = os.path.join(layer_output_path_train, "2")
+    os.makedirs(layer2_output_path_train)
+    layer3_output_path_train = os.path.join(layer_output_path_train, "3")
+    os.makedirs(layer3_output_path_train)
+    layer4_output_path_train = os.path.join(layer_output_path_train, "4")
+    os.makedirs(layer4_output_path_train)
+    layer5_output_path_train = os.path.join(layer_output_path_train, "5")
+    os.makedirs(layer5_output_path_train)
+    layer6_output_path_train = os.path.join(layer_output_path_train, "6")
+    os.makedirs(layer6_output_path_train)
+    layer7_output_path_train = os.path.join(layer_output_path_train, "7")
+    os.makedirs(layer7_output_path_train)
+    layer8_output_path_train = os.path.join(layer_output_path_train, "8")
+    os.makedirs(layer8_output_path_train)
+    layer9_output_path_train = os.path.join(layer_output_path_train, "9")
+    os.makedirs(layer9_output_path_train)
+    layer10_output_path_train = os.path.join(layer_output_path_train, "10")
+    os.makedirs(layer10_output_path_train)
+    layer11_output_path_train = os.path.join(layer_output_path_train, "11")
+    os.makedirs(layer11_output_path_train)
+    layer12_output_path_train = os.path.join(layer_output_path_train, "12")
+    os.makedirs(layer12_output_path_train)
+    layer13_output_path_train = os.path.join(layer_output_path_train, "13")
+    os.makedirs(layer13_output_path_train)
+    layer14_output_path_train = os.path.join(layer_output_path_train, "14")
+    os.makedirs(layer14_output_path_train)
+    layer15_output_path_train = os.path.join(layer_output_path_train, "15")
+    os.makedirs(layer15_output_path_train)
+    layer16_output_path_train = os.path.join(layer_output_path_train, "16")
+    os.makedirs(layer16_output_path_train)
+    layer17_output_path_train = os.path.join(layer_output_path_train, "17")
+    os.makedirs(layer17_output_path_train)
+    layer18_output_path_train = os.path.join(layer_output_path_train, "18")
+    os.makedirs(layer18_output_path_train)
+
+    layer1_output_path_test = os.path.join(layer_output_path_test, "1")
+    os.makedirs(layer1_output_path_test)
+    layer2_output_path_test = os.path.join(layer_output_path_test, "2")
+    os.makedirs(layer2_output_path_test)
+    layer3_output_path_test = os.path.join(layer_output_path_test, "3")
+    os.makedirs(layer3_output_path_test)
+    layer4_output_path_test = os.path.join(layer_output_path_test, "4")
+    os.makedirs(layer4_output_path_test)
+    layer5_output_path_test = os.path.join(layer_output_path_test, "5")
+    os.makedirs(layer5_output_path_test)
+    layer6_output_path_test = os.path.join(layer_output_path_test, "6")
+    os.makedirs(layer6_output_path_test)
+    layer7_output_path_test = os.path.join(layer_output_path_test, "7")
+    os.makedirs(layer7_output_path_test)
+    layer8_output_path_test = os.path.join(layer_output_path_test, "8")
+    os.makedirs(layer8_output_path_test)
+    layer9_output_path_test = os.path.join(layer_output_path_test, "9")
+    os.makedirs(layer9_output_path_test)
+    layer10_output_path_test = os.path.join(layer_output_path_test, "10")
+    os.makedirs(layer10_output_path_test)
+    layer11_output_path_test = os.path.join(layer_output_path_test, "11")
+    os.makedirs(layer11_output_path_test)
+    layer12_output_path_test = os.path.join(layer_output_path_test, "12")
+    os.makedirs(layer12_output_path_test)
+    layer13_output_path_test = os.path.join(layer_output_path_test, "13")
+    os.makedirs(layer13_output_path_test)
+    layer14_output_path_test = os.path.join(layer_output_path_test, "14")
+    os.makedirs(layer14_output_path_test)
+    layer15_output_path_test = os.path.join(layer_output_path_test, "15")
+    os.makedirs(layer15_output_path_test)
+    layer16_output_path_test = os.path.join(layer_output_path_test, "16")
+    os.makedirs(layer16_output_path_test)
+    layer17_output_path_test = os.path.join(layer_output_path_test, "17")
+    os.makedirs(layer17_output_path_test)
+    layer18_output_path_test = os.path.join(layer_output_path_test, "18")
+    os.makedirs(layer18_output_path_test)
+
+
 
     config = tf.ConfigProto(allow_soft_placement=True, log_device_placement=True)
     config.gpu_options.allow_growth = True
@@ -579,9 +710,21 @@ def train(train_indices, validation_indices, run_id):
                     batch_inputs = np.multiply(batch_inputs, 1.0 / 255)
 
                     batch_targets = augmentation_seq_deterministic.augment_images(batch_targets, hooks=hooks_binmasks)
-                    cost, cost_unweighted, layer_output, _ = sess.run([network.cost, network.cost_unweighted, network.layer_output, network.train_op],
+
+                    cost, cost_unweighted, layer_output1, layer_output2, layer_output3, layer_output4, layer_output5, layer_output6, layer_output7, \
+                    layer_output8, layer_output9, layer_output10,  layer_output11, layer_output12, layer_output13, layer_output14, layer_output15, \
+                    layer_output16, layer_output17, layer_output18, _ = sess.run([network.cost, network.cost_unweighted, network.layer_output1, network.layer_output2,
+                                                                       network.layer_output3, network.layer_output4, network.layer_output5,
+                                                                       network.layer_output6, network.layer_output7, network.layer_output8,
+                                                                       network.layer_output9, network.layer_output10, network.layer_output11,
+                                                                       network.layer_output12, network.layer_output13, network.layer_output14,
+                                                                       network.layer_output15, network.layer_output16, network.layer_output17,
+                                                                       network.layer_output18, network.train_op],
                                        feed_dict={network.inputs: batch_inputs, network.masks: batch_masks,
                                                   network.targets: batch_targets, network.is_training: True})
+                    layer_outputs = [layer_output1, layer_output2, layer_output3, layer_output4, layer_output5, layer_output6,
+                                     layer_output7, layer_output8, layer_output9, layer_output10, layer_output11, layer_output12,
+                                     layer_output13, layer_output14, layer_output15, layer_output16, layer_output17, layer_output18]
 
                     end = time.time()
 
@@ -591,13 +734,24 @@ def train(train_indices, validation_indices, run_id):
                                                                                                                         cost,
                                                                                                                         cost_unweighted,
                                                                                                                         end - start,
-                                                                                                                        pos_weight))
-                    if batch_num % 200 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
-                        layer_output = np.reshape(layer_output, [64, Mod_WIDTH, Mod_HEIGHT])
-                        for z in range(64):
-                            img = Image.fromarray(layer_output[z], "L")
-                            img.save(
-                                os.path.join(os.path.join('layer_outputs', network.description + str(count), timestamp),"layer_output_train" + str(batch_num) +"channel_"+str(z)+ ".jpeg"))
+                                                                                                                       pos_weight))
+                    if batch_num % 1 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
+                        for j in range(len(layer_outputs)):
+                            layer_output = layer_outputs[j]
+                            for k in range(layer_output.shape[3]):
+                                channel_output = layer_output[0,:,:,k]
+                                """
+                                if k == 0 or k == 17 or k == 16:
+                                    channel_output = np.reshape(channel_output, (584,584))
+                                elif k == 1 or k == 2 or k == 15 or k == 14:
+                                    channel_output = np.reshape(channel_output, (292, 292))
+                                elif k == 3 or k == 4 or k == 5 or k == 13 or k == 12 or k == 11:
+                                    channel_output = np.reshape(channel_output, (146, 146))
+                                elif k == 6 or k == 7 or k == 8 or k == 10 or k == 9:
+                                    channel_output = np.reshape(channel_output, (73, 73))
+                                """
+                                img = Image.fromarray(channel_output, "L")
+                                img.save(os.path.join(os.path.join(layer_output_path_train, str(j+1)),"channel_"+str(k)+ ".jpeg"))
 
                         test_accuracy = 0.0
 
@@ -605,26 +759,49 @@ def train(train_indices, validation_indices, run_id):
                         target_array = np.zeros((len(test_inputs), IMAGE_WIDTH, IMAGE_HEIGHT))
                         prediction_array = np.zeros((len(test_inputs), IMAGE_WIDTH, IMAGE_HEIGHT))
 
+                        sample_test_image = randint(0, len(test_inputs)-1)
                         for i in range(len(test_inputs)):
-                            # print(test_inputs.shape)
-                            # print(test_targets.shape)
-                            # print(test_masks.shape)
-                            # print(test_inputs[i:(i+1)].shape)
-                            # print(test_targets[i:(i+1)].shape)
-                            # print(test_masks[i:(i+1)].shape)
-                            # inputs, masks, results, targets, _, acc = sess.run([network.inputs, network.masks, network.segmentation_result, network.targets, network.summaries, network.accuracy],
-                            # feed_dict={network.inputs: test_inputs[i:(i+1)], network.masks: test_masks[i:(i+1)], network.targets: test_targets[i:(i+1)], network.is_training: False})
-                            # inputs, masks, results, targets, _, acc = sess.run([network.inputs, network.masks, network.segmentation_result, network.targets, network.summaries, network.accuracy],
-                            # feed_dict={network.inputs: test_inputs[i:(i+1)], network.targets: test_targets[i:(i+1)], network.is_training: False})
-                            inputs, masks, results, targets, acc, test_layer_output = sess.run(
-                                [network.inputs, network.masks, network.segmentation_result, network.targets,
-                                 network.accuracy, network.layer_output],
-                                feed_dict={network.inputs: test_inputs[i:(i + 1)], network.masks: test_masks[i:(i + 1)],
-                                           network.targets: test_targets[i:(i + 1)], network.is_training: False})
-                            test_layer_output = np.reshape(test_layer_output, [64, Mod_WIDTH, Mod_HEIGHT])
-                            for z in range(64):
-                                img = Image.fromarray(test_layer_output[z], "L")
-                                img.save(os.path.join(os.path.join('layer_outputs', network.description + str(count), timestamp),"layer_output_test"+str(i) +"_" +str(batch_num)+ "channel_"+str(z)+ ".jpeg"))
+
+                            if i == sample_test_image:
+                                inputs, masks, results, targets, acc,
+                                layer_output1, layer_output2, layer_output3, layer_output4, layer_output5, layer_output6, layer_output7, \
+                                layer_output8, layer_output9, layer_output10, layer_output11, layer_output12, layer_output13, layer_output14, layer_output15, \
+                                layer_output16, layer_output17, layer_output18, = sess.run(
+                                    [network.inputs, network.masks, network.segmentation_result, network.targets, network.accuracy,
+                                     network.layer_output1, network.layer_output2,
+                                     network.layer_output3, network.layer_output4, network.layer_output5,
+                                     network.layer_output6, network.layer_output7, network.layer_output8,
+                                     network.layer_output9, network.layer_output10, network.layer_output11,
+                                     network.layer_output12, network.layer_output13, network.layer_output14,
+                                     network.layer_output15, network.layer_output16, network.layer_output17,
+                                     network.layer_output18],
+                                    feed_dict={network.inputs: test_inputs[i:(i + 1)], network.masks: test_masks[i:(i + 1)],
+                                               network.targets: test_targets[i:(i + 1)], network.is_training: False})
+                                layer_outputs = [layer_output1, layer_output2, layer_output3, layer_output4, layer_output5, layer_output6,
+                                                 layer_output7, layer_output8, layer_output9, layer_output10, layer_output11, layer_output12,
+                                                 layer_output13, layer_output14, layer_output15, layer_output16, layer_output17, layer_output18]
+                            else:
+                                inputs, masks, results, targets, acc = sess.run([network.inputs, network.masks, network.segmentation_result, network.targets, network.accuracy],
+                                                                                feed_dict={network.inputs: test_inputs[i:(i + 1)], network.masks: test_masks[i:(i + 1)],
+                                                                                           network.targets: test_targets[i:(i + 1)], network.is_training: False})
+
+
+                        for j in range(len(layer_outputs)):
+                            layer_output = layer_outputs[j]
+                            for k in range(layer_output.shape[3]):
+                                channel_output = layer_output[0, :, :, k]
+                                """
+                                if k == 0 or k == 17 or k == 16:
+                                    channel_output = np.reshape(channel_output, (584,584))
+                                elif k == 1 or k == 2 or k == 15 or k == 14:
+                                    channel_output = np.reshape(channel_output, (292, 292))
+                                elif k == 3 or k == 4 or k == 5 or k == 13 or k == 12 or k == 11:
+                                    channel_output = np.reshape(channel_output, (146, 146))
+                                elif k == 6 or k == 7 or k == 8 or k == 10 or k == 9:
+                                    channel_output = np.reshape(channel_output, (73, 73))
+                                """
+                                img = Image.fromarray(channel_output, "L")
+                                img.save(os.path.join(os.path.join(layer_output_path_test, str(j+1)),"channel_"+str(k)+ ".jpeg"))
 
                             inputs = inputs[0, :, :, 0]
                             masks = masks[0, :, :, 0]
@@ -745,9 +922,9 @@ def train(train_indices, validation_indices, run_id):
                         print("Best accuracy: {} in batch {}".format(max_acc[0], max_acc[1]))
                         print("Total time: {}".format(time.time() - global_start))
                         f1.write(
-                            'Step {}, test accuracy: {}, cost: {}, cost_unweighted: {}, recall {}, specificity {}, auc {}, auc_10_fpr {}, precision {}, fbeta_score {}, kappa {}, class balance {}, max acc {} {}, max auc {} {}, max auc 10 fpr {} {} \n'.format(
+                            'Step {}, test accuracy: {}, cost: {}, cost_unweighted: {}, recall {}, specificity {}, auc {}, auc_10_fpr {}, precision {}, fbeta_score {}, kappa {}, class balance {}, max acc {} {}, max auc {} {}, max auc 10 fpr {} {}, sample test image {} \n'.format(
                                 batch_num, test_accuracy, cost, cost_unweighted, recall, specificity, auc, auc_10_fpr, precision, fbeta_score, kappa, neg_pos_class_ratio,
-                                max_acc[0],max_acc[1], max_auc[0], max_auc[1], max_auc_10_fpr[0], max_auc_10_fpr[1]))
+                                max_acc[0],max_acc[1], max_auc[0], max_auc[1], max_auc_10_fpr[0], max_auc_10_fpr[1], sample_test_image))
                         f1.write(('Step {}, '+"overall max thresh accuracy {} {}, ".format(max_thresh_accuracy[0], max_thresh_accuracy[1])+thresh_acc_strings+'\n').format(batch_num))
                         f1.close()
 
@@ -774,3 +951,5 @@ if __name__ == '__main__':
         p.start()
         p.join()
         count += 1
+        if count > 0:
+            break
