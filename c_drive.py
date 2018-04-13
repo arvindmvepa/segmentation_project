@@ -211,6 +211,9 @@ class Network:
             # layers.append(Conv2d(kernel_size=1, strides=[1, 1, 1, 1], output_channels=1000, name='conv_6_3'))
             # self.inputs = tf.placeholder(tf.float32, [None, self.IMAGE_WIDTH, self.IMAGE_HEIGHT, self.IMAGE_CHANNELS],name='inputs')
 
+        self.debug1 = tf.placeholder(tf.float32, [None, Mod_WIDTH, Mod_HEIGHT, self.IMAGE_CHANNELS], name='debug1')
+        self.debug2 = tf.placeholder(tf.float32, [None, Mod_WIDTH, Mod_HEIGHT, self.IMAGE_CHANNELS], name='debug2')
+
         self.inputs = tf.placeholder(tf.float32, [None, Mod_WIDTH, Mod_HEIGHT, self.IMAGE_CHANNELS], name='inputs')
         self.masks = tf.placeholder(tf.float32, [None, self.IMAGE_WIDTH, self.IMAGE_HEIGHT, 1], name='masks')
         self.targets = tf.placeholder(tf.float32, [None, self.IMAGE_WIDTH, self.IMAGE_HEIGHT, 1], name='targets')
@@ -243,10 +246,12 @@ class Network:
 
         self.layers = {}
 
+        self.debug1 = self.inputs
         ### can easily define image_preprocessing techniques here !!!!!!
         if per_image_standardization:
             list_of_images_norm = tf.map_fn(tf.image.per_image_standardization, self.inputs)
             net = tf.stack(list_of_images_norm)
+            self.debug2 = net
         else:
             net = self.inputs
 
@@ -511,12 +516,12 @@ def train(train_indices, validation_indices, run_id):
     # ])
 
     augmentation_seq = iaa.Sequential([
-        iaa.Crop(px=(0, 16), name="Cropper"),  # crop images from each side by 0 to 16px (randomly chosen)
-        iaa.Fliplr(0.5, name="Flipper"),
-        iaa.GaussianBlur((0, 3.0), name="GaussianBlur"),
-        iaa.Dropout(0.02, name="Dropout"),
-        iaa.AdditiveGaussianNoise(scale=0.01 * 255, name="GaussianNoise"),
-        iaa.Affine(translate_px={"x": (-1024 // 3, 1024 // 3)}, name="Affine")
+        #iaa.Crop(px=(0, 16), name="Cropper"),  # crop images from each side by 0 to 16px (randomly chosen)
+        #iaa.Fliplr(0.5, name="Flipper"),
+        #iaa.GaussianBlur((0, 3.0), name="GaussianBlur"),
+        #iaa.Dropout(0.02, name="Dropout"),
+        #iaa.AdditiveGaussianNoise(scale=0.01 * 255, name="GaussianNoise"),
+        #iaa.Affine(translate_px={"x": (-1024 // 3, 1024 // 3)}, name="Affine")
     ])
 
     # change the activated augmenters for binary masks,
@@ -562,6 +567,7 @@ def train(train_indices, validation_indices, run_id):
     # test_inputs = np.reshape(test_inputs, (len(test_inputs), Mod_HEIGHT, Mod_WIDTH, 1))
     test_inputs = np.reshape(test_inputs, (len(test_inputs), Mod_WIDTH, Mod_HEIGHT, 1))
     test_inputs = np.multiply(test_inputs, 1.0 / 255)
+
     test_targets = np.reshape(test_targets, (len(test_targets), IMAGE_WIDTH, IMAGE_HEIGHT, 1))
     test_masks = np.reshape(test_masks, (len(test_masks), IMAGE_WIDTH, IMAGE_HEIGHT, 1))
 
@@ -587,8 +593,14 @@ def train(train_indices, validation_indices, run_id):
     layer_output_path_test = os.path.join(layer_output_path, "test")
     os.makedirs(layer_output_path_test)
 
+    layer_debug1_output_path_train = os.path.join(layer_output_path_train, "debug1")
+    os.makedirs(layer_debug1_output_path_train)
+    layer_debug2_output_path_train = os.path.join(layer_output_path_train, "debug2")
+    os.makedirs(layer_debug2_output_path_train)
     layer1_output_path_train = os.path.join(layer_output_path_train, "1")
     os.makedirs(layer1_output_path_train)
+    layer_mask1_output_path_train = os.path.join(layer_output_path_train, "mask1")
+    os.makedirs(layer_mask1_output_path_train)
     layer2_output_path_train = os.path.join(layer_output_path_train, "2")
     os.makedirs(layer2_output_path_train)
     layer3_output_path_train = os.path.join(layer_output_path_train, "3")
@@ -621,11 +633,15 @@ def train(train_indices, validation_indices, run_id):
     os.makedirs(layer16_output_path_train)
     layer17_output_path_train = os.path.join(layer_output_path_train, "17")
     os.makedirs(layer17_output_path_train)
+    layer_mask2_output_path_train = os.path.join(layer_output_path_train, "mask2")
+    os.makedirs(layer_mask2_output_path_train)
     layer18_output_path_train = os.path.join(layer_output_path_train, "18")
     os.makedirs(layer18_output_path_train)
 
     layer1_output_path_test = os.path.join(layer_output_path_test, "1")
     os.makedirs(layer1_output_path_test)
+    layer_mask1_output_path_test = os.path.join(layer_output_path_test, "mask1")
+    os.makedirs(layer_mask1_output_path_test)
     layer2_output_path_test = os.path.join(layer_output_path_test, "2")
     os.makedirs(layer2_output_path_test)
     layer3_output_path_test = os.path.join(layer_output_path_test, "3")
@@ -658,6 +674,8 @@ def train(train_indices, validation_indices, run_id):
     os.makedirs(layer16_output_path_test)
     layer17_output_path_test = os.path.join(layer_output_path_test, "17")
     os.makedirs(layer17_output_path_test)
+    layer_mask2_output_path_test = os.path.join(layer_output_path_test, "mask2")
+    os.makedirs(layer_mask2_output_path_test)
     layer18_output_path_test = os.path.join(layer_output_path_test, "18")
     os.makedirs(layer18_output_path_test)
 
@@ -697,30 +715,34 @@ def train(train_indices, validation_indices, run_id):
                         break
 
                     augmentation_seq_deterministic = augmentation_seq.to_deterministic()
-
                     start = time.time()
                     batch_inputs, batch_masks, batch_targets = dataset.next_batch()
 
+                    print(batch_inputs.shape)
+                    plt.imsave(os.path.join(layer_output_path_train, "test1.jpeg"), batch_inputs[0])
+                    plt.imsave(os.path.join(layer_output_path_train, "test1_target.jpeg"), batch_targets[0])
+
                     batch_inputs = np.reshape(batch_inputs, (dataset.batch_size, Mod_WIDTH, Mod_HEIGHT, 1))
-                    batch_masks = np.reshape(batch_masks,
-                                             (dataset.batch_size, network.IMAGE_WIDTH, network.IMAGE_HEIGHT, 1))
-                    batch_targets = np.reshape(batch_targets,
-                                               (dataset.batch_size, network.IMAGE_WIDTH, network.IMAGE_HEIGHT, 1))
+                    batch_masks = np.reshape(batch_masks, (dataset.batch_size, network.IMAGE_WIDTH, network.IMAGE_HEIGHT, 1))
+                    batch_targets = np.reshape(batch_targets, (dataset.batch_size, network.IMAGE_WIDTH, network.IMAGE_HEIGHT, 1))
 
                     batch_inputs = augmentation_seq_deterministic.augment_images(batch_inputs)
+                    plt.imsave(os.path.join(layer_output_path_train, "test2.jpeg"), batch_inputs[0, :, :, 0])
+                    plt.imsave(os.path.join(layer_output_path_train, "test2_target.jpeg"), batch_targets[0, :, :, 0])
+
                     batch_inputs = np.multiply(batch_inputs, 1.0 / 255)
 
                     batch_targets = augmentation_seq_deterministic.augment_images(batch_targets, hooks=hooks_binmasks)
 
                     cost, cost_unweighted, layer_output1, layer_output2, layer_output3, layer_output4, layer_output5, layer_output6, layer_output7, \
                     layer_output8, layer_output9, layer_output10,  layer_output11, layer_output12, layer_output13, layer_output14, layer_output15, \
-                    layer_output16, layer_output17, layer_output18, _ = sess.run([network.cost, network.cost_unweighted, network.layer_output1, network.layer_output2,
+                    layer_output16, layer_output17, layer_output18, debug1, debug2, _ = sess.run([network.cost, network.cost_unweighted, network.layer_output1, network.layer_output2,
                                                                        network.layer_output3, network.layer_output4, network.layer_output5,
                                                                        network.layer_output6, network.layer_output7, network.layer_output8,
                                                                        network.layer_output9, network.layer_output10, network.layer_output11,
                                                                        network.layer_output12, network.layer_output13, network.layer_output14,
                                                                        network.layer_output15, network.layer_output16, network.layer_output17,
-                                                                       network.layer_output18, network.train_op],
+                                                                       network.layer_output18, network.debug1, network.debug2, network.train_op],
                                        feed_dict={network.inputs: batch_inputs, network.masks: batch_masks, network.targets: batch_targets, network.is_training: True})
                     layer_outputs = [layer_output1, layer_output2, layer_output3, layer_output4, layer_output5, layer_output6,
                                      layer_output7, layer_output8, layer_output9, layer_output10, layer_output11, layer_output12,
@@ -735,14 +757,29 @@ def train(train_indices, validation_indices, run_id):
                                                                                                                         cost_unweighted,
                                                                                                                         end - start,
                                                                                                                        pos_weight))
+                    debug1 = debug1[0,:,:,0]
+                    debug2 = debug2[0,:,:,0]
+                    plt.imsave(os.path.join(layer_debug1_output_path_train, "debug1.jpeg"), debug1)
+                    plt.imsave(os.path.join(layer_debug2_output_path_train, "debug2.jpeg"), debug2)
+
+                    mask_threshold = .5
                     if batch_num % 200 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
                         for j in range(len(layer_outputs)):
                             layer_output = layer_outputs[j]
                             for k in range(layer_output.shape[3]):
                                 channel_output = layer_output[0,:,:,k]
                                 plt.imsave(os.path.join(os.path.join(layer_output_path_train, str(j+1)),"channel_"+str(k)+ ".jpeg"), channel_output)
+                                if j == 0:
+                                    channel_output[np.where(channel_output > mask_threshold)] = 1
+                                    channel_output[np.where(channel_output <= mask_threshold)] = 0
+                                    plt.imsave(os.path.join(os.path.join(layer_output_path_train, "mask1"), "channel_" + str(k) + ".jpeg"), channel_output)
+                                if j == 16:
+                                    channel_output[np.where(channel_output > mask_threshold)] = 1
+                                    channel_output[np.where(channel_output <= mask_threshold)] = 0
+                                    plt.imsave(os.path.join(os.path.join(layer_output_path_train, "mask2"), "channel_" + str(k) + ".jpeg"), channel_output)
 
                         test_accuracy = 0.0
+
 
                         mask_array = np.zeros((len(test_inputs), IMAGE_WIDTH, IMAGE_HEIGHT))
                         target_array = np.zeros((len(test_inputs), IMAGE_WIDTH, IMAGE_HEIGHT))
@@ -771,6 +808,17 @@ def train(train_indices, validation_indices, run_id):
                                         channel_output = layer_output[0, :, :, k]
                                         plt.imsave(os.path.join(os.path.join(layer_output_path_test, str(j + 1)),
                                                               "channel_" + str(k) + ".jpeg"), channel_output)
+                                        if j == 0:
+                                            channel_output[np.where(channel_output > mask_threshold)] = 1
+                                            channel_output[np.where(channel_output <= mask_threshold)] = 0
+                                            plt.imsave(os.path.join(os.path.join(layer_output_path_test, "mask1"),
+                                                                    "channel_" + str(k) + ".jpeg"), channel_output)
+                                        if j == 16:
+                                            channel_output[np.where(channel_output > mask_threshold)] = 1
+                                            channel_output[np.where(channel_output <= mask_threshold)] = 0
+                                            plt.imsave(os.path.join(os.path.join(layer_output_path_test, "mask2"),
+                                                                    "channel_" + str(k) + ".jpeg"),channel_output)
+
                             else:
                                 inputs, masks, results, targets, acc = sess.run([network.inputs, network.masks, network.segmentation_result, network.targets, network.accuracy],
                                                                                 feed_dict={network.inputs: test_inputs[i:(i + 1)], network.masks: test_masks[i:(i + 1)],
@@ -909,7 +957,7 @@ if __name__ == '__main__':
 
     f1.close()
     f2.close()
-
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
     count = 0
     for train_indices, validation_indices in k_fold.split(os.listdir(os.path.join('drive', 'inputs'))):
         f1 = open('out1.txt', 'a')
@@ -922,3 +970,5 @@ if __name__ == '__main__':
         p.start()
         p.join()
         count += 1
+        if count > 0:
+            break
