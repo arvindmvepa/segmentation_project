@@ -496,6 +496,7 @@ def draw_results(test_inputs, test_targets, test_segmentation, test_accuracy, ne
 def train(train_indices, validation_indices, run_id):
     BATCH_SIZE = 1
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
+    plt.rcParams['image.cmap'] = 'gray'
 
     dataset = Dataset(folder='drive', include_hair=True,
                       batch_size=BATCH_SIZE, sgd = True)
@@ -720,8 +721,7 @@ def train(train_indices, validation_indices, run_id):
                                                                        network.layer_output12, network.layer_output13, network.layer_output14,
                                                                        network.layer_output15, network.layer_output16, network.layer_output17,
                                                                        network.layer_output18, network.train_op],
-                                       feed_dict={network.inputs: batch_inputs, network.masks: batch_masks,
-                                                  network.targets: batch_targets, network.is_training: True})
+                                       feed_dict={network.inputs: batch_inputs, network.masks: batch_masks, network.targets: batch_targets, network.is_training: True})
                     layer_outputs = [layer_output1, layer_output2, layer_output3, layer_output4, layer_output5, layer_output6,
                                      layer_output7, layer_output8, layer_output9, layer_output10, layer_output11, layer_output12,
                                      layer_output13, layer_output14, layer_output15, layer_output16, layer_output17, layer_output18]
@@ -735,23 +735,12 @@ def train(train_indices, validation_indices, run_id):
                                                                                                                         cost_unweighted,
                                                                                                                         end - start,
                                                                                                                        pos_weight))
-                    if batch_num % 1 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
+                    if batch_num % 200 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
                         for j in range(len(layer_outputs)):
                             layer_output = layer_outputs[j]
                             for k in range(layer_output.shape[3]):
                                 channel_output = layer_output[0,:,:,k]
-                                """
-                                if k == 0 or k == 17 or k == 16:
-                                    channel_output = np.reshape(channel_output, (584,584))
-                                elif k == 1 or k == 2 or k == 15 or k == 14:
-                                    channel_output = np.reshape(channel_output, (292, 292))
-                                elif k == 3 or k == 4 or k == 5 or k == 13 or k == 12 or k == 11:
-                                    channel_output = np.reshape(channel_output, (146, 146))
-                                elif k == 6 or k == 7 or k == 8 or k == 10 or k == 9:
-                                    channel_output = np.reshape(channel_output, (73, 73))
-                                """
-                                img = Image.fromarray(channel_output, "L")
-                                img.save(os.path.join(os.path.join(layer_output_path_train, str(j+1)),"channel_"+str(k)+ ".jpeg"))
+                                plt.imsave(os.path.join(os.path.join(layer_output_path_train, str(j+1)),"channel_"+str(k)+ ".jpeg"), channel_output)
 
                         test_accuracy = 0.0
 
@@ -761,49 +750,31 @@ def train(train_indices, validation_indices, run_id):
 
                         sample_test_image = randint(0, len(test_inputs)-1)
                         for i in range(len(test_inputs)):
-
                             if i == sample_test_image:
-                                inputs, masks, results, targets, acc,
-                                layer_output1, layer_output2, layer_output3, layer_output4, layer_output5, layer_output6, layer_output7, \
-                                layer_output8, layer_output9, layer_output10, layer_output11, layer_output12, layer_output13, layer_output14, layer_output15, \
-                                layer_output16, layer_output17, layer_output18, = sess.run(
-                                    [network.inputs, network.masks, network.segmentation_result, network.targets, network.accuracy,
-                                     network.layer_output1, network.layer_output2,
+                                inputs, masks, results, targets, acc, layer_output1, layer_output2, layer_output3, layer_output4, layer_output5, layer_output6, layer_output7, \
+                                layer_output8, layer_output9, layer_output10, layer_output11, layer_output12, layer_output13, layer_output14, layer_output15, layer_output16, \
+                                layer_output17, layer_output18 = sess.run(
+                                    [network.inputs, network.masks, network.segmentation_result, network.targets, network.accuracy, network.layer_output1, network.layer_output2,
                                      network.layer_output3, network.layer_output4, network.layer_output5,
                                      network.layer_output6, network.layer_output7, network.layer_output8,
                                      network.layer_output9, network.layer_output10, network.layer_output11,
                                      network.layer_output12, network.layer_output13, network.layer_output14,
                                      network.layer_output15, network.layer_output16, network.layer_output17,
                                      network.layer_output18],
-                                    feed_dict={network.inputs: test_inputs[i:(i + 1)], network.masks: test_masks[i:(i + 1)],
-                                               network.targets: test_targets[i:(i + 1)], network.is_training: False})
+                                    feed_dict={network.inputs: test_inputs[i:(i + 1)], network.masks: test_masks[i:(i + 1)], network.targets: test_targets[i:(i + 1)],network.is_training: False})
                                 layer_outputs = [layer_output1, layer_output2, layer_output3, layer_output4, layer_output5, layer_output6,
                                                  layer_output7, layer_output8, layer_output9, layer_output10, layer_output11, layer_output12,
                                                  layer_output13, layer_output14, layer_output15, layer_output16, layer_output17, layer_output18]
+                                for j in range(len(layer_outputs)):
+                                    layer_output = layer_outputs[j]
+                                    for k in range(layer_output.shape[3]):
+                                        channel_output = layer_output[0, :, :, k]
+                                        plt.imsave(os.path.join(os.path.join(layer_output_path_test, str(j + 1)),
+                                                              "channel_" + str(k) + ".jpeg"), channel_output)
                             else:
                                 inputs, masks, results, targets, acc = sess.run([network.inputs, network.masks, network.segmentation_result, network.targets, network.accuracy],
                                                                                 feed_dict={network.inputs: test_inputs[i:(i + 1)], network.masks: test_masks[i:(i + 1)],
                                                                                            network.targets: test_targets[i:(i + 1)], network.is_training: False})
-
-
-                        for j in range(len(layer_outputs)):
-                            layer_output = layer_outputs[j]
-                            for k in range(layer_output.shape[3]):
-                                channel_output = layer_output[0, :, :, k]
-                                """
-                                if k == 0 or k == 17 or k == 16:
-                                    channel_output = np.reshape(channel_output, (584,584))
-                                elif k == 1 or k == 2 or k == 15 or k == 14:
-                                    channel_output = np.reshape(channel_output, (292, 292))
-                                elif k == 3 or k == 4 or k == 5 or k == 13 or k == 12 or k == 11:
-                                    channel_output = np.reshape(channel_output, (146, 146))
-                                elif k == 6 or k == 7 or k == 8 or k == 10 or k == 9:
-                                    channel_output = np.reshape(channel_output, (73, 73))
-                                """
-                                img = Image.fromarray(channel_output, "L")
-                                img.save(os.path.join(os.path.join(layer_output_path_test, str(j+1)),"channel_"+str(k)+ ".jpeg"))
-
-                            inputs = inputs[0, :, :, 0]
                             masks = masks[0, :, :, 0]
                             results = results[0, :, :, 0]
                             targets = targets[0, :, :, 0]
@@ -814,9 +785,9 @@ def train(train_indices, validation_indices, run_id):
 
                         test_accuracy = test_accuracy / len(test_inputs)
 
-                        mask_tensor = tf.convert_to_tensor(mask_array, dtype=tf.float32)
-                        prediction_tensor = tf.convert_to_tensor(prediction_array, dtype=tf.float32)
-                        target_tensor = tf.convert_to_tensor(target_array, dtype=tf.float32)
+                        #mask_tensor = tf.convert_to_tensor(mask_array, dtype=tf.float32)
+                        #prediction_tensor = tf.convert_to_tensor(prediction_array, dtype=tf.float32)
+                        #target_tensor = tf.convert_to_tensor(target_array, dtype=tf.float32)
 
                         #dice_coe_val = dice_coe(prediction_tensor, target_tensor, mask_tensor, len(test_inputs))
                         #hard_dice_coe_val = dice_hard_coe(prediction_tensor, target_tensor, mask_tensor,len(test_inputs))
@@ -951,5 +922,3 @@ if __name__ == '__main__':
         p.start()
         p.join()
         count += 1
-        if count > 0:
-            break
