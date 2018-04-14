@@ -702,17 +702,20 @@ def train(train_indices, validation_indices, run_id):
             # Fit all training data
             n_epochs = 40000
             global_start = time.time()
-            acc = 0.0
             batch_num = 0
+
+            layer_output_freq = 200
+            score_freq = 10
+            end_freq = 20000
             for epoch_i in range(n_epochs):
-                if batch_num > 20000:
+                if batch_num > end_freq:
                     epoch_i = 0
                     dataset.reset_batch_pointer()
                     break
                 dataset.reset_batch_pointer()
                 for batch_i in range(dataset.num_batches_in_epoch()):
                     batch_num = epoch_i * dataset.num_batches_in_epoch() + batch_i + 1
-                    if batch_num > 20000:
+                    if batch_num > end_freq:
                         break
 
                     augmentation_seq_deterministic = augmentation_seq.to_deterministic()
@@ -764,21 +767,21 @@ def train(train_indices, validation_indices, run_id):
                     plt.imsave(os.path.join(layer_debug2_output_path_train, "debug2.jpeg"), debug2)
 
                     mask_threshold = .5
-                    if batch_num % 200 == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
-                        for j in range(len(layer_outputs)):
-                            layer_output = layer_outputs[j]
-                            for k in range(layer_output.shape[3]):
-                                channel_output = layer_output[0,:,:,k]
-                                plt.imsave(os.path.join(os.path.join(layer_output_path_train, str(j+1)),"channel_"+str(k)+ ".jpeg"), channel_output)
-                                if j == 0:
-                                    channel_output[np.where(channel_output > mask_threshold)] = 1
-                                    channel_output[np.where(channel_output <= mask_threshold)] = 0
-                                    plt.imsave(os.path.join(os.path.join(layer_output_path_train, "mask1"), "channel_" + str(k) + ".jpeg"), channel_output)
-                                if j == 16:
-                                    channel_output[np.where(channel_output > mask_threshold)] = 1
-                                    channel_output[np.where(channel_output <= mask_threshold)] = 0
-                                    plt.imsave(os.path.join(os.path.join(layer_output_path_train, "mask2"), "channel_" + str(k) + ".jpeg"), channel_output)
-
+                    if batch_num % score_freq == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
+                        if batch_num % layer_output_freq == 0:
+                            for j in range(len(layer_outputs)):
+                                layer_output = layer_outputs[j]
+                                for k in range(layer_output.shape[3]):
+                                    channel_output = layer_output[0,:,:,k]
+                                    plt.imsave(os.path.join(os.path.join(layer_output_path_train, str(j+1)),"channel_"+str(k)+ ".jpeg"), channel_output)
+                                    if j == 0:
+                                        channel_output[np.where(channel_output > mask_threshold)] = 1
+                                        channel_output[np.where(channel_output <= mask_threshold)] = 0
+                                        plt.imsave(os.path.join(os.path.join(layer_output_path_train, "mask1"), "channel_" + str(k) + ".jpeg"), channel_output)
+                                    if j == 16:
+                                        channel_output[np.where(channel_output > mask_threshold)] = 1
+                                        channel_output[np.where(channel_output <= mask_threshold)] = 0
+                                        plt.imsave(os.path.join(os.path.join(layer_output_path_train, "mask2"), "channel_" + str(k) + ".jpeg"), channel_output)
                         test_accuracy = 0.0
 
 
@@ -803,22 +806,23 @@ def train(train_indices, validation_indices, run_id):
                                 layer_outputs = [layer_output1, layer_output2, layer_output3, layer_output4, layer_output5, layer_output6,
                                                  layer_output7, layer_output8, layer_output9, layer_output10, layer_output11, layer_output12,
                                                  layer_output13, layer_output14, layer_output15, layer_output16, layer_output17, layer_output18]
-                                for j in range(len(layer_outputs)):
-                                    layer_output = layer_outputs[j]
-                                    for k in range(layer_output.shape[3]):
-                                        channel_output = layer_output[0, :, :, k]
-                                        plt.imsave(os.path.join(os.path.join(layer_output_path_test, str(j + 1)),
-                                                              "channel_" + str(k) + ".jpeg"), channel_output)
-                                        if j == 0:
-                                            channel_output[np.where(channel_output > mask_threshold)] = 1
-                                            channel_output[np.where(channel_output <= mask_threshold)] = 0
-                                            plt.imsave(os.path.join(os.path.join(layer_output_path_test, "mask1"),
-                                                                    "channel_" + str(k) + ".jpeg"), channel_output)
-                                        if j == 16:
-                                            channel_output[np.where(channel_output > mask_threshold)] = 1
-                                            channel_output[np.where(channel_output <= mask_threshold)] = 0
-                                            plt.imsave(os.path.join(os.path.join(layer_output_path_test, "mask2"),
-                                                                    "channel_" + str(k) + ".jpeg"),channel_output)
+                                if batch_num % layer_output_freq == 0:
+                                    for j in range(len(layer_outputs)):
+                                        layer_output = layer_outputs[j]
+                                        for k in range(layer_output.shape[3]):
+                                            channel_output = layer_output[0, :, :, k]
+                                            plt.imsave(os.path.join(os.path.join(layer_output_path_test, str(j + 1)),
+                                                                  "channel_" + str(k) + ".jpeg"), channel_output)
+                                            if j == 0:
+                                                channel_output[np.where(channel_output > mask_threshold)] = 1
+                                                channel_output[np.where(channel_output <= mask_threshold)] = 0
+                                                plt.imsave(os.path.join(os.path.join(layer_output_path_test, "mask1"),
+                                                                        "channel_" + str(k) + ".jpeg"), channel_output)
+                                            if j == 16:
+                                                channel_output[np.where(channel_output > mask_threshold)] = 1
+                                                channel_output[np.where(channel_output <= mask_threshold)] = 0
+                                                plt.imsave(os.path.join(os.path.join(layer_output_path_test, "mask2"),
+                                                                        "channel_" + str(k) + ".jpeg"),channel_output)
 
                             else:
                                 inputs, masks, results, targets, acc = sess.run([network.inputs, network.masks, network.segmentation_result, network.targets, network.accuracy],
