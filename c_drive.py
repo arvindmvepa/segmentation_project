@@ -547,9 +547,12 @@ def train(train_indices, validation_indices, run_id):
     #pos_weight
     neg_pos_class_ratio, _, _ = find_class_balance(train_targets, train_masks)
     _, test_neg_class_frac, test_pos_class_frac  = find_class_balance(test_targets, test_masks)
-    z = 0.56
+    #z = 0.56
     #pos_weight = (z*neg_pos_class_ratio)/(1-z)
-    pos_weight = 1
+    #pos_weight = 1
+    tuning_constant = .5
+    pos_weight = neg_pos_class_ratio * tuning_constant
+
 
     dataset.train_inputs = train_inputs
     dataset.train_masks = train_masks
@@ -705,7 +708,7 @@ def train(train_indices, validation_indices, run_id):
             batch_num = 0
 
             layer_output_freq = 200
-            score_freq = 10
+            score_freq = 200
             end_freq = 20000
             for epoch_i in range(n_epochs):
                 if batch_num > end_freq:
