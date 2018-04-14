@@ -516,12 +516,12 @@ def train(train_indices, validation_indices, run_id):
     # ])
 
     augmentation_seq = iaa.Sequential([
-        #iaa.Crop(px=(0, 16), name="Cropper"),  # crop images from each side by 0 to 16px (randomly chosen)
+        iaa.Crop(px=(0, 16), name="Cropper"),  # crop images from each side by 0 to 16px (randomly chosen)
         iaa.Fliplr(0.5, name="Flipper"),
         iaa.GaussianBlur((0, 3.0), name="GaussianBlur"),
         iaa.Dropout(0.02, name="Dropout"),
         iaa.AdditiveGaussianNoise(scale=0.01 * 255, name="GaussianNoise"),
-        #iaa.Affine(translate_px={"x": (-1024 // 3, 1024 // 3)}, name="Affine")
+        iaa.Affine(translate_px={"x": (-1024 // 3, 1024 // 3)}, name="Affine")
     ])
 
     # change the activated augmenters for binary masks,
