@@ -550,7 +550,7 @@ def train(train_indices, validation_indices, run_id):
     #z = 0.56
     #pos_weight = (z*neg_pos_class_ratio)/(1-z)
     #pos_weight = 1
-    tuning_constant = .25
+    tuning_constant = 1
     pos_weight = neg_pos_class_ratio * tuning_constant
 
 
@@ -701,6 +701,8 @@ def train(train_indices, validation_indices, run_id):
             test_accuracies = []
             test_auc = []
             test_auc_10_fpr = []
+            test_auc_05_fpr = []
+            test_auc_025_fpr = []
             max_thresh_accuracies = []
             # Fit all training data
             n_epochs = 40000
@@ -708,7 +710,7 @@ def train(train_indices, validation_indices, run_id):
             batch_num = 0
 
             layer_output_freq = 200
-            score_freq = 200
+            score_freq = 5
             end_freq = 20000
             for epoch_i in range(n_epochs):
                 if batch_num > end_freq:
@@ -856,17 +858,24 @@ def train(train_indices, validation_indices, run_id):
 
                         fprs, tprs, thresholds = roc_curve(target_flat, prediction_flat, sample_weight=mask_flat)
                         np_fprs, np_tprs, np_thresholds = np.array(fprs).flatten(), np.array(tprs).flatten(), np.array(thresholds).flatten()
-                        lower_fpr = np_fprs[np.where(np_fprs < .10)]
+                        fpr_10 = np_fprs[np.where(np_fprs < .10)]
+                        tpr_10 = np_tprs[0:len(fpr_10)]
 
-                        lower_tpr = np_tprs[0:len(lower_fpr)]
+                        fpr_05 = np_fprs[np.where(np_fprs < .05)]
+                        tpr_05 = np_tprs[0:len(fpr_05)]
 
-                        #upper_thresholds = np_thresholds[0:len(lower_fpr)]
+                        fpr_025 = np_fprs[np.where(np_fprs < .025)]
+                        tpr_025 = np_tprs[0:len(fpr_025)]
+
+                        #upper_thresholds = np_thresholds[0:len(fpr_10)]
                         thresh_acc_strings = ""
                         thresh_max = 0.0
                         thresh_max_items = ""
                         list_fprs_tprs_thresholds = list(zip(fprs, tprs, thresholds))
 
-                        auc_10_fpr = auc_(lower_fpr, lower_tpr)
+                        auc_10_fpr = auc_(fpr_10, tpr_10)
+                        auc_05_fpr = auc_(fpr_05, tpr_05)
+                        auc_025_fpr = auc_(fpr_025, tpr_025)
                         #sampled_fprs_tprs_thresholds = random.sample(list_fprs_tprs_thresholds, 100000)
                         i = 0
                         #interval = 0.000001
@@ -901,8 +910,8 @@ def train(train_indices, validation_indices, run_id):
 
                         # test_accuracy1 = test_accuracy1/len(test_inputs)
                         print(
-                        'Step {}, test accuracy: {}, cost: {}, cost_unweighted: {} recall {}, precision {}, fbeta_score {}, auc {}, auc_10_fpr {}, kappa {}, specificity {}, class balance {}'.format(
-                            batch_num, test_accuracy, cost, cost_unweighted,recall, precision, fbeta_score, auc, auc_10_fpr, kappa, specificity, neg_pos_class_ratio))
+                        'Step {}, test accuracy: {}, cost: {}, cost_unweighted: {} recall {}, specificity {}, precision {}, fbeta_score {}, auc {}, auc_10_fpr {}, auc_05_fpr {}, auc_025_fpr {}, kappa {}, class balance {}'.format(
+                            batch_num, test_accuracy, cost, cost_unweighted,recall, specificity, precision, fbeta_score, auc, auc_10_fpr, auc_05_fpr, auc_025_fpr, kappa, neg_pos_class_ratio))
                         # print('Step {}, test accuracy1: {}'.format(batch_num, test_accuracy1))
 
                         # n_examples = 5
@@ -939,19 +948,24 @@ def train(train_indices, validation_indices, run_id):
                         test_accuracies.append((test_accuracy, batch_num))
                         test_auc.append((auc, batch_num))
                         test_auc_10_fpr.append((auc_10_fpr, batch_num))
+                        test_auc_05_fpr.append((auc_05_fpr, batch_num))
+                        test_auc_025_fpr.append((auc_025_fpr, batch_num))
                         max_thresh_accuracies.append((thresh_max, batch_num))
                         print("Accuracies in time: ", [test_accuracies[x][0] for x in range(len(test_accuracies))])
                         print(test_accuracies)
                         max_acc = max(test_accuracies)
                         max_auc = max(test_auc)
                         max_auc_10_fpr = max(test_auc_10_fpr)
+                        max_auc_05_fpr = max(test_auc_05_fpr)
+                        max_auc_025_fpr = max(test_auc_025_fpr)
                         max_thresh_accuracy = max(max_thresh_accuracies)
                         print("Best accuracy: {} in batch {}".format(max_acc[0], max_acc[1]))
                         print("Total time: {}".format(time.time() - global_start))
                         f1.write(
-                            'Step {}, test accuracy: {}, cost: {}, cost_unweighted: {}, recall {}, specificity {}, auc {}, auc_10_fpr {}, precision {}, fbeta_score {}, kappa {}, class balance {}, max acc {} {}, max auc {} {}, max auc 10 fpr {} {}, sample test image {} \n'.format(
+                            'Step {}, test accuracy: {}, cost: {}, cost_unweighted: {}, recall {}, specificity {}, auc {}, auc_10_fpr {}, precision {}, fbeta_score {}, kappa {}, class balance {}, '
+                            'max acc {} {}, max auc {} {}, max auc 10 fpr {} {}, max auc 5 fpr {} {}, max auc 2.5 fpr {} {}, sample test image {} \n'.format(
                                 batch_num, test_accuracy, cost, cost_unweighted, recall, specificity, auc, auc_10_fpr, precision, fbeta_score, kappa, neg_pos_class_ratio,
-                                max_acc[0],max_acc[1], max_auc[0], max_auc[1], max_auc_10_fpr[0], max_auc_10_fpr[1], sample_test_image))
+                                max_acc[0],max_acc[1], max_auc[0], max_auc[1], max_auc_10_fpr[0], max_auc_10_fpr[1], max_auc_05_fpr[0], max_auc_05_fpr[0], max_auc_025_fpr[0], max_auc_025_fpr[1], sample_test_image))
                         f1.write(('Step {}, '+"overall max thresh accuracy {} {}, ".format(max_thresh_accuracy[0], max_thresh_accuracy[1])+thresh_acc_strings+'\n').format(batch_num))
                         f1.close()
 
