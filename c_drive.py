@@ -962,9 +962,9 @@ def train(train_indices, validation_indices, run_id):
                         print("Best accuracy: {} in batch {}".format(max_acc[0], max_acc[1]))
                         print("Total time: {}".format(time.time() - global_start))
                         f1.write(
-                            'Step {}, test accuracy: {}, cost: {}, cost_unweighted: {}, recall {}, specificity {}, auc {}, auc_10_fpr {}, precision {}, fbeta_score {}, kappa {}, class balance {}, '
+                            'Step {}, test accuracy: {}, cost: {}, cost_unweighted: {}, recall {}, specificity {}, auc {}, auc_10_fpr {}, auc_05_fpr {}, auc_025_fpr {}, precision {}, fbeta_score {}, kappa {}, class balance {}, '
                             'max acc {} {}, max auc {} {}, max auc 10 fpr {} {}, max auc 5 fpr {} {}, max auc 2.5 fpr {} {}, sample test image {} \n'.format(
-                                batch_num, test_accuracy, cost, cost_unweighted, recall, specificity, auc, auc_10_fpr, precision, fbeta_score, kappa, neg_pos_class_ratio,
+                                batch_num, test_accuracy, cost, cost_unweighted, recall, specificity, auc, auc_10_fpr, auc_05_fpr, auc_025_fpr, precision, fbeta_score, kappa, neg_pos_class_ratio,
                                 max_acc[0],max_acc[1], max_auc[0], max_auc[1], max_auc_10_fpr[0], max_auc_10_fpr[1], max_auc_05_fpr[0], max_auc_05_fpr[0], max_auc_025_fpr[0], max_auc_025_fpr[1], sample_test_image))
                         f1.write(('Step {}, '+"overall max thresh accuracy {} {}, ".format(max_thresh_accuracy[0], max_thresh_accuracy[1])+thresh_acc_strings+'\n').format(batch_num))
                         f1.close()
