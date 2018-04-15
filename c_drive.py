@@ -24,6 +24,7 @@ import datetime
 import io
 from PIL import Image
 from skimage import io as skio
+from skimage.exposure import equalize_adapthist, adjust_gamma
 from sklearn.model_selection import KFold, cross_val_score
 import random
 from sklearn.metrics import precision_recall_fscore_support, cohen_kappa_score, roc_auc_score, confusion_matrix, roc_curve, auc as auc_
@@ -159,6 +160,11 @@ def iou_coe(output, target, mask=None, num_batches=1, threshold=0.5, axis=None, 
         iou = tf.reduce_mean(batch_iou)
     return iou  # , pre, truth, inse, union
 
+def preprocessing(input_image, gamma = 1):
+    normalized_image = (input_image - np.mean(input_image))/(np.std(input_image))
+    clahe_image = equalize_adapthist(normalized_image)
+    gamma_image = adjust_gamma(clahe_image, gamma=gamma)
+    return gamma_image
 
 class Network:
     # IMAGE_HEIGHT = 565
@@ -246,6 +252,8 @@ class Network:
 
         self.debug1 = self.inputs
         ### can easily define image_preprocessing techniques here !!!!!!
+
+        #you can remove these image preprocessing techniques
         if per_image_standardization:
             list_of_images_norm = tf.map_fn(tf.image.per_image_standardization, self.inputs)
             net = tf.stack(list_of_images_norm)
@@ -374,6 +382,9 @@ class Dataset:
             # add training image to dataset
             test_image = cv2.imread(input_image, 1)
             test_image = test_image[:, :, 1]
+            #test_image = preprocessing(test_image, gamma = 1)
+            #add pre-processing methods here approximately, and comment out image standardization in tensorflow
+
             top_pad = int((Mod_HEIGHT - IMAGE_HEIGHT) / 2)
             bot_pad = (Mod_HEIGHT - IMAGE_HEIGHT) - top_pad
             left_pad = int((Mod_WIDTH - IMAGE_WIDTH) / 2)
@@ -991,5 +1002,3 @@ if __name__ == '__main__':
         p.start()
         p.join()
         count += 1
-        if count > 0:
-            break
