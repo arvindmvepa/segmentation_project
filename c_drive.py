@@ -550,7 +550,7 @@ def train(train_indices, validation_indices, run_id):
     #z = 0.56
     #pos_weight = (z*neg_pos_class_ratio)/(1-z)
     #pos_weight = 1
-    tuning_constant = 1
+    tuning_constant = .75
     pos_weight = neg_pos_class_ratio * tuning_constant
 
 
