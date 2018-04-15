@@ -41,8 +41,6 @@ INPUT_IMAGE_WIDTH = IMAGE_WIDTH
 Mod_HEIGHT = 584
 Mod_WIDTH = 584
 
-n_examples = 4
-
 # np.set_printoptions(threshold=np.nan)
 
 """
@@ -535,7 +533,6 @@ def train(train_indices, validation_indices, run_id):
 
     hooks_binmasks = imgaug_1.HooksImages(activator=activator_binmasks)
 
-    k_fold = KFold(n_splits=4)
     folder = dataset.folder
 
     train_inputs, train_masks, train_targets = dataset.file_paths_to_images(folder, train_indices,
@@ -550,7 +547,7 @@ def train(train_indices, validation_indices, run_id):
     #z = 0.56
     #pos_weight = (z*neg_pos_class_ratio)/(1-z)
     #pos_weight = 1
-    tuning_constant = 1.25
+    tuning_constant = .50
     pos_weight = neg_pos_class_ratio * tuning_constant
 
 
@@ -711,7 +708,7 @@ def train(train_indices, validation_indices, run_id):
 
             layer_output_freq = 200
             score_freq = 200
-            end_freq = 20000
+            end_freq = 2000
             for epoch_i in range(n_epochs):
                 if batch_num > end_freq:
                     epoch_i = 0
@@ -969,10 +966,12 @@ def train(train_indices, validation_indices, run_id):
                         f1.write(('Step {}, '+"overall max thresh accuracy {} {}, ".format(max_thresh_accuracy[0], max_thresh_accuracy[1])+thresh_acc_strings+'\n').format(batch_num))
                         f1.close()
 
+n_examples = 1
+n_splits = 20
 
 if __name__ == '__main__':
     x = random.randint(1, 100)
-    k_fold = KFold(n_splits=3, shuffle=True, random_state=x)
+    k_fold = KFold(n_splits=n_splits, shuffle=True, random_state=x)
 
     f1 = open('out1.txt', 'w')
     f2 = open('out2.txt', 'w')
