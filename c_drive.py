@@ -710,7 +710,7 @@ def train(train_indices, validation_indices, run_id):
             batch_num = 0
 
             layer_output_freq = 200
-            score_freq = 5
+            score_freq = 200
             end_freq = 20000
             for epoch_i in range(n_epochs):
                 if batch_num > end_freq:
