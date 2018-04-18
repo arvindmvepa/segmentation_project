@@ -254,12 +254,12 @@ class Network:
         ### can easily define image_preprocessing techniques here !!!!!!
 
         #you can remove these image preprocessing techniques
-        if per_image_standardization:
-            list_of_images_norm = tf.map_fn(tf.image.per_image_standardization, self.inputs)
-            net = tf.stack(list_of_images_norm)
-            self.debug2 = net
-        else:
-            net = self.inputs
+        #if per_image_standardization:
+        #    list_of_images_norm = tf.map_fn(tf.image.per_image_standardization, self.inputs)
+        #    net = tf.stack(list_of_images_norm)
+        #    self.debug2 = net
+        #else:
+        net = self.inputs
 
         # ENCODER
         for i in range(len(layers)):
@@ -382,7 +382,7 @@ class Dataset:
             # add training image to dataset
             test_image = cv2.imread(input_image, 1)
             test_image = test_image[:, :, 1]
-            #test_image = preprocessing(test_image, gamma = 1)
+            test_image = preprocessing(test_image, gamma = 1)
             #add pre-processing methods here approximately, and comment out image standardization in tensorflow
 
             top_pad = int((Mod_HEIGHT - IMAGE_HEIGHT) / 2)
@@ -558,7 +558,7 @@ def train(train_indices, validation_indices, run_id):
     #z = 0.56
     #pos_weight = (z*neg_pos_class_ratio)/(1-z)
     #pos_weight = 1
-    tuning_constant = .50
+    tuning_constant = .75
     pos_weight = neg_pos_class_ratio * tuning_constant
 
 
