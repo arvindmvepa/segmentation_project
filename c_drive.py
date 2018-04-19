@@ -160,11 +160,38 @@ def iou_coe(output, target, mask=None, num_batches=1, threshold=0.5, axis=None, 
         iou = tf.reduce_mean(batch_iou)
     return iou  # , pre, truth, inse, union
 
-def preprocessing(input_image, gamma = 1):
-    normalized_image = (input_image - np.mean(input_image))/(np.std(input_image))
-    clahe_image = equalize_adapthist(normalized_image)
-    gamma_image = adjust_gamma(clahe_image, gamma=gamma)
-    return gamma_image
+def preprocessing(img, **kwargs):
+    img = dataset_normalized(img)
+    img = clahe_equalized(img)
+    img = adjust_gamma(img, 1.2)
+    return img
+
+def histo_equalized(img):
+    img_equalized = np.empty(img.shape)
+    img_equalized[0] = cv2.equalizeHist(np.array(img[0], dtype = np.uint8))
+    return img_equalized
+
+def clahe_equalized(img):
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+    img_equalized = np.empty(img.shape)
+    img_equalized = clahe.apply(np.array(img, dtype = np.uint8))
+    return img_equalized
+
+def dataset_normalized(img):
+    img_normalized = np.empty(img.shape)
+    img_std = np.std(img)
+    img_mean = np.mean(img)
+    img_normalized = (img - img_mean) / img_std
+    img_normalized = ((img_normalized - np.min(img_normalized)) / (np.max(img_normalized)-np.min(img_normalized)))*255
+    return img_normalized
+
+def adjust_gamma(img, gamma=1.0):
+    invGamma = 1.0 / gamma
+    table = np.array([((i / 255.0) ** invGamma) * 255 for i in np.arange(0, 256)]).astype("uint8")
+    # apply gamma correction using the lookup table
+    new_img = np.empty(img.shape)
+    new_img = cv2.LUT(np.array(img, dtype = np.uint8), table)
+    return new_img
 
 class Network:
     # IMAGE_HEIGHT = 565
@@ -254,12 +281,13 @@ class Network:
         ### can easily define image_preprocessing techniques here !!!!!!
 
         #you can remove these image preprocessing techniques
-        if per_image_standardization:
-            list_of_images_norm = tf.map_fn(tf.image.per_image_standardization, self.inputs)
-            net = tf.stack(list_of_images_norm)
-            self.debug2 = net
-        else:
-            net = self.inputs
+        #if per_image_standardization:
+        #list_of_images_norm = tf.map_fn(tf.image.per_image_standardization, self.inputs)
+        #net = tf.stack(list_of_images_norm)
+        #self.debug2 = net
+        #else:
+        net = self.inputs
+        self.debug2 = net
 
         # ENCODER
         for i in range(len(layers)):
@@ -382,7 +410,7 @@ class Dataset:
             # add training image to dataset
             test_image = cv2.imread(input_image, 1)
             test_image = test_image[:, :, 1]
-            #test_image = preprocessing(test_image, gamma = 1)
+            test_image = preprocessing(test_image, gamma = 2)
             #add pre-processing methods here approximately, and comment out image standardization in tensorflow
 
             top_pad = int((Mod_HEIGHT - IMAGE_HEIGHT) / 2)
@@ -1002,3 +1030,5 @@ if __name__ == '__main__':
         p.start()
         p.join()
         count += 1
+        if count > 1:
+            break
