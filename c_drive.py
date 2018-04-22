@@ -541,7 +541,7 @@ def train(train_indices, validation_indices, run_id):
     plt.rcParams['image.cmap'] = 'gray'
 
     dataset = Dataset(folder='drive', include_hair=True,
-                      batch_size=BATCH_SIZE, sgd = True)
+                      batch_size=BATCH_SIZE, sgd = False)
 
     # inputs, targets = dataset.next_batch()
     # print(inputs.shape, targets.shape)
@@ -586,7 +586,7 @@ def train(train_indices, validation_indices, run_id):
     #z = 0.56
     #pos_weight = (z*neg_pos_class_ratio)/(1-z)
     #pos_weight = 1
-    tuning_constant = 1.00
+    tuning_constant = .75
     pos_weight = neg_pos_class_ratio * tuning_constant
 
 
