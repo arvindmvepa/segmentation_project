@@ -438,12 +438,9 @@ class Dataset:
                 # load grayscale
                 # test_image = np.multiply(test_image, 1.0 / 255)
 
-                if file_type == "_training":
-                    target1_image = np.array(skio.imread(target1_image))
-                    target1_image = cv2.threshold(target1_image, 127, 1, cv2.THRESH_BINARY)[1]
-                    # target1_image = cv2.resize(target1_image, (IMAGE_WIDTH,IMAGE_HEIGHT))
-                else:
-                    target1_image = np.array(Image.open(target1_image))
+                target1_image = np.array(skio.imread(target1_image))
+                target1_image = cv2.threshold(target1_image, 127, 1, cv2.THRESH_BINARY)[1]
+                # target1_image = cv2.resize(target1_image, (IMAGE_WIDTH,IMAGE_HEIGHT))
                 targets.append(target1_image)
 
             elif os.path.exists(target2_image):
@@ -746,7 +743,7 @@ def train():
             batch_num = 0
 
             layer_output_freq = 200
-            score_freq = 200
+            score_freq = 1
             end_freq = 2000
             decision_thresh = .75
             for epoch_i in range(n_epochs):
@@ -891,6 +888,12 @@ def train():
                         mask_flat = mask_array.flatten()
                         prediction_flat = prediction_array.flatten()
                         target_flat = target_array.flatten()
+
+                        #print(target_flat)
+                        #print(np.mean(target_flat))
+                        #print(np.max(target_flat))
+                        #print(np.min(target_flat))
+
                         auc = roc_auc_score(target_flat, prediction_flat, sample_weight=mask_flat)
 
                         fprs, tprs, thresholds = roc_curve(target_flat, prediction_flat, sample_weight=mask_flat)
