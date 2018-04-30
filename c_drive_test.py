@@ -277,8 +277,8 @@ class Network:
         self.layers = {}
 
         self.debug1 = self.inputs
-
         #you can remove these image preprocessing techniques
+        """
         if per_image_standardization:
             list_of_images_norm = tf.map_fn(tf.image.per_image_standardization, self.inputs)
             net = tf.stack(list_of_images_norm)
@@ -286,6 +286,10 @@ class Network:
         else:
             net = self.inputs
             self.debug2 = net
+        """
+        net = self.inputs
+        self.debug2 = net
+
 
         # ENCODER
         for i in range(len(layers)):
@@ -410,7 +414,7 @@ class Dataset:
             test_image = cv2.imread(input_image, 1)
             test_image = test_image[:, :, 1]
             #add pre-processing methods here approximately, and comment out image standardization in tensorflow
-            #test_image = preprocessing(test_image, gamma = 2)
+            test_image = preprocessing(test_image, gamma = 2)
 
             top_pad = int((Mod_HEIGHT - IMAGE_HEIGHT) / 2)
             bot_pad = (Mod_HEIGHT - IMAGE_HEIGHT) - top_pad
@@ -744,7 +748,7 @@ def train():
             layer_output_freq = 200
             score_freq = 200
             end_freq = 2000
-            decision_thresh = .7
+            decision_thresh = .75
             for epoch_i in range(n_epochs):
                 if batch_num > end_freq:
                     epoch_i = 0
