@@ -578,7 +578,7 @@ def train():
 
     train_inputs, train_masks, train_targets = dataset.file_paths_to_images(folder, range(21, 41, 1))
 
-    test_inputs, test_masks, test_targets = dataset.file_paths_to_images(folder, range(1,21,1), file_type="_test", manual_suffix = "_manual2.gif")
+    test_inputs, test_masks, test_targets = dataset.file_paths_to_images(folder, range(1,21,1), file_type="_test", manual_suffix = "_manual1.gif")
     ##DEBUG
     #pos_weight
     neg_pos_class_ratio, _, _ = find_class_balance(train_targets, train_masks)
