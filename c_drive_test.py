@@ -743,7 +743,7 @@ def train():
             batch_num = 0
 
             layer_output_freq = 200
-            score_freq = 200
+            score_freq = 10
             end_freq = 2000
             decision_thresh = .75
             for epoch_i in range(n_epochs):
