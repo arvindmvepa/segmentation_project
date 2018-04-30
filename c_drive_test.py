@@ -743,7 +743,7 @@ def train():
             batch_num = 0
 
             layer_output_freq = 200
-            score_freq = 1
+            score_freq = 200
             end_freq = 2000
             decision_thresh = .75
             for epoch_i in range(n_epochs):
@@ -1019,11 +1019,8 @@ def train():
                         f1.close()
 
 n_examples = 1
-n_splits = 20
 
 if __name__ == '__main__':
-    x = random.randint(1, 100)
-    k_fold = KFold(n_splits=n_splits, shuffle=True, random_state=x)
 
     f1 = open('out1.txt', 'w')
     f2 = open('out2.txt', 'w')
