@@ -874,6 +874,11 @@ def train():
                             results = results[0, :, :, 0]
                             targets = targets[0, :, :, 0]
 
+                            mask_array[i] = masks
+                            target_array[i] = targets
+                            prediction_array[i] = results
+                            test_accuracy += acc
+
                             fprs, tprs, thresholds = roc_curve(targets.flatten(), results.flatten(), sample_weight=masks.flatten())
                             list_fprs_tprs_thresholds = list(zip(fprs, tprs, thresholds))
                             interval = 0.0001
@@ -886,12 +891,7 @@ def train():
                                     thresh_max = thresh_acc
                                 i += 1
 
-
                             max_thresh_accuracy += thresh_max
-                            mask_array[i] = masks
-                            target_array[i] = targets
-                            prediction_array[i] = results
-                            test_accuracy += acc
 
                         max_thresh_accuracy = max_thresh_accuracy / len(test_inputs)
                         test_accuracy = test_accuracy / len(test_inputs)
