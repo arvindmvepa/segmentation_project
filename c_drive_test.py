@@ -874,7 +874,7 @@ def train():
                             results = results[0, :, :, 0]
                             targets = targets[0, :, :, 0]
 
-                            fprs, tprs, thresholds = roc_curve(results.flatten(), targets.flatten(), sample_weight=masks.flatten())
+                            fprs, tprs, thresholds = roc_curve(targets.flatten(), results.flatten(), sample_weight=masks.flatten())
                             list_fprs_tprs_thresholds = list(zip(fprs, tprs, thresholds))
                             interval = 0.0001
 
