@@ -874,7 +874,7 @@ def train():
                             results = results[0, :, :, 0]
                             targets = targets[0, :, :, 0]
 
-                            fprs, tprs, thresholds = roc_curve(results, targets, sample_weight=masks)
+                            fprs, tprs, thresholds = roc_curve(results.flatten(), targets.flatten(), sample_weight=masks.flatten())
                             list_fprs_tprs_thresholds = list(zip(fprs, tprs, thresholds))
                             interval = 0.0001
 
@@ -912,8 +912,6 @@ def train():
                         #print(np.mean(target_flat))
                         #print(np.max(target_flat))
                         #print(np.min(target_flat))
-
-                        auc = roc_auc_score(target_flat, prediction_flat, sample_weight=mask_flat)
 
                         fprs, tprs, thresholds = roc_curve(target_flat, prediction_flat, sample_weight=mask_flat)
                         np_fprs, np_tprs, np_thresholds = np.array(fprs).flatten(), np.array(tprs).flatten(), np.array(thresholds).flatten()
