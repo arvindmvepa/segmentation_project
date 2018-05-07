@@ -913,6 +913,7 @@ def train():
                         #print(np.max(target_flat))
                         #print(np.min(target_flat))
 
+                        auc = roc_auc_score(target_flat, prediction_flat, sample_weight=mask_flat)
                         fprs, tprs, thresholds = roc_curve(target_flat, prediction_flat, sample_weight=mask_flat)
                         np_fprs, np_tprs, np_thresholds = np.array(fprs).flatten(), np.array(tprs).flatten(), np.array(thresholds).flatten()
                         fpr_10 = np_fprs[np.where(np_fprs < .10)]
