@@ -576,6 +576,7 @@ def train():
     train_inputs, train_masks, train_targets = dataset.file_paths_to_images(folder, range(21, 41, 1))
 
     test_inputs, test_masks, test_targets = dataset.file_paths_to_images(folder, range(1,21,1), file_type="_test", manual_suffix = "_manual1.gif")
+
     ##DEBUG
     #pos_weight
     neg_pos_class_ratio, _, _ = find_class_balance(train_targets, train_masks)
@@ -821,8 +822,9 @@ def train():
                                         channel_output[np.where(channel_output > mask_threshold)] = 1
                                         channel_output[np.where(channel_output <= mask_threshold)] = 0
                                         plt.imsave(os.path.join(os.path.join(layer_output_path_train, "mask2"), "channel_" + str(k) + ".jpeg"), channel_output)
-                        test_accuracy = 0.0
 
+                        test_accuracy = 0.0
+                        max_thresh_accuracy = 0.0
 
                         mask_array = np.zeros((len(test_inputs), IMAGE_WIDTH, IMAGE_HEIGHT))
                         target_array = np.zeros((len(test_inputs), IMAGE_WIDTH, IMAGE_HEIGHT))
@@ -830,6 +832,7 @@ def train():
 
                         sample_test_image = randint(0, len(test_inputs)-1)
                         for i in range(len(test_inputs)):
+                            thresh_max = 0.0
                             if i == sample_test_image:
                                 inputs, masks, results, targets, acc, layer_output1, layer_output2, layer_output3, layer_output4, layer_output5, layer_output6, layer_output7, \
                                 layer_output8, layer_output9, layer_output10, layer_output11, layer_output12, layer_output13, layer_output14, layer_output15, layer_output16, \
@@ -870,11 +873,27 @@ def train():
                             masks = masks[0, :, :, 0]
                             results = results[0, :, :, 0]
                             targets = targets[0, :, :, 0]
+
+                            fprs, tprs, thresholds = roc_curve(results, targets, sample_weight=masks)
+                            list_fprs_tprs_thresholds = list(zip(fprs, tprs, thresholds))
+                            interval = 0.0001
+
+                            for i in np.arange(0.0, 1.0 + interval, interval):
+                                index = int(round((len(thresholds) - 1) * i, 0))
+                                fpr, tpr, threshold = list_fprs_tprs_thresholds[index]
+                                thresh_acc = (1 - fpr) * test_neg_class_frac + tpr * test_pos_class_frac
+                                if thresh_acc > thresh_max:
+                                    thresh_max = thresh_acc
+                                i += 1
+
+
+                            max_thresh_accuracy += thresh_max
                             mask_array[i] = masks
                             target_array[i] = targets
                             prediction_array[i] = results
                             test_accuracy += acc
 
+                        max_thresh_accuracy = max_thresh_accuracy / len(test_inputs)
                         test_accuracy = test_accuracy / len(test_inputs)
 
                         #mask_tensor = tf.convert_to_tensor(mask_array, dtype=tf.float32)
@@ -909,24 +928,14 @@ def train():
 
                         #upper_thresholds = np_thresholds[0:len(fpr_10)]
                         thresh_acc_strings = ""
-                        thresh_max = 0.0
-                        thresh_max_items = ""
                         list_fprs_tprs_thresholds = list(zip(fprs, tprs, thresholds))
 
                         auc_10_fpr = auc_(fpr_10, tpr_10)
                         auc_05_fpr = auc_(fpr_05, tpr_05)
                         auc_025_fpr = auc_(fpr_025, tpr_025)
 
-                        interval = 0.00001
-                        #interval = 0.001
-                        for i in np.arange(0.0, 1.0 + interval, interval):
-                            index = int(round((len(thresholds)-1) * i, 0))
-                            fpr, tpr, threshold = list_fprs_tprs_thresholds[index]
-                            thresh_acc = (1-fpr)*test_neg_class_frac+tpr*test_pos_class_frac
-                            if thresh_acc > thresh_max:
-                                thresh_max_items = "max thresh acc thresh: {}, max thresh acc: {}, max thresh acc tpr: {}, max thresh acc spec: {}, ".format(threshold, thresh_acc, tpr, 1-fpr)
-                                thresh_max = thresh_acc
-                            i += 1
+                        thresh_max_items = "max thresh acc : {}, ".format(max_thresh_accuracy)
+
                         interval = 0.05
                         for i in np.arange(0, 1.0 + interval, interval):
                             index = int(round((len(thresholds) - 1) * i, 0))
@@ -945,6 +954,7 @@ def train():
                                                                                               prediction_flat,
                                                                                               average='binary',
                                                                                               sample_weight=mask_flat)
+
                         kappa = cohen_kappa_score(target_flat, prediction_flat, sample_weight=mask_flat)
                         tn, fp, fn, tp = confusion_matrix(target_flat, prediction_flat, sample_weight=mask_flat).ravel()
 
@@ -999,7 +1009,7 @@ def train():
                         test_auc_10_fpr.append((auc_10_fpr, batch_num))
                         test_auc_05_fpr.append((auc_05_fpr, batch_num))
                         test_auc_025_fpr.append((auc_025_fpr, batch_num))
-                        max_thresh_accuracies.append((thresh_max, batch_num))
+                        max_thresh_accuracies.append((max_thresh_accuracy, batch_num))
                         print("Accuracies in time: ", [test_accuracies[x][0] for x in range(len(test_accuracies))])
                         print(test_accuracies)
                         max_acc = max(test_accuracies)
