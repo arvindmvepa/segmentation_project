@@ -25,6 +25,7 @@ for it in range(10,2010,10):
     num_networks = len(net_results_files)
     net_results_list = []
 
+    print(net_results_files)
 
     for result_file in net_results_files:
         prediction_flat = np.load(result_file)
