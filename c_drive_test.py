@@ -744,7 +744,7 @@ def train():
             batch_num = 0
 
             layer_output_freq = 200
-            score_freq = 10
+            score_freq = 1
             end_freq = 2000
             decision_thresh = .75
             for epoch_i in range(n_epochs):
@@ -907,6 +907,18 @@ def train():
                         mask_flat = mask_array.flatten()
                         prediction_flat = prediction_array.flatten()
                         target_flat = target_array.flatten()
+
+                        ## save mask and target (if files don't exist)
+                        cwd = os.getcwd()
+                        if not os.path.exists(os.path.join(cwd, "mask.npy")):
+                            np.save("mask", mask_flat)
+                        if not os.path.exists(os.path.join(cwd, "target.npy")):
+                            np.save("target", target_flat)
+
+                        ### save prediction array for ensemble
+                        file_name = timestamp + "_" + str(batch_num)
+                        np.save(file_name, prediction_flat)
+
 
                         #print(target_flat)
                         #print(np.mean(target_flat))
