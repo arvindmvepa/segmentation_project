@@ -19,11 +19,13 @@ test_auc_05_fpr = []
 test_auc_025_fpr = []
 
 ## for all iterations
-for it in range(10,2010,10):
-    cwd = os.getcwd()
+#for it in range(10,2010,10):
+for it in range(1,3,1):
+    #cwd = os.getcwd()
     suffix = "_"+str(it)+".npy"
     ## load all the files for an iteration
-    search_string = cwd+"/*" + suffix
+    #search_string = cwd+"/*" + suffix
+    search_string = "*" + suffix
     net_results_files = glob.glob(search_string)
     num_networks = len(net_results_files)
     net_results_list = []
