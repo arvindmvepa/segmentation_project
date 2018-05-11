@@ -1,5 +1,6 @@
 import numpy as np
 import glob
+import os
 from sklearn.metrics import precision_recall_fscore_support, cohen_kappa_score, roc_auc_score, confusion_matrix, roc_curve, auc as auc_
 
 metric_filename = 'ensemble_results.txt'
@@ -19,9 +20,11 @@ test_auc_025_fpr = []
 
 ## for all iterations
 for it in range(10,2010,10):
+    cwd = os.getcwd()
     suffix = "_"+str(it)+".npy"
     ## load all the files for an iteration
-    net_results_files = glob.glob("*" + suffix)
+    search_string = cwd+"/*" + suffix
+    net_results_files = glob.glob(search_string)
     num_networks = len(net_results_files)
     net_results_list = []
 
