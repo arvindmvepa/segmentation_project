@@ -92,9 +92,14 @@ for it in range(1,3,1):
     print(max_auc_05_fpr)
     print(max_auc_025_fpr)
 
+    """
     f1.write(
         'Step {}, recall {}, specificity {}, auc {}, auc_10_fpr {}, auc_05_fpr {}, auc_025_fpr {}, precision {}, fbeta_score {}, kappa {} '
         'max acc {} {}, max auc {} {}, max auc 10 fpr {} {}, max auc 5 fpr {} {}, max auc 2.5 fpr {} {} \n'.format(
             it, recall, specificity, auc, auc_10_fpr, auc_05_fpr, auc_025_fpr, precision, fbeta_score, kappa, max_auc[0], max_auc[1], max_auc_10_fpr[0], max_auc_10_fpr[1], max_auc_05_fpr[0],
             max_auc_05_fpr[1], max_auc_025_fpr[0], max_auc_025_fpr[1]))
+    """
+    f1.write(
+        'Step {}, recall {}, specificity {}, auc {}, auc_10_fpr {}, auc_05_fpr {}, auc_025_fpr {}, precision {}, fbeta_score {}, kappa {} \n'.format(
+            it, recall, specificity, auc, auc_10_fpr, auc_05_fpr, auc_025_fpr, precision, fbeta_score, kappa))
     f1.close()
