@@ -33,7 +33,7 @@ for it in range(10,2010,10):
     ## process accumulation of results
     ## mean, median, other methods
     ## Code missing, to include
-    prediction_flat = np.mean(net_results_list)
+    prediction_flat = np.array(net_results_list).mean(0)
 
 
     ## produce results per iteration
