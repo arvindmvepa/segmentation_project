@@ -87,11 +87,6 @@ for it in range(1,3,1):
     max_auc_05_fpr = max(test_auc_05_fpr)
     max_auc_025_fpr = max(test_auc_025_fpr)
 
-    print(max_auc)
-    print(max_auc_10_fpr)
-    print(max_auc_05_fpr)
-    print(max_auc_025_fpr)
-
     """
     f1.write(
         'Step {}, recall {}, specificity {}, auc {}, auc_10_fpr {}, auc_05_fpr {}, auc_025_fpr {}, precision {}, fbeta_score {}, kappa {} '
@@ -100,6 +95,6 @@ for it in range(1,3,1):
             max_auc_05_fpr[1], max_auc_025_fpr[0], max_auc_025_fpr[1]))
     """
     f1.write(
-        'Step {}, recall {}, specificity {}, auc {}, auc_10_fpr {}, auc_05_fpr {}, auc_025_fpr {}, precision {}, fbeta_score {}, kappa {} \n'.format(
-            it, recall, specificity, auc, auc_10_fpr, auc_05_fpr, auc_025_fpr, precision, fbeta_score, kappa))
+        'Step {}, recall {}, specificity {}, auc {}, auc_10_fpr {}, auc_05_fpr {}, auc_025_fpr {}, precision {}, fbeta_score {}, kappa {}, max auc {} {} \n'.format(
+            it, recall, specificity, auc, auc_10_fpr, auc_05_fpr, auc_025_fpr, precision, fbeta_score, kappa, max_auc[0], max_auc[1]))
     f1.close()
