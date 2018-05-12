@@ -534,7 +534,7 @@ def draw_results(test_inputs, test_targets, test_segmentation, test_accuracy, ne
     return buf
 
 
-def train(end_freq = 2000, decision_thresh = .75, score_freq=10, layer_output_freq=200):
+def train(end_freq = 2000, decision_thresh = .75, score_freq=10, layer_output_freq=200, output_file="results.txt"):
     BATCH_SIZE = 1
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
     plt.rcParams['image.cmap'] = 'gray'
@@ -1040,7 +1040,6 @@ def train(end_freq = 2000, decision_thresh = .75, score_freq=10, layer_output_fr
                         f1.close()
 
 n_examples = 1
-output_file = ""
 if __name__ == '__main__':
     ensemble_count = 10
     for i in range(ensemble_count):
@@ -1049,7 +1048,7 @@ if __name__ == '__main__':
         f1 = open(output_file, 'w')
         f1.close()
         os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
-        kwargs = {'score_freq': 1, 'end_freq': 10, 'layer_output_freq': 200, 'decision_thresh': .75}
+        kwargs = {'score_freq': 1, 'end_freq': 10, 'layer_output_freq': 200, 'decision_thresh': .75, 'output_file': output_file}
         p = multiprocessing.Process(target=train, kwargs=kwargs)
         p.start()
         p.join()
