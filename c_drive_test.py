@@ -506,22 +506,26 @@ class Dataset:
 
 def draw_results(test_inputs, test_targets, test_segmentation, test_accuracy, network, batch_num):
     n_examples_to_plot = n_examples
+
     fig, axs = plt.subplots(4, n_examples_to_plot, figsize=(n_examples_to_plot * 3, 10), squeeze=False)
     fig.suptitle("Accuracy: {}, {}".format(test_accuracy, network.description), fontsize=20)
     for example_i in range(n_examples_to_plot):
         axs[0][example_i].imshow(test_inputs[example_i], cmap='gray')
+        axs[0][example_i].axis('off')
         # print(np.sum(test_targets[example_i].astype(np.float32)))
         axs[1][example_i].imshow(test_targets[example_i].astype(np.float32), cmap='gray')
+        axs[1][example_i].axis('off')
         axs[2][example_i].imshow(
             np.reshape(test_segmentation[example_i], [network.IMAGE_WIDTH, network.IMAGE_HEIGHT]),
             cmap='gray')
+        axs[2][example_i].axis('off')
 
         test_image_thresholded = np.array(
             [0 if x < 0.5 else 255 for x in test_segmentation[example_i].flatten()])
         axs[3][example_i].imshow(
             np.reshape(test_image_thresholded, [network.IMAGE_WIDTH, network.IMAGE_HEIGHT]),
             cmap='gray')
-
+        axs[3][example_i].axis('off')
     buf = io.BytesIO()
     plt.savefig(buf, format='png')
     buf.seek(0)

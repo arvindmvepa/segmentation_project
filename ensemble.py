@@ -20,7 +20,7 @@ test_auc_025_fpr = []
 
 ## for all iterations
 #for it in range(10,2010,10):
-for it in range(1,11,1):
+for it in range(50,2050,50):
     #cwd = os.getcwd()
     suffix = "_"+str(it)+".npy"
     ## load all the files for an iteration
