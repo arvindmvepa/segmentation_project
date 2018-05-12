@@ -1040,7 +1040,7 @@ def train(end_freq = 2000, decision_thresh = .75, score_freq=10, layer_output_fr
                         f1.close()
 
 n_examples = 1
-
+output_file = ""
 if __name__ == '__main__':
     ensemble_count = 10
     for i in range(ensemble_count):
