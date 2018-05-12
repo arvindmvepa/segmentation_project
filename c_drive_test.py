@@ -534,7 +534,7 @@ def draw_results(test_inputs, test_targets, test_segmentation, test_accuracy, ne
     return buf
 
 
-def train():
+def train(end_freq = 2000, decision_thresh = .75, score_freq=10, layer_output_freq=200):
     BATCH_SIZE = 1
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
     plt.rcParams['image.cmap'] = 'gray'
@@ -743,10 +743,10 @@ def train():
             global_start = time.time()
             batch_num = 0
 
-            layer_output_freq = 200
-            score_freq = 1
-            end_freq = 2000
-            decision_thresh = .75
+            #layer_output_freq = 200
+            #score_freq = 1
+            #end_freq = 2000
+            #decision_thresh = .75
             for epoch_i in range(n_epochs):
                 if batch_num > end_freq:
                     epoch_i = 0
@@ -1013,7 +1013,7 @@ def train():
                         image_summary_op = tf.summary.image("plot", image)
                         image_summary = sess.run(image_summary_op)
                         summary_writer.add_summary(image_summary)
-                        f1 = open(file_name, 'a')
+                        f1 = open(output_file, 'a')
 
                         test_accuracies.append((test_accuracy, batch_num))
                         test_auc.append((auc, batch_num))
@@ -1042,11 +1042,14 @@ def train():
 n_examples = 1
 
 if __name__ == '__main__':
-    new_time = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
-    file_name = new_time+"_results.txt"
-    f1 = open(file_name, 'w')
-    f1.close()
-    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
-    p = multiprocessing.Process(target=train)
-    p.start()
-    p.join()
+    ensemble_count = 10
+    for i in range(ensemble_count):
+        new_time = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
+        output_file = new_time+"_results.txt"
+        f1 = open(output_file, 'w')
+        f1.close()
+        os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
+        kwargs = {'score_freq': 1, 'end_freq': 10, 'layer_output_freq': 200, 'decision_thresh': .75}
+        p = multiprocessing.Process(target=train, kwargs=kwargs)
+        p.start()
+        p.join()
