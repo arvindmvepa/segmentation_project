@@ -1013,7 +1013,7 @@ def train():
                         image_summary_op = tf.summary.image("plot", image)
                         image_summary = sess.run(image_summary_op)
                         summary_writer.add_summary(image_summary)
-                        f1 = open('out1.txt', 'a')
+                        f1 = open(file_name, 'a')
 
                         test_accuracies.append((test_accuracy, batch_num))
                         test_auc.append((auc, batch_num))
@@ -1042,17 +1042,11 @@ def train():
 n_examples = 1
 
 if __name__ == '__main__':
-
-    f1 = open('out1.txt', 'w')
-    f2 = open('out2.txt', 'w')
-
+    new_time = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
+    file_name = new_time+"_results.txt"
+    f1 = open(file_name, 'w')
     f1.close()
-    f2.close()
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
-    f1 = open('out1.txt', 'a')
-    f2 = open('out2.txt', 'a')
-    f1.close()
-    f2.close()
     p = multiprocessing.Process(target=train)
     p.start()
     p.join()
