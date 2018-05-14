@@ -42,8 +42,8 @@ for it in range(50,2050,50):
     ## mean, median, other methods
     ## Code missing, to include
 
-    #prediction_flat = np.array(net_results_list).mean(0)
-    prediction_flat = np.median(np.array(net_results_list),0)
+    prediction_flat = np.array(net_results_list).mean(0)
+    #prediction_flat = np.median(np.array(net_results_list),0)
 
     ## produce results per iteration
 
