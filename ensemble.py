@@ -17,6 +17,7 @@ test_auc = []
 test_auc_10_fpr = []
 test_auc_05_fpr = []
 test_auc_025_fpr = []
+decision_thresh = .75
 
 ## for all iterations
 #for it in range(10,2010,10):
@@ -63,7 +64,7 @@ for it in range(50,2050,50):
     auc_05_fpr = auc_(fpr_05, tpr_05)
     auc_025_fpr = auc_(fpr_025, tpr_025)
 
-
+    result_flat = ((prediction_flat > decision_thresh) * 1).astype(int)
     prediction_flat = np.round(prediction_flat)
     target_flat = np.round(target_flat)
 
@@ -74,8 +75,31 @@ for it in range(50,2050,50):
 
     kappa = cohen_kappa_score(target_flat, prediction_flat, sample_weight=mask_flat)
     tn, fp, fn, tp = confusion_matrix(target_flat, prediction_flat, sample_weight=mask_flat).ravel()
-
+    acc = (tp+tn)/(tp+tn+fp+fn)
     specificity = tn / (tn + fp)
+    """
+    fprs, tprs, thresholds = roc_curve(target_flat, prediction_flat, sample_weight=mask_flat)
+    list_fprs_tprs_thresholds = list(zip(fprs, tprs, thresholds))
+
+    interval = 0.0001
+
+    for i in np.arange(0.0, 1.0 + interval, interval):
+        index = int(round((len(thresholds) - 1) * i, 0))
+        fpr, tpr, threshold = list_fprs_tprs_thresholds[index]
+        thresh_acc = (1 - fpr) * test_neg_class_frac + tpr * test_pos_class_frac
+        if thresh_acc > thresh_max:
+            thresh_max = thresh_acc
+        i += 1
+
+    max_thresh_accuracy += thresh_max
+    """
+
+    r_tn, r_fp, r_fn, r_tp = confusion_matrix(target_flat, result_flat, sample_weight=mask_flat).ravel()
+
+    r_acc = (r_tp + r_tn) / (r_tp + r_tn + r_fp + r_fn)
+    r_recall = r_tp / (r_tp + r_fn)
+    r_precision = r_tp / (r_tp + r_fp)
+    r_specificity = r_tn / (r_tn + r_fp)
 
     f1 = open(metric_filename, 'a')
 
@@ -89,6 +113,6 @@ for it in range(50,2050,50):
     max_auc_025_fpr = max(test_auc_025_fpr)
 
     f1.write(
-        'Step {}, recall {}, specificity {}, auc {}, auc_10_fpr {}, auc_05_fpr {}, auc_025_fpr {}, precision {}, fbeta_score {}, kappa {}, max auc {} {}, max auc 10 fpr {} {}, max auc 5 fpr {} {}, max auc 2.5 fpr {} {} \n'.format(
-            it, recall, specificity, auc, auc_10_fpr, auc_05_fpr, auc_025_fpr, precision, fbeta_score, kappa, max_auc[0], max_auc[1], max_auc_10_fpr[0], max_auc_10_fpr[1], max_auc_05_fpr[0], max_auc_05_fpr[1], max_auc_025_fpr[0], max_auc_025_fpr[1]))
+        'Step {}, r_acc {}, r_recall {}, r_precision {}, r_specificity {}, acc {}, recall {}, specificity {}, auc {}, auc_10_fpr {}, auc_05_fpr {}, auc_025_fpr {}, precision {}, fbeta_score {}, kappa {}, max auc {} {}, max auc 10 fpr {} {}, max auc 5 fpr {} {}, max auc 2.5 fpr {} {} \n'.format(
+            it, r_acc, r_recall, r_precision, r_specificity, acc, recall, specificity, auc, auc_10_fpr, auc_05_fpr, auc_025_fpr, precision, fbeta_score, kappa, max_auc[0], max_auc[1], max_auc_10_fpr[0], max_auc_10_fpr[1], max_auc_05_fpr[0], max_auc_05_fpr[1], max_auc_025_fpr[0], max_auc_025_fpr[1]))
     f1.close()
