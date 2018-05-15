@@ -1120,13 +1120,14 @@ def train(end_freq = 2000, decision_thresh = .75, score_freq=10, layer_output_fr
                         max_auc_05_fpr = max(test_auc_05_fpr)
                         max_auc_025_fpr = max(test_auc_025_fpr)
                         max_thresh_accuracy = max(max_thresh_accuracies)
-                        print("layer 1 pos-neg distribution")
-                        print("total positive sum: "+str(total_pos))
-                        print("total negative sum: "+str(total_neg))
-                        print("percentage positive: " + str(float(total_pos)/float(total_neg+total_pos)))
-                        print("percentage negative: " + str(float(total_neg)/float(total_neg+total_pos)))
-                        if len(channel_list) > 0:
-                            tile_images(channel_list)
+                        if batch_num % layer_output_freq == 0:
+                            print("layer 1 pos-neg distribution")
+                            print("total positive sum: "+str(total_pos))
+                            print("total negative sum: "+str(total_neg))
+                            print("percentage positive: " + str(float(total_pos)/float(total_neg+total_pos)))
+                            print("percentage negative: " + str(float(total_neg)/float(total_neg+total_pos)))
+                            if len(channel_list) > 0:
+                                tile_images(channel_list)
                         print("Best accuracy: {} in batch {}".format(max_acc[0], max_acc[1]))
                         print("Total time: {}".format(time.time() - global_start))
                         f1.write(
