@@ -56,6 +56,46 @@ def _MaxPoolWithArgmaxGrad(op, grad, unused_argmax_grad):
                                      data_format='NHWC')
 """
 
+#assume this is square
+def tile_images(list_of_images, new_shape = (400, 400), save=True, file_name = "layer1_collage.jpeg"):
+    list_of_images.sort(key=lambda x: x[0])
+    num_images = len(list_of_images)
+    sqrt_num_images = int(num_images**(.5))
+    new_image = np.zeros(new_shape)
+    resize_height = int(new_shape[0] / sqrt_num_images)
+    resize_width = int(new_shape[1] / sqrt_num_images)
+    grid_positions = []
+
+    for i in range(num_images):
+        list_of_images[i] = cv2.resize(list_of_images[i][1], (resize_height, resize_width), cv2.INTER_AREA)
+
+    for i in range(sqrt_num_images):
+        for j in range(sqrt_num_images):
+            grid_positions += [np.array((i,j))]
+
+    for i in range(num_images):
+        pos, grid_positions = find_closest_pos(grid_positions)
+        x_index = resize_height*pos[0]
+        y_index = resize_width*pos[1]
+        new_image[x_index:x_index+resize_height, y_index:y_index+resize_width] = list_of_images[i]
+    if save:
+        plt.imsave(file_name, new_image)
+    return new_image
+
+
+def find_closest_pos(positions, start_pos=(0,0)):
+    min = np.inf
+    min_index = -1
+    start_pos = np.array(start_pos)
+    for i in range(len(positions)):
+        pos = positions[i]
+        test = np.linalg.norm(start_pos - pos)
+        if test < min:
+            min = test
+            min_index = i
+    min_pos = positions.pop(min_index)
+    return min_pos, positions
+
 
 def mask_op_and_mask_mean(correct_pred, mask, num_batches=1, width=IMAGE_WIDTH, height=IMAGE_HEIGHT):
     correct_pred = tf.multiply(correct_pred, mask)
@@ -538,7 +578,7 @@ def draw_results(test_inputs, test_targets, test_segmentation, test_accuracy, ne
     return buf
 
 
-def train(end_freq = 2000, decision_thresh = .75, score_freq=10, layer_output_freq=200, output_file="results.txt"):
+def train(end_freq = 2000, decision_thresh = .75, score_freq=10, layer_output_freq=200, output_file="results.txt", tuning_constant=1.0):
     BATCH_SIZE = 1
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
     plt.rcParams['image.cmap'] = 'gray'
@@ -588,7 +628,7 @@ def train(end_freq = 2000, decision_thresh = .75, score_freq=10, layer_output_fr
     #z = 0.56
     #pos_weight = (z*neg_pos_class_ratio)/(1-z)
     #pos_weight = 1
-    tuning_constant = 1.0
+    #tuning_constant = 1.0
     pos_weight = neg_pos_class_ratio * tuning_constant
 
 
@@ -811,6 +851,8 @@ def train(end_freq = 2000, decision_thresh = .75, score_freq=10, layer_output_fr
                     plt.imsave(os.path.join(layer_debug2_output_path_train, "debug2.jpeg"), debug2)
 
                     mask_threshold = .5
+                    channel_list = []
+
                     if batch_num % score_freq == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
                         if batch_num % layer_output_freq == 0:
                             for j in range(len(layer_outputs)):
@@ -837,7 +879,7 @@ def train(end_freq = 2000, decision_thresh = .75, score_freq=10, layer_output_fr
                         sample_test_image = randint(0, len(test_inputs)-1)
                         for i in range(len(test_inputs)):
                             thresh_max = 0.0
-                            if i == sample_test_image:
+                            if i == sample_test_image and batch_num % layer_output_freq == 0:
                                 inputs, masks, results, targets, acc, layer_output1, layer_output2, layer_output3, layer_output4, layer_output5, layer_output6, layer_output7, \
                                 layer_output8, layer_output9, layer_output10, layer_output11, layer_output12, layer_output13, layer_output14, layer_output15, layer_output16, \
                                 layer_output17, layer_output18 = sess.run(
@@ -852,23 +894,62 @@ def train(end_freq = 2000, decision_thresh = .75, score_freq=10, layer_output_fr
                                 layer_outputs = [layer_output1, layer_output2, layer_output3, layer_output4, layer_output5, layer_output6,
                                                  layer_output7, layer_output8, layer_output9, layer_output10, layer_output11, layer_output12,
                                                  layer_output13, layer_output14, layer_output15, layer_output16, layer_output17, layer_output18]
-                                if batch_num % layer_output_freq == 0:
-                                    for j in range(len(layer_outputs)):
-                                        layer_output = layer_outputs[j]
-                                        for k in range(layer_output.shape[3]):
-                                            channel_output = layer_output[0, :, :, k]
-                                            plt.imsave(os.path.join(os.path.join(layer_output_path_test, str(j + 1)),
-                                                                  "channel_" + str(k) + ".jpeg"), channel_output)
-                                            if j == 0:
-                                                channel_output[np.where(channel_output > mask_threshold)] = 1
-                                                channel_output[np.where(channel_output <= mask_threshold)] = 0
-                                                plt.imsave(os.path.join(os.path.join(layer_output_path_test, "mask1"),
-                                                                        "channel_" + str(k) + ".jpeg"), channel_output)
-                                            if j == 16:
-                                                channel_output[np.where(channel_output > mask_threshold)] = 1
-                                                channel_output[np.where(channel_output <= mask_threshold)] = 0
-                                                plt.imsave(os.path.join(os.path.join(layer_output_path_test, "mask2"),
-                                                                        "channel_" + str(k) + ".jpeg"),channel_output)
+
+                                top_pad = int((Mod_HEIGHT - IMAGE_HEIGHT) / 2)
+                                bot_pad = (Mod_HEIGHT - IMAGE_HEIGHT) - top_pad
+                                left_pad = int((Mod_WIDTH - IMAGE_WIDTH) / 2)
+                                right_pad = (Mod_WIDTH - IMAGE_WIDTH) - left_pad
+
+                                target = test_targets[i:(i + 1)]
+                                target = np.reshape(target, (IMAGE_HEIGHT, IMAGE_WIDTH))
+                                invert_target = np.invert(target)
+
+                                mask = test_masks[i:(i + 1)]
+                                mask = np.reshape(mask, (IMAGE_HEIGHT, IMAGE_WIDTH))
+                                target = np.multiply(target, mask)
+                                invert_target = np.multiply(invert_target, mask)
+
+                                #input =  test_inputs[i:(i + 1)]
+                                #input = np.reshape(input, (Mod_HEIGHT, Mod_WIDTH))
+                                #input = input[top_pad:Mod_HEIGHT-bot_pad,left_pad:Mod_WIDTH-right_pad]
+
+
+
+                                channel_list = []
+                                total_pos = 0
+                                total_neg = 0
+
+                                for j in range(len(layer_outputs)):
+                                    layer_output = layer_outputs[j]
+                                    for k in range(layer_output.shape[3]):
+                                        channel_output = layer_output[0, :, :, k]
+                                        plt.imsave(os.path.join(os.path.join(layer_output_path_test, str(j + 1)),
+                                                              "channel_" + str(k) + ".jpeg"), channel_output)
+                                        if j == 0:
+                                            input = np.reshape(channel_output, (Mod_HEIGHT, Mod_WIDTH))
+                                            input_crop = input[top_pad:Mod_HEIGHT - bot_pad, left_pad:Mod_WIDTH - right_pad]
+                                            invert_input_crop = 1-input_crop
+
+                                            results_ = np.multiply(input_crop, target)
+                                            results_invert = np.multiply(invert_input_crop, invert_target)
+
+                                            sum = np.sum(results_)
+                                            sum_neg = np.sum(results_invert)
+
+                                            total_pos += sum
+                                            total_neg += sum_neg
+
+                                            channel_list.append((sum, input_crop))
+
+                                            channel_output[np.where(channel_output > mask_threshold)] = 1
+                                            channel_output[np.where(channel_output <= mask_threshold)] = 0
+                                            plt.imsave(os.path.join(os.path.join(layer_output_path_test, "mask1"),
+                                                                    "channel_" + str(k) + ".jpeg"), channel_output)
+                                        if j == 16:
+                                            channel_output[np.where(channel_output > mask_threshold)] = 1
+                                            channel_output[np.where(channel_output <= mask_threshold)] = 0
+                                            plt.imsave(os.path.join(os.path.join(layer_output_path_test, "mask2"),
+                                                                    "channel_" + str(k) + ".jpeg"),channel_output)
 
                             else:
                                 inputs, masks, results, targets, acc = sess.run([network.inputs, network.masks, network.segmentation_result, network.targets, network.accuracy],
@@ -896,6 +977,12 @@ def train(end_freq = 2000, decision_thresh = .75, score_freq=10, layer_output_fr
                                 i += 1
 
                             max_thresh_accuracy += thresh_max
+
+                        #print("print positive correlation sums")
+                        #for it in channel_list:
+                        #    print(it[0])
+                        """
+                        """
 
                         max_thresh_accuracy = max_thresh_accuracy / len(test_inputs)
                         test_accuracy = test_accuracy / len(test_inputs)
@@ -1033,6 +1120,13 @@ def train(end_freq = 2000, decision_thresh = .75, score_freq=10, layer_output_fr
                         max_auc_05_fpr = max(test_auc_05_fpr)
                         max_auc_025_fpr = max(test_auc_025_fpr)
                         max_thresh_accuracy = max(max_thresh_accuracies)
+                        print("layer 1 pos-neg distribution")
+                        print("total positive sum: "+str(total_pos))
+                        print("total negative sum: "+str(total_neg))
+                        print("percentage positive: " + str(float(total_pos)/float(total_neg+total_pos)))
+                        print("percentage negative: " + str(float(total_neg)/float(total_neg+total_pos)))
+                        if len(channel_list) > 0:
+                            tile_images(channel_list)
                         print("Best accuracy: {} in batch {}".format(max_acc[0], max_acc[1]))
                         print("Total time: {}".format(time.time() - global_start))
                         f1.write(
@@ -1046,13 +1140,21 @@ def train(end_freq = 2000, decision_thresh = .75, score_freq=10, layer_output_fr
 n_examples = 1
 if __name__ == '__main__':
     ensemble_count = 10
+    start_constant = .5
+    if ensemble_count == 1:
+        tuning_constants = [start_constant]
+    else:
+        end_constant = 1.5
+        interval = (end_constant - start_constant) / float(ensemble_count - 1)
+        tuning_constants = list(np.arange(start_constant, end_constant+interval, interval))
     for i in range(ensemble_count):
+        tuning_constant = tuning_constants[i]
         new_time = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
         output_file = new_time+"_results.txt"
         f1 = open(output_file, 'w')
         f1.close()
         os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
-        kwargs = {'score_freq': 50, 'end_freq': 2000, 'layer_output_freq': 200, 'decision_thresh': .75, 'output_file': output_file}
+        kwargs = {'score_freq': 50, 'end_freq': 2000, 'layer_output_freq': 1000, 'decision_thresh': .75, 'output_file': output_file, 'tuning_constant': tuning_constant}
         p = multiprocessing.Process(target=train, kwargs=kwargs)
         p.start()
         p.join()
