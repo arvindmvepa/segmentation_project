@@ -56,15 +56,45 @@ def _MaxPoolWithArgmaxGrad(op, grad, unused_argmax_grad):
                                      data_format='NHWC')
 """
 
+#assume this is square
+def tile_images(list_of_images, new_shape = (400, 400), save=True, file_name = "layer1_collage.jpeg"):
+    list_of_images.sort(key=lambda x: x[0])
+    num_images = len(list_of_images)
+    sqrt_num_images = int(num_images**(.5))
+    new_image = np.zeros(new_shape)
+    resize_height = int(new_shape[0] / sqrt_num_images)
+    resize_width = int(new_shape[1] / sqrt_num_images)
+    grid_positions = []
 
-def mask_op_and_mask_mean(correct_pred, mask, num_batches=1, width=IMAGE_WIDTH, height=IMAGE_HEIGHT):
-    correct_pred = tf.multiply(correct_pred, mask)
-    return mask_mean(tf.count_nonzero(correct_pred, dtype=tf.float32), mask, num_batches, width, height)
+    for i in range(num_images):
+        list_of_images[i] = cv2.resize(list_of_images[i][1], (resize_height, resize_width), cv2.INTER_AREA)
+
+    for i in range(sqrt_num_images):
+        for j in range(sqrt_num_images):
+            grid_positions += [np.array((i,j))]
+
+    for i in range(num_images):
+        pos, grid_positions = find_closest_pos(grid_positions)
+        x_index = resize_height*pos[0]
+        y_index = resize_width*pos[1]
+        new_image[x_index:x_index+resize_height, y_index:y_index+resize_width] = list_of_images[i]
+    if save:
+        plt.imsave(file_name, new_image)
+    return new_image
 
 
-def mask_op_and_mask_mean_diff(correct_pred, mask, num_batches=1, width=IMAGE_WIDTH, height=IMAGE_HEIGHT):
-    correct_pred = tf.multiply(correct_pred, mask)
-    return mask_mean(tf.count_nonzero(correct_pred, dtype=tf.float32), mask, num_batches, width, height)
+def find_closest_pos(positions, start_pos=(0,0)):
+    min = np.inf
+    min_index = -1
+    start_pos = np.array(start_pos)
+    for i in range(len(positions)):
+        pos = positions[i]
+        test = np.linalg.norm(start_pos - pos)
+        if test < min:
+            min = test
+            min_index = i
+    min_pos = positions.pop(min_index)
+    return min_pos, positions
 
 
 def mask_mean(masked_pred, mask, num_batches=1, width=IMAGE_WIDTH, height=IMAGE_HEIGHT):
@@ -82,7 +112,6 @@ def mask_mean_diff(masked_pred, mask, num_batches=1, width=IMAGE_WIDTH, height=I
 def find_class_balance(targets, masks):
     total_pos = 0
     total_num_pixels = 0
-    total_neg = 0
     for target, mask in zip(targets, masks):
         target = np.multiply(target, mask)
         total_pos += np.count_nonzero(target)
@@ -246,7 +275,6 @@ class Network:
         self.debug2 = tf.placeholder(tf.float32, [None, Mod_WIDTH, Mod_HEIGHT, self.IMAGE_CHANNELS], name='debug2')
 
         self.inputs = tf.placeholder(tf.float32, [None, Mod_WIDTH, Mod_HEIGHT, self.IMAGE_CHANNELS], name='inputs')
-        self.masks = tf.placeholder(tf.float32, [None, self.IMAGE_WIDTH, self.IMAGE_HEIGHT, 1], name='masks')
         self.targets = tf.placeholder(tf.float32, [None, self.IMAGE_WIDTH, self.IMAGE_HEIGHT, 1], name='targets')
         self.is_training = tf.placeholder_with_default(False, [], name='is_training')
 
@@ -278,8 +306,8 @@ class Network:
         self.layers = {}
 
         self.debug1 = self.inputs
-
         #you can remove these image preprocessing techniques
+        """
         if per_image_standardization:
             list_of_images_norm = tf.map_fn(tf.image.per_image_standardization, self.inputs)
             net = tf.stack(list_of_images_norm)
@@ -287,6 +315,10 @@ class Network:
         else:
             net = self.inputs
             self.debug2 = net
+        """
+        net = self.inputs
+        self.debug2 = net
+
 
         # ENCODER
         for i in range(len(layers)):
@@ -341,10 +373,7 @@ class Network:
                 self.layer_output18 = net
 
         net = tf.image.resize_image_with_crop_or_pad(net, IMAGE_WIDTH, IMAGE_HEIGHT)
-        net = tf.multiply(net, self.masks)
         self.segmentation_result = tf.sigmoid(net)
-
-        self.targets = tf.multiply(self.targets, self.masks)
 
         print('segmentation_result.shape: {}, targets.shape: {}'.format(self.segmentation_result.get_shape(),
                                                                         self.targets.get_shape()))
@@ -360,15 +389,9 @@ class Network:
 
         self.train_op = tf.train.AdamOptimizer().minimize(self.cost)
         with tf.name_scope('accuracy'):
-            # t_shape_list = (self.segmentation_result).get_shape().as_list()
-            # num_batches = t_shape_list[0]
-            num_batches = 1
             argmax_probs = tf.round(self.segmentation_result)  # 0x1
             correct_pred = tf.cast(tf.equal(argmax_probs, self.targets), tf.float32)
-            # correct_pred = tf.multiply(correct_pred, self.masks)
-            # FOV_num_pixels = tf.cast(tf.equal(self.masks, self.ones), tf.float32)
-            # self.accuracy = tf.divide(correct_pred, FOV_num_pixels)
-            self.accuracy = mask_op_and_mask_mean(correct_pred, self.masks, num_batches, IMAGE_WIDTH, IMAGE_HEIGHT)
+            self.accuracy =  tf.divide(correct_pred, IMAGE_HEIGHT*IMAGE_WIDTH)
             tf.summary.scalar('accuracy', self.accuracy)
 
         self.summaries = tf.summary.merge_all()
@@ -383,34 +406,31 @@ class Dataset:
 
         # train_files, validation_files, test_files = self.train_valid_test_split(os.listdir(os.path.join(folder, 'inputs')))
 
-        self.train_inputs, self.train_masks, self.train_targets = ([], [], [])
-        self.test_inputs, self.train_masks, self.test_targets = ([], [], [])
+        self.train_inputs, self.train_targets = ([], [])
+        self.test_inputs, self.test_targets = ([], [])
 
         self.pointer = 0
 
-    def file_paths_to_images(self, folder, file_indices, files_list, verbose=False):
+    def file_paths_to_images(self, folder, file_indices, file_type = "_training", manual_suffix = "_manual1.gif"):
+
         inputs = []
-        masks = []
         targets = []
 
         for file_index in file_indices:
-            orig_file = files_list[file_index]
-
-            num = int(orig_file[0:2])
-            file = str(num) + "_manual1.gif"
-            mask_file = str(num) + "_training_mask.gif"
+            string_num = str(file_index).zfill(2)
+            orig_file = string_num +file_type +".tif"
+            file = string_num + manual_suffix
 
             input_image = os.path.join(folder, 'inputs', orig_file)
             target1_image = os.path.join(folder, 'targets1', file)
             target2_image = os.path.join(folder, 'targets2', file)
 
-            mask_loc = os.path.join(folder, 'masks', mask_file)
-
             # add training image to dataset
+            print(input_image)
             test_image = cv2.imread(input_image, 1)
             test_image = test_image[:, :, 1]
             #add pre-processing methods here approximately, and comment out image standardization in tensorflow
-            #test_image = preprocessing(test_image, gamma = 2)
+            test_image = preprocessing(test_image, gamma = 2)
 
             top_pad = int((Mod_HEIGHT - IMAGE_HEIGHT) / 2)
             bot_pad = (Mod_HEIGHT - IMAGE_HEIGHT) - top_pad
@@ -423,24 +443,14 @@ class Dataset:
             print(test_image.shape)
             inputs.append(test_image)
 
-            # add mask for training image to dataset
-            mask = Image.open(mask_loc)
-            mask_array = np.array(mask)
-            mask_array = mask_array / 255
-            masks.append(mask_array)
-
             if os.path.exists(target1_image):
 
                 # load grayscale
                 # test_image = np.multiply(test_image, 1.0 / 255)
-                print(target1_image)
 
                 target1_image = np.array(skio.imread(target1_image))
                 target1_image = cv2.threshold(target1_image, 127, 1, cv2.THRESH_BINARY)[1]
                 # target1_image = cv2.resize(target1_image, (IMAGE_WIDTH,IMAGE_HEIGHT))
-
-                print(target1_image)
-
                 targets.append(target1_image)
 
             elif os.path.exists(target2_image):
@@ -454,7 +464,7 @@ class Dataset:
                 print(target2_image)
                 print("here")
 
-        return np.asarray(inputs), np.asarray(masks), np.asarray(targets)
+        return np.asarray(inputs), np.asarray(targets)
 
     def train_valid_test_split(self, X, ratio=None):
         if ratio is None:
@@ -479,7 +489,6 @@ class Dataset:
 
     def next_batch(self):
         inputs = []
-        masks = []
         targets = []
         # print(self.batch_size, self.pointer, self.train_inputs.shape, self.train_targets.shape)
         if self.sgd:
@@ -488,16 +497,14 @@ class Dataset:
         for i in range(self.batch_size):
             if self.sgd:
                 inputs.append(np.array(self.train_inputs[samples[i]]))
-                masks.append(np.array(self.train_masks[samples[i]]))
                 targets.append(np.array(self.train_targets[samples[i]]))
             else:
                 inputs.append(np.array(self.train_inputs[self.pointer + i]))
-                masks.append(np.array(self.train_masks[self.pointer + i]))
                 targets.append(np.array(self.train_targets[self.pointer + i]))
 
         self.pointer += self.batch_size
 
-        return np.array(inputs, dtype=np.uint8), np.array(masks, dtype=np.uint8), np.array(targets, dtype=np.uint8)
+        return np.array(inputs, dtype=np.uint8), np.array(targets, dtype=np.uint8)
 
     @property
     def test_set(self):
@@ -506,22 +513,26 @@ class Dataset:
 
 def draw_results(test_inputs, test_targets, test_segmentation, test_accuracy, network, batch_num):
     n_examples_to_plot = n_examples
+
     fig, axs = plt.subplots(4, n_examples_to_plot, figsize=(n_examples_to_plot * 3, 10), squeeze=False)
     fig.suptitle("Accuracy: {}, {}".format(test_accuracy, network.description), fontsize=20)
     for example_i in range(n_examples_to_plot):
         axs[0][example_i].imshow(test_inputs[example_i], cmap='gray')
+        axs[0][example_i].axis('off')
         # print(np.sum(test_targets[example_i].astype(np.float32)))
         axs[1][example_i].imshow(test_targets[example_i].astype(np.float32), cmap='gray')
+        axs[1][example_i].axis('off')
         axs[2][example_i].imshow(
             np.reshape(test_segmentation[example_i], [network.IMAGE_WIDTH, network.IMAGE_HEIGHT]),
             cmap='gray')
+        axs[2][example_i].axis('off')
 
         test_image_thresholded = np.array(
             [0 if x < 0.5 else 255 for x in test_segmentation[example_i].flatten()])
         axs[3][example_i].imshow(
             np.reshape(test_image_thresholded, [network.IMAGE_WIDTH, network.IMAGE_HEIGHT]),
             cmap='gray')
-
+        axs[3][example_i].axis('off')
     buf = io.BytesIO()
     plt.savefig(buf, format='png')
     buf.seek(0)
@@ -534,7 +545,7 @@ def draw_results(test_inputs, test_targets, test_segmentation, test_accuracy, ne
     return buf
 
 
-def train(train_indices, validation_indices, run_id):
+def train(end_freq = 2000, decision_thresh = .75, score_freq=10, layer_output_freq=200, output_file="results.txt", tuning_constant=1.0):
     BATCH_SIZE = 1
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
     plt.rcParams['image.cmap'] = 'gray'
@@ -573,42 +584,36 @@ def train(train_indices, validation_indices, run_id):
 
     folder = dataset.folder
 
-    train_inputs, train_masks, train_targets = dataset.file_paths_to_images(folder, train_indices,
-                                                                            os.listdir(os.path.join(folder, 'inputs')))
-    test_inputs, test_masks, test_targets = dataset.file_paths_to_images(folder, validation_indices,
-                                                                         os.listdir(os.path.join(folder, 'inputs')),
-                                                                         True)
+    train_inputs, train_targets = dataset.file_paths_to_images(folder, range(21, 41, 1))
+
+    test_inputs, test_targets = dataset.file_paths_to_images(folder, range(1,21,1), file_type="_test", manual_suffix = "_manual1.gif")
+
     ##DEBUG
     #pos_weight
-    neg_pos_class_ratio, _, _ = find_class_balance(train_targets, train_masks)
-    _, test_neg_class_frac, test_pos_class_frac  = find_class_balance(test_targets, test_masks)
+    neg_pos_class_ratio, _, _ = find_class_balance(train_targets)
+    _, test_neg_class_frac, test_pos_class_frac  = find_class_balance(test_targets)
     #z = 0.56
     #pos_weight = (z*neg_pos_class_ratio)/(1-z)
     #pos_weight = 1
-    tuning_constant = 1.00
+    #tuning_constant = 1.0
     pos_weight = neg_pos_class_ratio * tuning_constant
 
 
     dataset.train_inputs = train_inputs
-    dataset.train_masks = train_masks
     dataset.train_targets = train_targets
     dataset.test_inputs = test_inputs
-    dataset.test_masks = test_masks
     dataset.test_targets = test_targets
 
     print(train_inputs.shape)
     print(train_targets.shape)
-    print(train_masks.shape)
     print(test_inputs.shape)
     print(test_targets.shape)
-    print(test_masks.shape)
     # test_inputs, test_targets = test_inputs[:100], test_targets[:100]
     # test_inputs = np.reshape(test_inputs, (len(test_inputs), Mod_HEIGHT, Mod_WIDTH, 1))
     test_inputs = np.reshape(test_inputs, (len(test_inputs), Mod_WIDTH, Mod_HEIGHT, 1))
     test_inputs = np.multiply(test_inputs, 1.0 / 255)
 
     test_targets = np.reshape(test_targets, (len(test_targets), IMAGE_WIDTH, IMAGE_HEIGHT, 1))
-    test_masks = np.reshape(test_masks, (len(test_masks), IMAGE_WIDTH, IMAGE_HEIGHT, 1))
 
     # test_inputs = np.pad(test_inputs, ((8,8),(18,17)), 'constant', constant_values=0)
     # test_inputs=tf.image.resize_image_with_crop_or_pad(test_inputs,INPUT_IMAGE_HEIGHT,INPUT_IMAGE_WIDTH)
@@ -638,8 +643,6 @@ def train(train_indices, validation_indices, run_id):
     os.makedirs(layer_debug2_output_path_train)
     layer1_output_path_train = os.path.join(layer_output_path_train, "1")
     os.makedirs(layer1_output_path_train)
-    layer_mask1_output_path_train = os.path.join(layer_output_path_train, "mask1")
-    os.makedirs(layer_mask1_output_path_train)
     layer2_output_path_train = os.path.join(layer_output_path_train, "2")
     os.makedirs(layer2_output_path_train)
     layer3_output_path_train = os.path.join(layer_output_path_train, "3")
@@ -672,15 +675,11 @@ def train(train_indices, validation_indices, run_id):
     os.makedirs(layer16_output_path_train)
     layer17_output_path_train = os.path.join(layer_output_path_train, "17")
     os.makedirs(layer17_output_path_train)
-    layer_mask2_output_path_train = os.path.join(layer_output_path_train, "mask2")
-    os.makedirs(layer_mask2_output_path_train)
     layer18_output_path_train = os.path.join(layer_output_path_train, "18")
     os.makedirs(layer18_output_path_train)
 
     layer1_output_path_test = os.path.join(layer_output_path_test, "1")
     os.makedirs(layer1_output_path_test)
-    layer_mask1_output_path_test = os.path.join(layer_output_path_test, "mask1")
-    os.makedirs(layer_mask1_output_path_test)
     layer2_output_path_test = os.path.join(layer_output_path_test, "2")
     os.makedirs(layer2_output_path_test)
     layer3_output_path_test = os.path.join(layer_output_path_test, "3")
@@ -713,8 +712,6 @@ def train(train_indices, validation_indices, run_id):
     os.makedirs(layer16_output_path_test)
     layer17_output_path_test = os.path.join(layer_output_path_test, "17")
     os.makedirs(layer17_output_path_test)
-    layer_mask2_output_path_test = os.path.join(layer_output_path_test, "mask2")
-    os.makedirs(layer_mask2_output_path_test)
     layer18_output_path_test = os.path.join(layer_output_path_test, "18")
     os.makedirs(layer18_output_path_test)
 
@@ -744,9 +741,10 @@ def train(train_indices, validation_indices, run_id):
             global_start = time.time()
             batch_num = 0
 
-            layer_output_freq = 200
-            score_freq = 200
-            end_freq = 2000
+            #layer_output_freq = 200
+            #score_freq = 1
+            #end_freq = 2000
+            #decision_thresh = .75
             for epoch_i in range(n_epochs):
                 if batch_num > end_freq:
                     epoch_i = 0
@@ -760,14 +758,13 @@ def train(train_indices, validation_indices, run_id):
 
                     augmentation_seq_deterministic = augmentation_seq.to_deterministic()
                     start = time.time()
-                    batch_inputs, batch_masks, batch_targets = dataset.next_batch()
+                    batch_inputs, batch_targets = dataset.next_batch()
 
                     print(batch_inputs.shape)
                     plt.imsave(os.path.join(layer_output_path_train, "test1.jpeg"), batch_inputs[0])
                     plt.imsave(os.path.join(layer_output_path_train, "test1_target.jpeg"), batch_targets[0])
 
                     batch_inputs = np.reshape(batch_inputs, (dataset.batch_size, Mod_WIDTH, Mod_HEIGHT, 1))
-                    batch_masks = np.reshape(batch_masks, (dataset.batch_size, network.IMAGE_WIDTH, network.IMAGE_HEIGHT, 1))
                     batch_targets = np.reshape(batch_targets, (dataset.batch_size, network.IMAGE_WIDTH, network.IMAGE_HEIGHT, 1))
 
                     batch_inputs = augmentation_seq_deterministic.augment_images(batch_inputs)
@@ -787,7 +784,7 @@ def train(train_indices, validation_indices, run_id):
                                                                        network.layer_output12, network.layer_output13, network.layer_output14,
                                                                        network.layer_output15, network.layer_output16, network.layer_output17,
                                                                        network.layer_output18, network.debug1, network.debug2, network.train_op],
-                                       feed_dict={network.inputs: batch_inputs, network.masks: batch_masks, network.targets: batch_targets, network.is_training: True})
+                                       feed_dict={network.inputs: batch_inputs, network.targets: batch_targets, network.is_training: True})
                     layer_outputs = [layer_output1, layer_output2, layer_output3, layer_output4, layer_output5, layer_output6,
                                      layer_output7, layer_output8, layer_output9, layer_output10, layer_output11, layer_output12,
                                      layer_output13, layer_output14, layer_output15, layer_output16, layer_output17, layer_output18]
@@ -807,6 +804,8 @@ def train(train_indices, validation_indices, run_id):
                     plt.imsave(os.path.join(layer_debug2_output_path_train, "debug2.jpeg"), debug2)
 
                     mask_threshold = .5
+                    channel_list = []
+
                     if batch_num % score_freq == 0 or batch_num == n_epochs * dataset.num_batches_in_epoch():
                         if batch_num % layer_output_freq == 0:
                             for j in range(len(layer_outputs)):
@@ -822,16 +821,17 @@ def train(train_indices, validation_indices, run_id):
                                         channel_output[np.where(channel_output > mask_threshold)] = 1
                                         channel_output[np.where(channel_output <= mask_threshold)] = 0
                                         plt.imsave(os.path.join(os.path.join(layer_output_path_train, "mask2"), "channel_" + str(k) + ".jpeg"), channel_output)
+
                         test_accuracy = 0.0
+                        max_thresh_accuracy = 0.0
 
-
-                        mask_array = np.zeros((len(test_inputs), IMAGE_WIDTH, IMAGE_HEIGHT))
                         target_array = np.zeros((len(test_inputs), IMAGE_WIDTH, IMAGE_HEIGHT))
                         prediction_array = np.zeros((len(test_inputs), IMAGE_WIDTH, IMAGE_HEIGHT))
 
                         sample_test_image = randint(0, len(test_inputs)-1)
                         for i in range(len(test_inputs)):
-                            if i == sample_test_image:
+                            thresh_max = 0.0
+                            if i == sample_test_image and batch_num % layer_output_freq == 0:
                                 inputs, masks, results, targets, acc, layer_output1, layer_output2, layer_output3, layer_output4, layer_output5, layer_output6, layer_output7, \
                                 layer_output8, layer_output9, layer_output10, layer_output11, layer_output12, layer_output13, layer_output14, layer_output15, layer_output16, \
                                 layer_output17, layer_output18 = sess.run(
@@ -846,23 +846,62 @@ def train(train_indices, validation_indices, run_id):
                                 layer_outputs = [layer_output1, layer_output2, layer_output3, layer_output4, layer_output5, layer_output6,
                                                  layer_output7, layer_output8, layer_output9, layer_output10, layer_output11, layer_output12,
                                                  layer_output13, layer_output14, layer_output15, layer_output16, layer_output17, layer_output18]
-                                if batch_num % layer_output_freq == 0:
-                                    for j in range(len(layer_outputs)):
-                                        layer_output = layer_outputs[j]
-                                        for k in range(layer_output.shape[3]):
-                                            channel_output = layer_output[0, :, :, k]
-                                            plt.imsave(os.path.join(os.path.join(layer_output_path_test, str(j + 1)),
-                                                                  "channel_" + str(k) + ".jpeg"), channel_output)
-                                            if j == 0:
-                                                channel_output[np.where(channel_output > mask_threshold)] = 1
-                                                channel_output[np.where(channel_output <= mask_threshold)] = 0
-                                                plt.imsave(os.path.join(os.path.join(layer_output_path_test, "mask1"),
-                                                                        "channel_" + str(k) + ".jpeg"), channel_output)
-                                            if j == 16:
-                                                channel_output[np.where(channel_output > mask_threshold)] = 1
-                                                channel_output[np.where(channel_output <= mask_threshold)] = 0
-                                                plt.imsave(os.path.join(os.path.join(layer_output_path_test, "mask2"),
-                                                                        "channel_" + str(k) + ".jpeg"),channel_output)
+
+                                top_pad = int((Mod_HEIGHT - IMAGE_HEIGHT) / 2)
+                                bot_pad = (Mod_HEIGHT - IMAGE_HEIGHT) - top_pad
+                                left_pad = int((Mod_WIDTH - IMAGE_WIDTH) / 2)
+                                right_pad = (Mod_WIDTH - IMAGE_WIDTH) - left_pad
+
+                                target = test_targets[i:(i + 1)]
+                                target = np.reshape(target, (IMAGE_HEIGHT, IMAGE_WIDTH))
+                                invert_target = np.invert(target)
+
+                                mask = test_masks[i:(i + 1)]
+                                mask = np.reshape(mask, (IMAGE_HEIGHT, IMAGE_WIDTH))
+                                target = np.multiply(target, mask)
+                                invert_target = np.multiply(invert_target, mask)
+
+                                #input =  test_inputs[i:(i + 1)]
+                                #input = np.reshape(input, (Mod_HEIGHT, Mod_WIDTH))
+                                #input = input[top_pad:Mod_HEIGHT-bot_pad,left_pad:Mod_WIDTH-right_pad]
+
+
+
+                                channel_list = []
+                                total_pos = 0
+                                total_neg = 0
+
+                                for j in range(len(layer_outputs)):
+                                    layer_output = layer_outputs[j]
+                                    for k in range(layer_output.shape[3]):
+                                        channel_output = layer_output[0, :, :, k]
+                                        plt.imsave(os.path.join(os.path.join(layer_output_path_test, str(j + 1)),
+                                                              "channel_" + str(k) + ".jpeg"), channel_output)
+                                        if j == 0:
+                                            input = np.reshape(channel_output, (Mod_HEIGHT, Mod_WIDTH))
+                                            input_crop = input[top_pad:Mod_HEIGHT - bot_pad, left_pad:Mod_WIDTH - right_pad]
+                                            invert_input_crop = 1-input_crop
+
+                                            results_ = np.multiply(input_crop, target)
+                                            results_invert = np.multiply(invert_input_crop, invert_target)
+
+                                            sum = np.sum(results_)
+                                            sum_neg = np.sum(results_invert)
+
+                                            total_pos += sum
+                                            total_neg += sum_neg
+
+                                            channel_list.append((sum, input_crop))
+
+                                            channel_output[np.where(channel_output > mask_threshold)] = 1
+                                            channel_output[np.where(channel_output <= mask_threshold)] = 0
+                                            plt.imsave(os.path.join(os.path.join(layer_output_path_test, "mask1"),
+                                                                    "channel_" + str(k) + ".jpeg"), channel_output)
+                                        if j == 16:
+                                            channel_output[np.where(channel_output > mask_threshold)] = 1
+                                            channel_output[np.where(channel_output <= mask_threshold)] = 0
+                                            plt.imsave(os.path.join(os.path.join(layer_output_path_test, "mask2"),
+                                                                    "channel_" + str(k) + ".jpeg"),channel_output)
 
                             else:
                                 inputs, masks, results, targets, acc = sess.run([network.inputs, network.masks, network.segmentation_result, network.targets, network.accuracy],
@@ -871,11 +910,33 @@ def train(train_indices, validation_indices, run_id):
                             masks = masks[0, :, :, 0]
                             results = results[0, :, :, 0]
                             targets = targets[0, :, :, 0]
+
                             mask_array[i] = masks
                             target_array[i] = targets
                             prediction_array[i] = results
                             test_accuracy += acc
 
+                            fprs, tprs, thresholds = roc_curve(targets.flatten(), results.flatten(), sample_weight=masks.flatten())
+                            list_fprs_tprs_thresholds = list(zip(fprs, tprs, thresholds))
+                            interval = 0.0001
+
+                            for i in np.arange(0.0, 1.0 + interval, interval):
+                                index = int(round((len(thresholds) - 1) * i, 0))
+                                fpr, tpr, threshold = list_fprs_tprs_thresholds[index]
+                                thresh_acc = (1 - fpr) * test_neg_class_frac + tpr * test_pos_class_frac
+                                if thresh_acc > thresh_max:
+                                    thresh_max = thresh_acc
+                                i += 1
+
+                            max_thresh_accuracy += thresh_max
+
+                        #print("print positive correlation sums")
+                        #for it in channel_list:
+                        #    print(it[0])
+                        """
+                        """
+
+                        max_thresh_accuracy = max_thresh_accuracy / len(test_inputs)
                         test_accuracy = test_accuracy / len(test_inputs)
 
                         #mask_tensor = tf.convert_to_tensor(mask_array, dtype=tf.float32)
@@ -889,8 +950,25 @@ def train(train_indices, validation_indices, run_id):
                         mask_flat = mask_array.flatten()
                         prediction_flat = prediction_array.flatten()
                         target_flat = target_array.flatten()
-                        auc = roc_auc_score(target_flat, prediction_flat, sample_weight=mask_flat)
 
+                        ## save mask and target (if files don't exist)
+                        cwd = os.getcwd()
+                        if not os.path.exists(os.path.join(cwd, "mask.npy")):
+                            np.save("mask", mask_flat)
+                        if not os.path.exists(os.path.join(cwd, "target.npy")):
+                            np.save("target", target_flat)
+
+                        ### save prediction array for ensemble
+                        file_name = timestamp + "_" + str(batch_num)
+                        np.save(file_name, prediction_flat)
+
+
+                        #print(target_flat)
+                        #print(np.mean(target_flat))
+                        #print(np.max(target_flat))
+                        #print(np.min(target_flat))
+
+                        auc = roc_auc_score(target_flat, prediction_flat, sample_weight=mask_flat)
                         fprs, tprs, thresholds = roc_curve(target_flat, prediction_flat, sample_weight=mask_flat)
                         np_fprs, np_tprs, np_thresholds = np.array(fprs).flatten(), np.array(tprs).flatten(), np.array(thresholds).flatten()
                         fpr_10 = np_fprs[np.where(np_fprs < .10)]
@@ -904,26 +982,14 @@ def train(train_indices, validation_indices, run_id):
 
                         #upper_thresholds = np_thresholds[0:len(fpr_10)]
                         thresh_acc_strings = ""
-                        thresh_max = 0.0
-                        thresh_max_items = ""
                         list_fprs_tprs_thresholds = list(zip(fprs, tprs, thresholds))
 
                         auc_10_fpr = auc_(fpr_10, tpr_10)
                         auc_05_fpr = auc_(fpr_05, tpr_05)
                         auc_025_fpr = auc_(fpr_025, tpr_025)
-                        #sampled_fprs_tprs_thresholds = random.sample(list_fprs_tprs_thresholds, 100000)
-                        i = 0
-                        #interval = 0.000001
-                        interval = 0.00001
-                        #interval = 0.001
-                        for i in np.arange(0.0, 1.0 + interval, interval):
-                            index = int(round((len(thresholds)-1) * i, 0))
-                            fpr, tpr, threshold = list_fprs_tprs_thresholds[index]
-                            thresh_acc = (1-fpr)*test_neg_class_frac+tpr*test_pos_class_frac
-                            if thresh_acc > thresh_max:
-                                thresh_max_items = "max thresh acc thresh: {}, max thresh acc: {}, max thresh acc tpr: {}, max thresh acc spec: {}, ".format(threshold, thresh_acc, tpr, 1-fpr)
-                                thresh_max = thresh_acc
-                            i += 1
+
+                        thresh_max_items = "max thresh acc : {}, ".format(max_thresh_accuracy)
+
                         interval = 0.05
                         for i in np.arange(0, 1.0 + interval, interval):
                             index = int(round((len(thresholds) - 1) * i, 0))
@@ -932,21 +998,33 @@ def train(train_indices, validation_indices, run_id):
                             thresh_acc_strings += "thresh: {}, thresh acc: {}, tpr: {}, spec: {}, ".format(threshold, thresh_acc, tpr, 1-fpr)
 
                         thresh_acc_strings = thresh_max_items +thresh_acc_strings
+                        result_flat = ((prediction_flat > decision_thresh) * prediction_flat).astype(int)
+
                         prediction_flat = np.round(prediction_flat)
                         target_flat = np.round(target_flat)
+
+
                         (precision, recall, fbeta_score, _) = precision_recall_fscore_support(target_flat,
                                                                                               prediction_flat,
                                                                                               average='binary',
                                                                                               sample_weight=mask_flat)
+
                         kappa = cohen_kappa_score(target_flat, prediction_flat, sample_weight=mask_flat)
                         tn, fp, fn, tp = confusion_matrix(target_flat, prediction_flat, sample_weight=mask_flat).ravel()
+
                         specificity = tn / (tn + fp)
                         #sess.run(tf.local_variables_initializer())
+                        r_tn, r_fp, r_fn, r_tp = confusion_matrix(target_flat, result_flat, sample_weight=mask_flat).ravel()
+
+                        r_acc = (r_tp+r_tn)/(r_tp+r_tn+r_fp+r_fn)
+                        r_recall = r_tp / (r_tp + r_fn)
+                        r_precision = r_tp / (r_tp + r_fp)
+                        r_specificity = r_tn / (r_tn + r_fp)
 
                         # test_accuracy1 = test_accuracy1/len(test_inputs)
                         print(
-                        'Step {}, test accuracy: {}, cost: {}, cost_unweighted: {} recall {}, specificity {}, precision {}, fbeta_score {}, auc {}, auc_10_fpr {}, auc_05_fpr {}, auc_025_fpr {}, kappa {}, class balance {}'.format(
-                            batch_num, test_accuracy, cost, cost_unweighted,recall, specificity, precision, fbeta_score, auc, auc_10_fpr, auc_05_fpr, auc_025_fpr, kappa, neg_pos_class_ratio))
+                        'Step {}, test accuracy: {}, test accuracy: {}, thresh accuracy: {}, thresh recall: {}, thresh precision: {}, thresh specificity: {}, cost_unweighted: {} recall {}, specificity {}, precision {}, fbeta_score {}, auc {}, auc_10_fpr {}, auc_05_fpr {}, auc_025_fpr {}, kappa {}, class balance {}'.format(
+                            batch_num, test_accuracy, r_acc, r_recall, r_precision, r_specificity, cost, cost_unweighted,recall, specificity, precision, fbeta_score, auc, auc_10_fpr, auc_05_fpr, auc_025_fpr, kappa, neg_pos_class_ratio))
                         # print('Step {}, test accuracy1: {}'.format(batch_num, test_accuracy1))
 
                         # n_examples = 5
@@ -978,14 +1056,14 @@ def train(train_indices, validation_indices, run_id):
                         image_summary_op = tf.summary.image("plot", image)
                         image_summary = sess.run(image_summary_op)
                         summary_writer.add_summary(image_summary)
-                        f1 = open('out1.txt', 'a')
+                        f1 = open(output_file, 'a')
 
                         test_accuracies.append((test_accuracy, batch_num))
                         test_auc.append((auc, batch_num))
                         test_auc_10_fpr.append((auc_10_fpr, batch_num))
                         test_auc_05_fpr.append((auc_05_fpr, batch_num))
                         test_auc_025_fpr.append((auc_025_fpr, batch_num))
-                        max_thresh_accuracies.append((thresh_max, batch_num))
+                        max_thresh_accuracies.append((max_thresh_accuracy, batch_num))
                         print("Accuracies in time: ", [test_accuracies[x][0] for x in range(len(test_accuracies))])
                         print(test_accuracies)
                         max_acc = max(test_accuracies)
@@ -994,38 +1072,42 @@ def train(train_indices, validation_indices, run_id):
                         max_auc_05_fpr = max(test_auc_05_fpr)
                         max_auc_025_fpr = max(test_auc_025_fpr)
                         max_thresh_accuracy = max(max_thresh_accuracies)
+                        if batch_num % layer_output_freq == 0:
+                            print("layer 1 pos-neg distribution")
+                            print("total positive sum: "+str(total_pos))
+                            print("total negative sum: "+str(total_neg))
+                            print("percentage positive: " + str(float(total_pos)/float(total_neg+total_pos)))
+                            print("percentage negative: " + str(float(total_neg)/float(total_neg+total_pos)))
+                            if len(channel_list) > 0:
+                                tile_images(channel_list)
                         print("Best accuracy: {} in batch {}".format(max_acc[0], max_acc[1]))
                         print("Total time: {}".format(time.time() - global_start))
                         f1.write(
-                            'Step {}, test accuracy: {}, cost: {}, cost_unweighted: {}, recall {}, specificity {}, auc {}, auc_10_fpr {}, auc_05_fpr {}, auc_025_fpr {}, precision {}, fbeta_score {}, kappa {}, class balance {}, '
+                            'Step {}, test accuracy: {}, thresh accuracy: {}, thresh recall: {}, thresh precision: {}, thresh specificity: {}, cost: {}, cost_unweighted: {}, recall {}, specificity {}, auc {}, auc_10_fpr {}, auc_05_fpr {}, auc_025_fpr {}, precision {}, fbeta_score {}, kappa {}, class balance {}, '
                             'max acc {} {}, max auc {} {}, max auc 10 fpr {} {}, max auc 5 fpr {} {}, max auc 2.5 fpr {} {}, sample test image {} \n'.format(
-                                batch_num, test_accuracy, cost, cost_unweighted, recall, specificity, auc, auc_10_fpr, auc_05_fpr, auc_025_fpr, precision, fbeta_score, kappa, neg_pos_class_ratio,
+                                batch_num, test_accuracy, r_acc, r_recall, r_precision, r_specificity, cost, cost_unweighted, recall, specificity, auc, auc_10_fpr, auc_05_fpr, auc_025_fpr, precision, fbeta_score, kappa, neg_pos_class_ratio,
                                 max_acc[0],max_acc[1], max_auc[0], max_auc[1], max_auc_10_fpr[0], max_auc_10_fpr[1], max_auc_05_fpr[0], max_auc_05_fpr[0], max_auc_025_fpr[0], max_auc_025_fpr[1], sample_test_image))
                         f1.write(('Step {}, '+"overall max thresh accuracy {} {}, ".format(max_thresh_accuracy[0], max_thresh_accuracy[1])+thresh_acc_strings+'\n').format(batch_num))
                         f1.close()
 
 n_examples = 1
-n_splits = 20
-
 if __name__ == '__main__':
-    x = random.randint(1, 100)
-    k_fold = KFold(n_splits=n_splits, shuffle=True, random_state=x)
-
-    f1 = open('out1.txt', 'w')
-    f2 = open('out2.txt', 'w')
-
-    f1.close()
-    f2.close()
-    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
-    count = 0
-    for train_indices, validation_indices in k_fold.split(os.listdir(os.path.join('drive', 'inputs'))):
-        f1 = open('out1.txt', 'a')
-        f2 = open('out2.txt', 'a')
-        f1.write('Train Indices {} Validation Indices {} \n'.format(train_indices, validation_indices))
-        f2.write('Train Indices {} Validation Indices {} \n'.format(train_indices, validation_indices))
+    ensemble_count = 10
+    start_constant = .25
+    if ensemble_count == 1:
+        tuning_constants = [start_constant]
+    else:
+        end_constant = 2.0
+        interval = (end_constant - start_constant) / float(ensemble_count - 1)
+        tuning_constants = list(np.arange(start_constant, end_constant+interval, interval))
+    for i in range(ensemble_count):
+        tuning_constant = tuning_constants[i]
+        new_time = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
+        output_file = new_time+"_results.txt"
+        f1 = open(output_file, 'w')
         f1.close()
-        f2.close()
-        p = multiprocessing.Process(target=train, args=(train_indices, validation_indices, count))
+        os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
+        kwargs = {'score_freq': 50, 'end_freq': 2000, 'layer_output_freq': 1000, 'decision_thresh': .75, 'output_file': output_file, 'tuning_constant': tuning_constant}
+        p = multiprocessing.Process(target=train, kwargs=kwargs)
         p.start()
         p.join()
-        count += 1
