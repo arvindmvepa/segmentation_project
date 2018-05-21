@@ -893,10 +893,12 @@ n_examples = 1
 if __name__ == '__main__':
     ensemble_count = 10
     start_constant = 1
+    end_constant = 1
     if ensemble_count == 1:
         tuning_constants = [start_constant]
+    elif (end_constant - start_constant) == 0:
+        tuning_constants = [start_constant]*ensemble_count
     else:
-        end_constant = 1
         interval = (end_constant - start_constant) / float(ensemble_count - 1)
         tuning_constants = list(np.arange(start_constant, end_constant+interval, interval))
     for i in range(ensemble_count):
