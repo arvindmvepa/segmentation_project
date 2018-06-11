@@ -57,7 +57,7 @@ def _MaxPoolWithArgmaxGrad(op, grad, unused_argmax_grad):
 """
 
 #assume this is square
-def tile_images(list_of_images, new_shape = (400, 400), save=True, file_name = "layer1_collage.jpeg"):
+def tile_images(list_of_images, new_shape = (4000, 4000), save=True, file_name = "layer1_collage.jpeg"):
     list_of_images.sort(key=lambda x: x[0])
     num_images = len(list_of_images)
     sqrt_num_images = int(num_images**(.5))
@@ -578,7 +578,7 @@ def draw_results(test_inputs, test_targets, test_segmentation, test_accuracy, ne
     return buf
 
 
-def train(end_freq = 2000, decision_thresh = .75, score_freq=10, layer_output_freq=200, output_file="results.txt", tuning_constant=1.0):
+def train(end_freq = 2000, decision_thresh = .75, score_freq=10, layer_output_freq=200, output_file="results.txt", cost_log="cost_log.txt", tuning_constant=1.0):
     BATCH_SIZE = 1
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
     plt.rcParams['image.cmap'] = 'gray'
@@ -872,6 +872,9 @@ def train(end_freq = 2000, decision_thresh = .75, score_freq=10, layer_output_fr
                         test_accuracy = 0.0
                         max_thresh_accuracy = 0.0
 
+                        test_cost = 0.0
+                        test_cost_unweighted = 0.0
+
                         mask_array = np.zeros((len(test_inputs), IMAGE_WIDTH, IMAGE_HEIGHT))
                         target_array = np.zeros((len(test_inputs), IMAGE_WIDTH, IMAGE_HEIGHT))
                         prediction_array = np.zeros((len(test_inputs), IMAGE_WIDTH, IMAGE_HEIGHT))
@@ -880,10 +883,10 @@ def train(end_freq = 2000, decision_thresh = .75, score_freq=10, layer_output_fr
                         for i in range(len(test_inputs)):
                             thresh_max = 0.0
                             if i == sample_test_image and batch_num % layer_output_freq == 0:
-                                inputs, masks, results, targets, acc, layer_output1, layer_output2, layer_output3, layer_output4, layer_output5, layer_output6, layer_output7, \
+                                test_cost_, test_cost_unweighted_, inputs, masks, results, targets, acc, layer_output1, layer_output2, layer_output3, layer_output4, layer_output5, layer_output6, layer_output7, \
                                 layer_output8, layer_output9, layer_output10, layer_output11, layer_output12, layer_output13, layer_output14, layer_output15, layer_output16, \
                                 layer_output17, layer_output18 = sess.run(
-                                    [network.inputs, network.masks, network.segmentation_result, network.targets, network.accuracy, network.layer_output1, network.layer_output2,
+                                    [network.cost, network.cost_unweighted, network.inputs, network.masks, network.segmentation_result, network.targets, network.accuracy, network.layer_output1, network.layer_output2,
                                      network.layer_output3, network.layer_output4, network.layer_output5,
                                      network.layer_output6, network.layer_output7, network.layer_output8,
                                      network.layer_output9, network.layer_output10, network.layer_output11,
@@ -952,7 +955,7 @@ def train(end_freq = 2000, decision_thresh = .75, score_freq=10, layer_output_fr
                                                                     "channel_" + str(k) + ".jpeg"),channel_output)
 
                             else:
-                                inputs, masks, results, targets, acc = sess.run([network.inputs, network.masks, network.segmentation_result, network.targets, network.accuracy],
+                                test_cost_, test_cost_unweighted_, inputs, masks, results, targets, acc = sess.run([network.cost, network.cost_unweighted, network.inputs, network.masks, network.segmentation_result, network.targets, network.accuracy],
                                                                                 feed_dict={network.inputs: test_inputs[i:(i + 1)], network.masks: test_masks[i:(i + 1)],
                                                                                            network.targets: test_targets[i:(i + 1)], network.is_training: False})
                             masks = masks[0, :, :, 0]
@@ -962,7 +965,10 @@ def train(end_freq = 2000, decision_thresh = .75, score_freq=10, layer_output_fr
                             mask_array[i] = masks
                             target_array[i] = targets
                             prediction_array[i] = results
+
                             test_accuracy += acc
+                            test_cost += test_cost_
+                            test_cost_unweighted += test_cost_unweighted_
 
                             fprs, tprs, thresholds = roc_curve(targets.flatten(), results.flatten(), sample_weight=masks.flatten())
                             list_fprs_tprs_thresholds = list(zip(fprs, tprs, thresholds))
@@ -986,6 +992,8 @@ def train(end_freq = 2000, decision_thresh = .75, score_freq=10, layer_output_fr
 
                         max_thresh_accuracy = max_thresh_accuracy / len(test_inputs)
                         test_accuracy = test_accuracy / len(test_inputs)
+                        test_cost = test_cost / len(test_inputs)
+                        test_cost_unweighted = test_cost_unweighted / len(test_inputs)
 
                         #mask_tensor = tf.convert_to_tensor(mask_array, dtype=tf.float32)
                         #prediction_tensor = tf.convert_to_tensor(prediction_array, dtype=tf.float32)
@@ -1137,25 +1145,33 @@ def train(end_freq = 2000, decision_thresh = .75, score_freq=10, layer_output_fr
                                 max_acc[0],max_acc[1], max_auc[0], max_auc[1], max_auc_10_fpr[0], max_auc_10_fpr[1], max_auc_05_fpr[0], max_auc_05_fpr[0], max_auc_025_fpr[0], max_auc_025_fpr[1], sample_test_image))
                         f1.write(('Step {}, '+"overall max thresh accuracy {} {}, ".format(max_thresh_accuracy[0], max_thresh_accuracy[1])+thresh_acc_strings+'\n').format(batch_num))
                         f1.close()
+                        f1 = open(cost_log, 'a')
+                        f1.write('Step {}, training cost {}, training cost unweighted {}, test cost {}, test cost unweighted {}\n'.format(batch_num, cost, cost_unweighted, test_cost, test_cost_unweighted))
+                        f1.close()
 
 n_examples = 1
 if __name__ == '__main__':
-    ensemble_count = 10
-    start_constant = .25
+    ensemble_count = 5
+    start_constant = .5
     if ensemble_count == 1:
         tuning_constants = [start_constant]
     else:
-        end_constant = 2.0
+        end_constant = 1.5
         interval = (end_constant - start_constant) / float(ensemble_count - 1)
         tuning_constants = list(np.arange(start_constant, end_constant+interval, interval))
     for i in range(ensemble_count):
         tuning_constant = tuning_constants[i]
         new_time = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
+
         output_file = new_time+"_results.txt"
+        cost_log = new_time+"_cost_log.txt"
+
         f1 = open(output_file, 'w')
         f1.close()
+        f1 = open(cost_log, 'w')
+        f1.close()
         os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
-        kwargs = {'score_freq': 50, 'end_freq': 2000, 'layer_output_freq': 1000, 'decision_thresh': .75, 'output_file': output_file, 'tuning_constant': tuning_constant}
+        kwargs = {'score_freq': 10, 'end_freq': 2000, 'layer_output_freq': 1000, 'decision_thresh': .75, 'output_file': output_file, 'cost_log': cost_log, 'tuning_constant': tuning_constant}
         p = multiprocessing.Process(target=train, kwargs=kwargs)
         p.start()
         p.join()
