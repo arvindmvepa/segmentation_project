@@ -40,7 +40,7 @@ for result_file in net_results_files:
     roc_auc = roc_auc_score(target_flat, prediction_flat, sample_weight=mask_flat)
 
     plt.plot(fpr, tpr, lw=1, alpha=0.3,
-             label='Curve %s (AUC = %0.2f)' % (result_file, roc_auc))
+             label='Curve %s (AUC = %0.5f)' % (result_file, roc_auc))
 
 plt.plot([0, 1], [0, 1], linestyle='--', lw=2, color='r',
          label='Luck', alpha=.8)
