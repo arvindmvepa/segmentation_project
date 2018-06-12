@@ -578,7 +578,7 @@ def draw_results(test_inputs, test_targets, test_segmentation, test_accuracy, ne
     return buf
 
 
-def train(end_freq = 2000, decision_thresh = .75, score_freq=10, layer_output_freq=200, output_file="results.txt", cost_log="cost_log.txt", tuning_constant=1.0):
+def train(end_freq = 2000, decision_thresh = .75, score_freq=10, layer_output_freq=200, output_file="results.txt", cost_log="cost_log.txt", tuning_constant=1.0, time="None"):
     BATCH_SIZE = 1
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
     plt.rcParams['image.cmap'] = 'gray'
@@ -1135,7 +1135,7 @@ def train(end_freq = 2000, decision_thresh = .75, score_freq=10, layer_output_fr
                             print("percentage positive: " + str(float(total_pos)/float(total_neg+total_pos)))
                             print("percentage negative: " + str(float(total_neg)/float(total_neg+total_pos)))
                             if len(channel_list) > 0:
-                                tile_images(channel_list)
+                                tile_images(channel_list, file_name=time+"_layer1_collage.jpeg")
                         print("Best accuracy: {} in batch {}".format(max_acc[0], max_acc[1]))
                         print("Total time: {}".format(time.time() - global_start))
                         f1.write(
@@ -1149,7 +1149,7 @@ def train(end_freq = 2000, decision_thresh = .75, score_freq=10, layer_output_fr
                         f1.write('Step {}, training cost {}, training cost unweighted {}, test cost {}, test cost unweighted {}\n'.format(batch_num, cost, cost_unweighted, test_cost, test_cost_unweighted))
                         f1.close()
 
-n_examples = 1
+n_examples = 4
 if __name__ == '__main__':
     ensemble_count = 5
     start_constant = .5
@@ -1171,7 +1171,7 @@ if __name__ == '__main__':
         f1 = open(cost_log, 'w')
         f1.close()
         os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
-        kwargs = {'score_freq': 10, 'end_freq': 2000, 'layer_output_freq': 1000, 'decision_thresh': .75, 'output_file': output_file, 'cost_log': cost_log, 'tuning_constant': tuning_constant}
+        kwargs = {'score_freq': 200, 'end_freq': 2000, 'layer_output_freq': 1000, 'decision_thresh': .75, 'output_file': output_file, 'cost_log': cost_log, 'tuning_constant': tuning_constant, 'time': new_time}
         p = multiprocessing.Process(target=train, kwargs=kwargs)
         p.start()
         p.join()
