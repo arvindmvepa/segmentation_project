@@ -908,8 +908,8 @@ if __name__ == '__main__':
 
         f1 = open(output_file, 'w')
         f1.close()
-        f1 = open(cost_log, 'w')
-        f1.close()
+        #f1 = open(cost_log, 'w')
+        #f1.close()
         os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
         kwargs = {'score_freq': 200, 'end_freq': 2000, 'layer_output_freq': 1000, 'decision_thresh': .75, 'output_file': output_file, 'tuning_constant': tuning_constant, 'cur_time': cur_time}
         p = multiprocessing.Process(target=train, kwargs=kwargs)
