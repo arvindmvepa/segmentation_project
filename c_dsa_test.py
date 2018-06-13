@@ -403,7 +403,7 @@ def draw_results(test_inputs, test_targets, test_segmentation, test_accuracy, ne
     return buf
 
 
-def train(end_freq = 2000, decision_thresh = .75, score_freq=10, layer_output_freq=200, output_file="results.txt", tuning_constant=1.0, time="None"):
+def train(end_freq = 2000, decision_thresh = .75, score_freq=10, layer_output_freq=200, output_file="results.txt", tuning_constant=1.0, cur_time="None"):
     BATCH_SIZE = 1
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
     plt.rcParams['image.cmap'] = 'gray'
@@ -878,7 +878,7 @@ def train(end_freq = 2000, decision_thresh = .75, score_freq=10, layer_output_fr
                             print("percentage positive: " + str(float(total_pos)/float(total_neg+total_pos)))
                             print("percentage negative: " + str(float(total_neg)/float(total_neg+total_pos)))
                             if len(channel_list) > 0:
-                                tile_images(channel_list, file_name=time+"_layer1_collage.jpeg")
+                                tile_images(channel_list, file_name= cur_time + "_layer1_collage.jpeg")
                         print("Best accuracy: {} in batch {}".format(max_acc[0], max_acc[1]))
                         print("Total time: {}".format(time.time() - global_start))
                         f1.write(
@@ -889,10 +889,10 @@ def train(end_freq = 2000, decision_thresh = .75, score_freq=10, layer_output_fr
                         f1.write(('Step {}, '+"overall max thresh accuracy {} {}, ".format(max_thresh_accuracy[0], max_thresh_accuracy[1])+thresh_acc_strings+'\n').format(batch_num))
                         f1.close()
 
-n_examples = 1
+n_examples = 4
 if __name__ == '__main__':
-    ensemble_count = 5
-    start_constant = .5
+    ensemble_count = 1
+    start_constant = 1.0
     if ensemble_count == 1:
         tuning_constants = [start_constant]
     else:
@@ -901,17 +901,17 @@ if __name__ == '__main__':
         tuning_constants = list(np.arange(start_constant, end_constant+interval, interval))
     for i in range(ensemble_count):
         tuning_constant = tuning_constants[i]
-        new_time = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
+        cur_time = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
 
-        output_file = new_time+"_results.txt"
-        cost_log = new_time+"_cost_log.txt"
+        output_file = cur_time+"_results.txt"
+        cost_log = cur_time+"_cost_log.txt"
 
         f1 = open(output_file, 'w')
         f1.close()
         f1 = open(cost_log, 'w')
         f1.close()
         os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
-        kwargs = {'score_freq': 200, 'end_freq': 2000, 'layer_output_freq': 1000, 'decision_thresh': .75, 'output_file': output_file, 'cost_log': cost_log, 'tuning_constant': tuning_constant, 'time': new_time}
+        kwargs = {'score_freq': 200, 'end_freq': 2000, 'layer_output_freq': 1000, 'decision_thresh': .75, 'output_file': output_file, 'cost_log': cost_log, 'tuning_constant': tuning_constant, 'cur_time': cur_time}
         p = multiprocessing.Process(target=train, kwargs=kwargs)
         p.start()
         p.join()
