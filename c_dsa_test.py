@@ -891,8 +891,8 @@ def train(end_freq = 2000, decision_thresh = .75, score_freq=10, layer_output_fr
 
 n_examples = 4
 if __name__ == '__main__':
-    ensemble_count = 1
-    start_constant = 1.0
+    ensemble_count = 6
+    start_constant = .25
     if ensemble_count == 1:
         tuning_constants = [start_constant]
     else:
