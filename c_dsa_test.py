@@ -27,7 +27,7 @@ IMAGE_HEIGHT = 1024
 IMAGE_WIDTH = 1024
 
 #assume this is square
-def tile_images(list_of_images, new_shape = (400, 400), save=True, file_name = "layer1_collage.jpeg"):
+def tile_images(list_of_images, new_shape = (4000, 4000), save=True, file_name = "layer1_collage.jpeg"):
     list_of_images.sort(key=lambda x: x[0])
     num_images = len(list_of_images)
     sqrt_num_images = int(num_images**(.5))
