@@ -544,7 +544,7 @@ class Dataset:
         return np.array(self.test_inputs, dtype=np.uint8), np.array(self.test_targets, dtype=np.uint8)
 
 
-def draw_results(test_inputs, test_targets, test_segmentation, test_accuracy, network, batch_num):
+def draw_results(test_inputs, test_targets, test_segmentation, test_accuracy, network, batch_num, decision_thresh=.5):
     n_examples_to_plot = n_examples
 
     fig, axs = plt.subplots(4, n_examples_to_plot, figsize=(n_examples_to_plot * 3, 10), squeeze=False)
@@ -561,7 +561,7 @@ def draw_results(test_inputs, test_targets, test_segmentation, test_accuracy, ne
         axs[2][example_i].axis('off')
 
         test_image_thresholded = np.array(
-            [0 if x < 0.5 else 255 for x in test_segmentation[example_i].flatten()])
+            [0 if x < decision_thresh else 255 for x in test_segmentation[example_i].flatten()])
         axs[3][example_i].imshow(
             np.reshape(test_image_thresholded, [network.IMAGE_WIDTH, network.IMAGE_HEIGHT]),
             cmap='gray')
@@ -1105,7 +1105,7 @@ def train(end_freq = 2000, decision_thresh = .75, score_freq=10, layer_output_fr
 
                         test_plot_buf = draw_results(t_inputs[:n_examples],
                                                      np.multiply(t_targets[:n_examples], 1.0 / 255), test_segmentation,
-                                                     test_accuracy, network, batch_num)
+                                                     test_accuracy, network, batch_num, decision_thresh)
 
                         image = tf.image.decode_png(test_plot_buf.getvalue(), channels=4)
                         image = tf.expand_dims(image, 0)
@@ -1171,7 +1171,7 @@ if __name__ == '__main__':
         f1 = open(cost_log, 'w')
         f1.close()
         os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
-        kwargs = {'score_freq': 200, 'end_freq': 1000, 'layer_output_freq': 800, 'decision_thresh': .50, 'output_file': output_file, 'cost_log': cost_log, 'tuning_constant': tuning_constant, 'cur_time': cur_time}
+        kwargs = {'score_freq': 200, 'end_freq': 1000, 'layer_output_freq': 800, 'decision_thresh': .75, 'output_file': output_file, 'cost_log': cost_log, 'tuning_constant': tuning_constant, 'cur_time': cur_time}
         p = multiprocessing.Process(target=train, kwargs=kwargs)
         p.start()
         p.join()
