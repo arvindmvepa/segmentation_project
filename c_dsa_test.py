@@ -889,14 +889,14 @@ def train(end_freq = 2000, decision_thresh = .75, score_freq=10, layer_output_fr
                         f1.write(('Step {}, '+"overall max thresh accuracy {} {}, ".format(max_thresh_accuracy[0], max_thresh_accuracy[1])+thresh_acc_strings+'\n').format(batch_num))
                         f1.close()
 
-n_examples = 4
+n_examples = 5
 if __name__ == '__main__':
-    ensemble_count = 6
+    ensemble_count = 2
     start_constant = .25
     if ensemble_count == 1:
         tuning_constants = [start_constant]
     else:
-        end_constant = 1.5
+        end_constant = 1.0
         interval = (end_constant - start_constant) / float(ensemble_count - 1)
         tuning_constants = list(np.arange(start_constant, end_constant+interval, interval))
     for i in range(ensemble_count):
@@ -911,7 +911,7 @@ if __name__ == '__main__':
         #f1 = open(cost_log, 'w')
         #f1.close()
         os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
-        kwargs = {'score_freq': 200, 'end_freq': 2000, 'layer_output_freq': 1000, 'decision_thresh': .75, 'output_file': output_file, 'tuning_constant': tuning_constant, 'cur_time': cur_time}
+        kwargs = {'score_freq': 200, 'end_freq': 2000, 'layer_output_freq': 1000, 'decision_thresh': .50, 'output_file': output_file, 'tuning_constant': tuning_constant, 'cur_time': cur_time}
         p = multiprocessing.Process(target=train, kwargs=kwargs)
         p.start()
         p.join()

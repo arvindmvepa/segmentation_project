@@ -1149,7 +1149,7 @@ def train(end_freq = 2000, decision_thresh = .75, score_freq=10, layer_output_fr
                         f1.write('Step {}, training cost {}, training cost unweighted {}, test cost {}, test cost unweighted {}\n'.format(batch_num, cost, cost_unweighted, test_cost, test_cost_unweighted))
                         f1.close()
 
-n_examples = 4
+n_examples = 5
 if __name__ == '__main__':
     ensemble_count = 1
     start_constant = 1.0
@@ -1171,7 +1171,7 @@ if __name__ == '__main__':
         f1 = open(cost_log, 'w')
         f1.close()
         os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
-        kwargs = {'score_freq': 200, 'end_freq': 2000, 'layer_output_freq': 1000, 'decision_thresh': .75, 'output_file': output_file, 'cost_log': cost_log, 'tuning_constant': tuning_constant, 'cur_time': cur_time}
+        kwargs = {'score_freq': 200, 'end_freq': 1000, 'layer_output_freq': 800, 'decision_thresh': .50, 'output_file': output_file, 'cost_log': cost_log, 'tuning_constant': tuning_constant, 'cur_time': cur_time}
         p = multiprocessing.Process(target=train, kwargs=kwargs)
         p.start()
         p.join()
