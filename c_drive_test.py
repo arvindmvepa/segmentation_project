@@ -1054,7 +1054,7 @@ def train(end_freq = 2000, decision_thresh = .75, score_freq=10, layer_output_fr
                             thresh_acc_strings += "thresh: {}, thresh acc: {}, tpr: {}, spec: {}, ".format(threshold, thresh_acc, tpr, 1-fpr)
 
                         thresh_acc_strings = thresh_max_items +thresh_acc_strings
-                        result_flat = ((prediction_flat > decision_thresh) * prediction_flat).astype(int)
+                        result_flat = (prediction_flat > decision_thresh).astype(int)
 
                         prediction_flat = np.round(prediction_flat)
                         target_flat = np.round(target_flat)
