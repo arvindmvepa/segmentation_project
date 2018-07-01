@@ -369,7 +369,7 @@ class Dataset:
         return np.array(self.test_inputs, dtype=np.uint8), np.array(self.test_targets, dtype=np.uint8)
 
 
-def draw_results(test_inputs, test_targets, test_segmentation, test_accuracy, network, batch_num):
+def draw_results(test_inputs, test_targets, test_segmentation, test_accuracy, network, batch_num, decision_thresh=.5):
     n_examples_to_plot = n_examples
 
     fig, axs = plt.subplots(4, n_examples_to_plot, figsize=(n_examples_to_plot * 3, 10), squeeze=False)
@@ -386,7 +386,7 @@ def draw_results(test_inputs, test_targets, test_segmentation, test_accuracy, ne
         axs[2][example_i].axis('off')
 
         test_image_thresholded = np.array(
-            [0 if x < 0.5 else 255 for x in test_segmentation[example_i].flatten()])
+            [0 if x < decision_thresh else 255 for x in test_segmentation[example_i].flatten()])
         axs[3][example_i].imshow(
             np.reshape(test_image_thresholded, [network.IMAGE_WIDTH, network.IMAGE_HEIGHT]),
             cmap='gray')
@@ -809,7 +809,7 @@ def train(end_freq = 2000, decision_thresh = .75, score_freq=10, layer_output_fr
                             thresh_acc_strings += "thresh: {}, thresh acc: {}, tpr: {}, spec: {}, ".format(threshold, thresh_acc, tpr, 1-fpr)
 
                         thresh_acc_strings = thresh_max_items +thresh_acc_strings
-                        result_flat = ((prediction_flat > decision_thresh) * prediction_flat).astype(int)
+                        result_flat = (prediction_flat > decision_thresh).astype(int)
 
                         prediction_flat = np.round(prediction_flat)
                         target_flat = np.round(target_flat)
@@ -848,7 +848,7 @@ def train(end_freq = 2000, decision_thresh = .75, score_freq=10, layer_output_fr
 
                         test_plot_buf = draw_results(t_inputs[:n_examples],
                                                      np.multiply(t_targets[:n_examples], 1.0 / 255), test_segmentation,
-                                                     test_accuracy, network, batch_num)
+                                                     test_accuracy, network, batch_num, decision_thresh)
 
                         image = tf.image.decode_png(test_plot_buf.getvalue(), channels=4)
                         image = tf.expand_dims(image, 0)
